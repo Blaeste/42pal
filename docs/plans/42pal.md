@@ -77,8 +77,9 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 - Test : un `.c` valide compile.
 - Test : une variable inutilisée fait échouer la compilation, et l'erreur est capturée.
 
-**9. Exécution.** On lance le programme avec des arguments ou une entrée standard, sous timeout, et on récupère stdout, le code de retour et le signal éventuel.
-- Test : une boucle infinie donne TIMEOUT, et `*(int*)0 = 0` donne SEGFAULT.
+**9. Exécution.** On lance le programme avec des arguments ou une entrée standard, sous timeout, et on récupère stdout, le code de retour et le signal éventuel. L'entrée et la sortie passent par des fichiers temporaires, le programme tourne dans son propre groupe de processus, et tout le groupe est tué à la fin : aucun enfant lancé avec `fork()` ne reste en vie. La sortie est limitée à 1 Mo (au-delà, le système arrête le programme avec `SIGXFSZ`).
+- Test : une boucle infinie donne TIMEOUT, et `*(volatile int *)0 = 0` donne SEGFAULT.
+- Test : un enfant qui boucle est arrêté, que le programme finisse seul ou par timeout ; une sortie sans fin est coupée.
 
 **10. Correcteur d'exos « programme ».** Chaque test compare la sortie à l'oracle, et on s'arrête au premier échec avec une **trace** comme celle de la moulinette : la commande du test, puis un diff en `cat -e` entre la sortie de l'étudiant (lignes `-`) et la sortie attendue (lignes `+`), et `Diff KO`. Un crash, un timeout ou une erreur de compilation donnent leur propre message à la place du diff. Le cœur renvoie le texte de la trace, et le shell l'écrit dans `traces/` (étape 18). Fichiers : `grader.py` et `trace.py`.
 

@@ -4,10 +4,13 @@ Run all the tests from the project root with: python3 -m unittest -v
 """
 
 import os
+import signal
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
+from pal42.model import TestCase
 from pal42.runners.c import CRunner
 
 HELLO = '#include <unistd.h>\n\nint\tmain(void)\n{\n\twrite(1, "hello\\n", 6);\n\treturn (0);\n}\n'
@@ -76,3 +79,170 @@ class TestCompile(unittest.TestCase):
 		source.write_text(HELLO, encoding="utf-8")
 		result = CRunner().compile([source], self.work, "hello")
 		self.assertTrue(result.ok, result.output)
+
+# Small programs for the run tests. raw strings: the \n stay for C to read.
+PRINT_ARGS = r"""#include <unistd.h>
+
+int	main(int ac, char **av)
+{
+	for (int i = 1; i < ac; i++)
+	{
+		int	n = 0;
+		while (av[i][n])
+			n++;
+		write(1, av[i], n);
+		write(1, "\n", 1);
+	}
+	return (ac - 1);
+}
+"""
+
+COPY_STDIN = r"""#include <unistd.h>
+
+int	main(void)
+{
+	char	buffer[64];
+	ssize_t	n;
+
+	while ((n = read(0, buffer, 64)) > 0)
+		write(1, buffer, n);
+	return (0);
+}
+"""
+
+ENDLESS_LOOP = "int\tmain(void)\n{\n\twhile (1)\n\t\t;\n}\n"
+
+# volatile: without it, clang deletes the write to 0 and -Werror refuses it.
+SEGFAULT = "int\tmain(void)\n{\n\t*(volatile int *)0 = 0;\n\treturn (0);\n}\n"
+
+# Starts a child that loops forever, prints its pid, then loops too.
+FORK_LOOP = r"""#include <stdio.h>
+#include <unistd.h>
+
+int	main(void)
+{
+	pid_t	pid;
+
+	pid = fork();
+	if (pid == 0)
+		while (1)
+			;
+	printf("%d\n", pid);
+	fflush(stdout);
+	while (1)
+		;
+}
+"""
+
+# Starts a child that loops forever, prints its pid, then ends at once.
+FORK_AND_EXIT = r"""#include <stdio.h>
+#include <unistd.h>
+
+int	main(void)
+{
+	pid_t	pid;
+
+	pid = fork();
+	if (pid == 0)
+		while (1)
+			;
+	printf("%d\n", pid);
+	return (0);
+}
+"""
+
+ENDLESS_OUTPUT = r"""#include <unistd.h>
+
+int	main(void)
+{
+	while (1)
+		write(1, "spam spam spam\n", 15);
+}
+"""
+
+class TestRun(unittest.TestCase):
+	"""CRunner.run(program, test) runs the student's program on one test."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.work = Path(self.tmp.name)
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def build(self, code):
+		"""Compile `code` and return the program."""
+		source = self.work / "prog.c"
+		source.write_text(code, encoding="utf-8")
+		result = CRunner().compile([source], self.work, "prog")
+		self.assertTrue(result.ok, result.output)
+		return result.binary
+
+	def test_run_gives_the_output_and_the_exit_code(self):
+		"""The arguments reach the program; its output and exit code come back."""
+		result = CRunner().run(self.build(PRINT_ARGS), TestCase(("hello", "a b")))
+		self.assertEqual(result.stdout, b"hello\na b\n")
+		self.assertEqual(result.exit_code, 2)
+		self.assertIsNone(result.signal)
+		self.assertFalse(result.timed_out)
+
+	def test_standard_input_reaches_the_program(self):
+		"""test.stdin is what the program reads on its standard input."""
+		result = CRunner().run(self.build(COPY_STDIN), TestCase((), "line 1\nline 2\n"))
+		self.assertEqual(result.stdout, b"line 1\nline 2\n")
+
+	def test_endless_loop_is_stopped_by_the_timeout(self):
+		"""A program that never ends is stopped: timed_out, no exit code."""
+		result = CRunner(timeout=0.5).run(self.build(ENDLESS_LOOP), TestCase())
+		self.assertTrue(result.timed_out)
+		self.assertIsNone(result.exit_code)
+
+	def test_segfault_is_recognized(self):
+		"""A program killed by a signal: no exit code, the signal's name instead."""
+		result = CRunner().run(self.build(SEGFAULT), TestCase())
+		self.assertEqual(result.signal, "SIGSEGV")
+		self.assertIsNone(result.exit_code)
+		self.assertFalse(result.timed_out)
+
+	def test_children_are_stopped_with_the_program(self):
+		"""A child started with fork() is stopped too: no loop left running."""
+		result = CRunner(timeout=0.5).run(self.build(FORK_LOOP), TestCase())
+		child = int(result.stdout)
+		# If the test fails, the child must still not be left running.
+		self.addCleanup(stop_if_alive, child)
+		self.assertTrue(result.timed_out)
+		self.assertTrue(gone_within(child, seconds=2), f"l'enfant {child} tourne encore")
+
+	def test_child_left_behind_by_a_finished_program_is_stopped(self):
+		"""The program ends normally but its child loops: the child is stopped."""
+		result = CRunner(timeout=2).run(self.build(FORK_AND_EXIT), TestCase())
+		child = int(result.stdout)
+		self.addCleanup(stop_if_alive, child)
+		self.assertEqual(result.exit_code, 0)
+		self.assertFalse(result.timed_out)
+		self.assertTrue(gone_within(child, seconds=2), f"l'enfant {child} tourne encore")
+
+	def test_endless_output_is_cut(self):
+		"""Printing forever fills no memory: stopped past the size limit."""
+		result = CRunner().run(self.build(ENDLESS_OUTPUT), TestCase(), max_output=10_000)
+		self.assertEqual(result.signal, "SIGXFSZ")
+		self.assertEqual(len(result.stdout), 10_000)
+
+def stop_if_alive(pid):
+	"""Kill `pid` if it still exists (cleanup after a failed test)."""
+	try:
+		os.kill(pid, signal.SIGKILL)
+	except ProcessLookupError:
+		pass
+
+def gone_within(pid, seconds):
+	"""True when the process `pid` disappears within `seconds`."""
+	deadline = time.monotonic() + seconds
+	while time.monotonic() < deadline:
+		try:
+			# Signal 0 sends nothing: it only checks that the process exists.
+			os.kill(pid, 0)
+		except ProcessLookupError:
+			return True
+		time.sleep(0.05)
+	return False

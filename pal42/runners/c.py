@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from pal42.runners.base import CompileResult
+from pal42.runners.base import DEFAULT_TIMEOUT, MAX_OUTPUT, CompileResult, run_command
 
 # The flags of the moulinette; an exam can give its own command instead.
 DEFAULT_COMMAND = ("cc", "-Wall", "-Wextra", "-Werror")
@@ -12,8 +12,10 @@ DEFAULT_COMMAND = ("cc", "-Wall", "-Wextra", "-Werror")
 class CRunner:
 	"""Compiles C files with a compile command (DEFAULT_COMMAND by default)."""
 
-	def __init__(self, command=DEFAULT_COMMAND):
+	def __init__(self, command=DEFAULT_COMMAND, timeout=DEFAULT_TIMEOUT):
 		self.command = tuple(command)
+		# Seconds the student's program may run on one test.
+		self.timeout = timeout
 
 	def compile(self, sources, workdir, name):
 		"""Compile `sources` into the program workdir/name.
@@ -40,3 +42,7 @@ class CRunner:
 		ok = process.returncode == 0
 		binary = workdir / name if ok else None
 		return CompileResult(ok, process.stdout + process.stderr, binary)
+
+	def run(self, program, test, max_output=MAX_OUTPUT):
+		"""Run the compiled `program` on `test`: its arguments and standard input."""
+		return run_command([str(program), *test.args], test.stdin, self.timeout, max_output)
