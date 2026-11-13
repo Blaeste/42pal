@@ -58,6 +58,15 @@ class TestLoading(unittest.TestCase):
 		self.assertRegex(catalog.warnings[0], "c/bad.*paramètre inconnu")
 		self.assertRegex(catalog.warnings[1], "c/nothing.*EXERCISE")
 
+	def test_exercise_with_an_unknown_theme_is_ignored_with_a_warning(self):
+		"""Each theme of an exercise must be in themes.json."""
+		unknown = EXERCISE_SOURCE.format(name="lost").replace('"char_sets"', '"nope"')
+		write_exercise(self.root, "c/lost", unknown)
+		catalog = load_catalog(self.root)
+		self.assertEqual(catalog.exercises, {})
+		self.assertEqual(len(catalog.warnings), 1)
+		self.assertRegex(catalog.warnings[0], "c/lost.*thème inconnu.*nope")
+
 	def test_two_exercises_with_the_same_name_keep_the_first(self):
 		"""exo#seed must name one exercise: a second "same" is skipped."""
 		write_exercise(self.root, "c/one", EXERCISE_SOURCE.format(name="same"))

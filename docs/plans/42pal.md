@@ -63,8 +63,9 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 - Test : `char_filter` est trouvé sous le thème `char_sets`.
 - Test : un dossier sans `exercise.py` est ignoré avec un avertissement.
 
-**7. Liste des thèmes : `themes.json`.** Pour chaque thème : son id, la compétence testée, et les exams et niveaux où il apparaît. La liste part de l'inventaire de 42_EXAM, en ne gardant que les thèmes.
+**7. Liste des thèmes : `themes.json`.** Pour chaque thème : son id, la compétence testée, et les exams et niveaux où il apparaît. Pour l'instant, seulement la piscine et le rank 02 : un premier jet écrit de mémoire (l'inventaire de 42_EXAM n'est plus en ligne), à faire relire par des étudiants qui ont passé ces exams.
 - Test : un modèle qui cite un thème inconnu donne une erreur.
+- Test : un thème sans compétence, sans exam ou avec un niveau qui n'est pas un nombre, ou un thème écrit deux fois, donne une erreur.
 
 ### Jalon 2 : correcteur C
 

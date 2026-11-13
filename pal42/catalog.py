@@ -10,6 +10,7 @@ from pathlib import Path
 from runpy import run_path
 
 from pal42.model import Exercise
+from pal42.themes import load_themes
 
 # exercises/ is next to the pal42 package, at the root of the project.
 EXERCISES_DIR = Path(__file__).resolve().parent.parent / "exercises"
@@ -33,12 +34,15 @@ class Catalog:
 class SkippedFolder(Exception):
 	"""A folder of exercises/ that gives no exercise; the message says why."""
 
-def load_catalog(root=EXERCISES_DIR):
+def load_catalog(root=EXERCISES_DIR, themes=None):
 	"""Find and load every exercise under `root`.
 
 	A folder that cannot give an exercise is skipped with a warning, so that
 	one broken exercise does not stop the others from being used.
+	themes are the known themes, by id; None means those of themes.json.
 	"""
+	if themes is None:
+		themes = load_themes()
 	exercises = {}
 	warnings = []
 	# The folder each name was found in, like "c/char_filter".
@@ -49,6 +53,9 @@ def load_catalog(root=EXERCISES_DIR):
 		where = folder.relative_to(root).as_posix()
 		try:
 			exo = _load_exercise(folder)
+			unknown = [theme for theme in exo.themes if theme not in themes]
+			if unknown:
+				raise SkippedFolder(f"thème inconnu « {', '.join(unknown)} »")
 			# The name identifies the exercise (exo#seed): it must be unique.
 			if exo.name in found_in:
 				raise SkippedFolder(
