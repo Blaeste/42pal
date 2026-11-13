@@ -14,7 +14,9 @@ def main(argv=None):
 	# %(prog)s is replaced by the program name given above.
 	parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 	parser.parse_args(argv)
-	return 0
+	# Imported here: --version must work even if the terminal front-end breaks.
+	from pal42.cli.shell import main as shell_main
+	return shell_main()
 
 if __name__ == "__main__":
 	# SystemExit turns the value returned by main() into the process exit code.
