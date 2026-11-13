@@ -130,6 +130,10 @@ class Shell:
 			elif command:
 				# escape: what the student typed must not be read as rich markup.
 				self.console.print(f"Commande inconnue : {escape(command)}. Tape help pour la liste.")
+			# A blank line after each answer sets it apart from the next prompt;
+			# Enter alone gave no answer, so it adds nothing.
+			if command:
+				self.console.print()
 
 	def show_status(self):
 		"""Show the exam, the level, the subject, the time spent and left."""

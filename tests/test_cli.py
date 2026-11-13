@@ -192,6 +192,15 @@ class TestShell(unittest.TestCase):
 		self.assertIn("Commande inconnue : foo", text)
 		self.assertIn("Fin de l'exam", text)
 
+	def test_a_blank_line_separates_each_answer_from_the_next_prompt(self):
+		"""After each command's answer, a blank line; Enter alone adds nothing."""
+		shell = make_shell(Script("grademe", "", "foo", "finish"), self.root)
+		shell.start(load_exam("rank02", catalog=CATALOG, themes=THEMES), 2)
+		shell.command_loop()
+		text = output(shell)
+		self.assertIn("étapes 9 à 15.\n\nCommande inconnue", text)
+		self.assertIn("Tape help pour la liste.\n\nFin de l'exam", text)
+
 	def test_ctrl_d_ends_the_exam_cleanly(self):
 		"""No answer left (Ctrl-D): the exam ends, nothing crashes."""
 		shell = make_shell(Script(), self.root)
