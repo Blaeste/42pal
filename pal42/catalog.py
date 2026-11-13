@@ -1,0 +1,78 @@
+"""The catalog: every exercise found in exercises/, indexed for the draws.
+
+Each exercise lives in its own folder, exercises/<language>/<name>/, whose
+exercise.py defines EXERCISE. Like the rest of the core, this module never
+prints.
+"""
+
+from dataclasses import dataclass
+from pathlib import Path
+from runpy import run_path
+
+from pal42.model import Exercise
+
+# exercises/ is next to the pal42 package, at the root of the project.
+EXERCISES_DIR = Path(__file__).resolve().parent.parent / "exercises"
+
+@dataclass
+class Catalog:
+	"""The exercises found, by name, and the warnings about skipped folders.
+
+	The front-ends show the warnings: the core itself never prints.
+	"""
+	exercises: dict[str, Exercise]
+	warnings: list[str]
+
+	def find(self, language, theme):
+		"""Return the exercises of `language` that train `theme`."""
+		return [
+			exo for exo in self.exercises.values()
+			if exo.language == language and theme in exo.themes
+		]
+
+class SkippedFolder(Exception):
+	"""A folder of exercises/ that gives no exercise; the message says why."""
+
+def load_catalog(root=EXERCISES_DIR):
+	"""Find and load every exercise under `root`.
+
+	A folder that cannot give an exercise is skipped with a warning, so that
+	one broken exercise does not stop the others from being used.
+	"""
+	exercises = {}
+	warnings = []
+	# The folder each name was found in, like "c/char_filter".
+	found_in = {}
+	# sorted: the same order on every machine, whatever the file system says.
+	for folder in sorted(path for path in root.glob("*/*") if path.is_dir()):
+		# Shown as "c/char_filter" in the warnings.
+		where = folder.relative_to(root).as_posix()
+		try:
+			exo = _load_exercise(folder)
+			# The name identifies the exercise (exo#seed): it must be unique.
+			if exo.name in found_in:
+				raise SkippedFolder(
+					f"le nom « {exo.name} » est déjà pris par {found_in[exo.name]}"
+				)
+		except SkippedFolder as reason:
+			warnings.append(f"{where} : {reason}, dossier ignoré")
+			continue
+		exercises[exo.name] = exo
+		found_in[exo.name] = where
+	return Catalog(exercises, warnings)
+
+def _load_exercise(folder):
+	"""Return the EXERCISE defined by folder/exercise.py, or raise SkippedFolder."""
+	file = folder / "exercise.py"
+	if not file.exists():
+		raise SkippedFolder("pas de exercise.py")
+	try:
+		# run_path runs exercise.py and returns its global names.
+		names = run_path(str(file))
+	# Any error: an ExerciseError from the model, but also a typo
+	# (SyntaxError, NameError...) in a file written by a contributor.
+	except Exception as error:
+		raise SkippedFolder(f"exercise.py refusé ({error})") from error
+	if "EXERCISE" not in names:
+		raise SkippedFolder("pas de EXERCISE dans exercise.py")
+	return names["EXERCISE"]
