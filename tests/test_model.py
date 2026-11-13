@@ -5,35 +5,8 @@ Run all the tests from the project root with: python3 -m unittest -v
 
 import unittest
 
-from pal42.model import Exercise, ExerciseError, Param
-
-def fake_oracle(params, test):
-	"""Stand-in oracle: these tests only build exercises, they never grade."""
-	return ""
-
-def fake_generate_tests(params, rng):
-	"""Stand-in test generator: these tests never ask for test cases."""
-	return []
-
-def make_exercise(**changes):
-	"""Build a valid exercise, with the fields given in `changes` replaced.
-
-	Each test changes only the field it is about, so the rest stays valid.
-	"""
-	fields = dict(
-		name="char_filter",
-		language="c",
-		kind="program",
-		expected_files=("char_filter.c",),
-		allowed_functions=("write",),
-		themes=("char_sets",),
-		params=(Param("mode", ("common", "only_first")),),
-		subject="Display the characters $mode, without doubles.",
-		oracle=fake_oracle,
-		generate_tests=fake_generate_tests,
-	)
-	fields.update(changes)
-	return Exercise(**fields)
+from pal42.model import ExerciseError, Param
+from tests.helpers import make_exercise
 
 class TestParam(unittest.TestCase):
 	"""Building a Param."""
@@ -57,6 +30,11 @@ class TestExercise(unittest.TestCase):
 		with self.assertRaisesRegex(ExerciseError, "order"):
 			make_exercise(subject="Display the characters $mode, in $order.")
 
+	def test_assignment_name_with_unknown_param_raises(self):
+		"""assignment_name is checked like the subject: its holes must be params."""
+		with self.assertRaisesRegex(ExerciseError, "nom.*order"):
+			make_exercise(assignment_name="${order}_chars")
+
 	def test_lone_dollar_in_subject_raises(self):
 		"""A `$` that starts no hole is an error that gives its line; `$$` is the fix."""
 		with self.assertRaisesRegex(ExerciseError, r"ligne 2.*\$\$"):
@@ -71,6 +49,11 @@ class TestExercise(unittest.TestCase):
 		"""A typo in a forbidden value would let the real subject be drawn."""
 		with self.assertRaisesRegex(ExerciseError, "comon"):
 			make_exercise(forbidden=({"mode": "comon"},))
+
+	def test_every_combination_forbidden_raises(self):
+		"""An exercise must leave at least one combination to draw."""
+		with self.assertRaisesRegex(ExerciseError, "aucune combinaison"):
+			make_exercise(forbidden=({"mode": "common"}, {"mode": "only_first"}))
 
 	def test_unknown_kind_raises(self):
 		"""kind must be "program" or "function", the two kinds the graders know."""

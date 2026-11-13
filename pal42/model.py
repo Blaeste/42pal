@@ -4,6 +4,7 @@ An Exercise is a template: drawing a value for each Param gives a variant
 (see variant.py). Like the rest of the core, this module never prints.
 """
 
+import itertools
 from dataclasses import dataclass
 from string import Template
 from typing import Callable
@@ -45,6 +46,9 @@ class Exercise:
 	each param name to the value drawn for it.
 	forbidden lists combinations a variant must never have, like
 	{"mode": "common", "order": "first"}: all the pairs must match to forbid.
+	assignment_name is the name the student sees, with holes like the subject
+	("${mode}_chars"); empty means `name`, which never changes since it
+	identifies the exercise (in `exo#seed`, for example).
 	"""
 	name: str
 	language: str
@@ -57,6 +61,7 @@ class Exercise:
 	oracle: Callable
 	generate_tests: Callable
 	forbidden: tuple[dict[str, str], ...] = ()
+	assignment_name: str = ""
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
@@ -68,23 +73,27 @@ class Exercise:
 			self._fail(
 				f"type d'exo inconnu « {self.kind} », choix : {', '.join(KINDS)}"
 			)
-		self._check_subject()
+		self._check_template(self.subject, "le sujet")
+		self._check_template(self.assignment_name, "le nom")
 		self._check_forbidden()
 
-	def _check_subject(self):
-		"""Each `$name` or `${name}` hole of the subject must be a param."""
+	def _check_template(self, text, where):
+		"""Each `$name` or `${name}` hole of `text` must be a param.
+
+		where names the text in the error messages, like "le sujet".
+		"""
 		param_names = {param.name for param in self.params}
 		# Template.pattern is the regex that string.Template itself uses, so we
 		# check exactly the holes it will fill. Not get_identifiers(): 3.11+.
-		for match in Template.pattern.finditer(self.subject):
+		for match in Template.pattern.finditer(text):
 			hole = match.group("named") or match.group("braced")
 			if hole is not None and hole not in param_names:
-				self._fail(f"le sujet utilise le paramètre inconnu « ${hole} »")
+				self._fail(f"{where} utilise le paramètre inconnu « ${hole} »")
 			# "invalid" matches a $ that starts no hole and is not $$.
 			if match.group("invalid") is not None:
-				line = self.subject.count("\n", 0, match.start()) + 1
+				line = text.count("\n", 0, match.start()) + 1
 				self._fail(
-					f"« $ » seul dans le sujet (ligne {line}) : écris « $$ » pour un $"
+					f"« $ » seul dans {where} (ligne {line}) : écris « $$ » pour un $"
 				)
 
 	def _check_forbidden(self):
@@ -105,6 +114,31 @@ class Exercise:
 						f"combinaison interdite avec la valeur inconnue « {value} »"
 						f" pour « {name} »"
 					)
+		# Only once names and values are known: combinations() relies on it.
+		if not self.combinations():
+			self._fail("aucune combinaison possible, elles sont toutes interdites")
+
+	def combinations(self):
+		"""Return every allowed combination of param values, as dicts.
+
+		Params and values keep the order they are written in, so the list is
+		always the same, and a seed always picks the same combination.
+		"""
+		names = [param.name for param in self.params]
+		allowed = []
+		# product gives every tuple of one value per param: 3 x 2 values -> 6.
+		for values in itertools.product(*(param.values for param in self.params)):
+			combination = dict(zip(names, values))
+			if not self.is_forbidden(combination):
+				allowed.append(combination)
+		return allowed
+
+	def is_forbidden(self, combination):
+		"""True when `combination` matches all the pairs of a forbidden one."""
+		return any(
+			all(combination[name] == value for name, value in forbidden.items())
+			for forbidden in self.forbidden
+		)
 
 	def _fail(self, reason):
 		"""Raise an ExerciseError that names this exercise."""
