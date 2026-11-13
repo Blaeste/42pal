@@ -5,7 +5,7 @@ An Exercise is a template: drawing a value for each Param gives a variant
 """
 
 import itertools
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from string import Template
 from typing import Callable
 
@@ -21,15 +21,38 @@ class ExerciseError(ValueError):
 class Param:
 	"""A parameter of an exercise and the values a variant can draw for it.
 
-	name is used as `$name` in the subject; values are short ids like "common".
+	name is used as `$name` in the subject; values are short ids like "common",
+	used to draw, to forbid a combination and in the assignment name.
+	texts gives the words that `$name` becomes in the subject for each value,
+	like {"common": "that appear in both strings"}; empty means the value itself.
 	"""
 	name: str
 	values: tuple[str, ...]
+	# field(default_factory=dict): each Param gets its own empty dict;
+	# a plain `= {}` default is refused by dataclasses (shared between all).
+	texts: dict[str, str] = field(default_factory=dict)
 
 	def __post_init__(self):
 		"""Check the param as soon as it is created (dataclass hook)."""
 		if not self.values:
 			raise ExerciseError(f"paramètre « {self.name} » sans aucune valeur")
+		# texts is all or nothing: a text for each value, and nothing else,
+		# so no raw id shows up in the middle of a sentence of the subject.
+		if self.texts:
+			for value in self.texts:
+				if value not in self.values:
+					raise ExerciseError(
+						f"paramètre « {self.name} » : texte pour la valeur inconnue « {value} »"
+					)
+			for value in self.values:
+				if value not in self.texts:
+					raise ExerciseError(
+						f"paramètre « {self.name} » : pas de texte pour la valeur « {value} »"
+					)
+
+	def text(self, value):
+		"""Return what `value` becomes in the subject: its text, or itself."""
+		return self.texts.get(value, value)
 
 @dataclass(frozen=True)
 class TestCase:
@@ -49,6 +72,9 @@ class Exercise:
 	assignment_name is the name the student sees, with holes like the subject
 	("${mode}_chars"); empty means `name`, which never changes since it
 	identifies the exercise (in `exo#seed`, for example).
+	expected_files can have the same holes ("${mode}_chars.c").
+	examples are the inputs shown in the subject; their outputs are never
+	written by hand: the oracle computes them for the drawn variant.
 	"""
 	name: str
 	language: str
@@ -62,6 +88,7 @@ class Exercise:
 	generate_tests: Callable
 	forbidden: tuple[dict[str, str], ...] = ()
 	assignment_name: str = ""
+	examples: tuple[TestCase, ...] = ()
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
@@ -75,6 +102,8 @@ class Exercise:
 			)
 		self._check_template(self.subject, "le sujet")
 		self._check_template(self.assignment_name, "le nom")
+		for file in self.expected_files:
+			self._check_template(file, "un fichier attendu")
 		self._check_forbidden()
 
 	def _check_template(self, text, where):

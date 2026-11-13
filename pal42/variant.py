@@ -28,6 +28,14 @@ class Variant:
 		template = self.exercise.assignment_name or self.exercise.name
 		return Template(template).substitute(self.params)
 
+	@property
+	def expected_files(self):
+		"""Files the student must hand in, holes filled like the name."""
+		return tuple(
+			Template(file).substitute(self.params)
+			for file in self.exercise.expected_files
+		)
+
 def draw(exo, seed):
 	"""Draw the variant of `exo` given by `seed`.
 

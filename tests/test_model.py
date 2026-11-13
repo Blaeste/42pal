@@ -16,6 +16,23 @@ class TestParam(unittest.TestCase):
 		with self.assertRaisesRegex(ExerciseError, "mode"):
 			Param("mode", ())
 
+	def test_text_of_a_value(self):
+		"""The subject shows the text of a value, or the value itself if none."""
+		texts = {"common": "that appear in both strings", "only_first": "of the first"}
+		self.assertEqual(
+			Param("mode", ("common", "only_first"), texts).text("common"),
+			"that appear in both strings",
+		)
+		self.assertEqual(Param("mode", ("common", "only_first")).text("common"), "common")
+
+	def test_texts_must_match_the_values(self):
+		"""A text for an unknown value, or a value without text, is an error."""
+		values = ("common", "only_first")
+		with self.assertRaisesRegex(ExerciseError, "comon"):
+			Param("mode", values, {"comon": "both", "only_first": "first"})
+		with self.assertRaisesRegex(ExerciseError, "only_first"):
+			Param("mode", values, {"common": "both"})
+
 class TestExercise(unittest.TestCase):
 	"""Building an Exercise and checking it as soon as it is created."""
 
@@ -34,6 +51,11 @@ class TestExercise(unittest.TestCase):
 		"""assignment_name is checked like the subject: its holes must be params."""
 		with self.assertRaisesRegex(ExerciseError, "nom.*order"):
 			make_exercise(assignment_name="${order}_chars")
+
+	def test_expected_files_with_unknown_param_raises(self):
+		"""expected_files are checked like the subject: their holes must be params."""
+		with self.assertRaisesRegex(ExerciseError, "fichier attendu.*order"):
+			make_exercise(expected_files=("${order}_chars.c",))
 
 	def test_lone_dollar_in_subject_raises(self):
 		"""A `$` that starts no hole is an error that gives its line; `$$` is the fix."""

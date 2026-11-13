@@ -38,6 +38,15 @@ class TestDraw(unittest.TestCase):
 			variant = draw(exo, seed)
 			self.assertEqual(variant.name, variant.params["mode"] + "_chars")
 
+	def test_expected_files_depend_on_params(self):
+		"""The holes of expected_files are filled like the name, so they match it."""
+		exo = make_two_param_exercise(
+			assignment_name="${mode}_chars", expected_files=("${mode}_chars.c",)
+		)
+		for seed in range(10):
+			variant = draw(exo, seed)
+			self.assertEqual(variant.expected_files, (variant.name + ".c",))
+
 	def test_name_defaults_to_exercise_name(self):
 		"""Without assignment_name, the student sees the exercise name."""
 		self.assertEqual(draw(make_exercise(), 42).name, "char_filter")
