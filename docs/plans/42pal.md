@@ -105,8 +105,9 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 - Test : 4 niveaux non vides.
 - Test : un thème inconnu, ou un thème sans aucun modèle, donne une erreur dès le chargement.
 
-**17. Session.** On garde l'exam, le niveau, le sujet en cours (`exo#seed`), le début de l'exam, les tentatives et l'heure de la prochaine correction possible dans `~/.42pal/session.json`, pour pouvoir reprendre. Fichier : `session.py`.
+**17. Session.** On garde l'exam, le niveau, le sujet en cours (`exo#seed`), le début de l'exam, les tentatives et l'heure de la prochaine correction possible dans `~/.42pal/session.json`, pour pouvoir reprendre. On garde aussi, à part, l'historique des exams terminés (exam, niveau atteint, note, tentatives, durée) : c'est la base du futur score (voir « Plus tard : gamification »). Fichier : `session.py`.
 - Test : sauvegarder puis recharger donne le même état (l'horloge est injectée pour les tests).
+- Test : un exam terminé s'ajoute à l'historique, qui survit à une nouvelle session.
 
 **18. Le shell examshell.** Choix de l'exam, puis création de `subjects/<exo>/subject.en.txt` et `rendu/<exo>/`, avec les commandes `status`, `grademe`, `finish` et `help`. Au tirage : un thème du niveau, puis un modèle, puis une seed. Fichiers : `cli/shell.py` et `cli/display.py`.
 - Vérifier à la main : une bonne solution fait passer au niveau suivant, une mauvaise produit une traceback.
@@ -145,6 +146,19 @@ FastAPI importe le même cœur. La correction tourne dans un conteneur Docker sa
 
 Le déploiement doit pouvoir changer de serveur : tout passe par Docker Compose et un fichier `.env`, sans rien de propre au VPS OVH. Passer au serveur de l'école reviendra à copier le compose et le `.env`.
 
+### Plus tard : gamification (phase 2, seulement pour ceux qui le veulent)
+
+Un score et des classements, **uniquement sur la base du volontariat** : c'est désactivé par défaut, on peut s'inscrire et se retirer à tout moment, et se retirer efface ses données du classement.
+
+- **Score** : calculé à partir des exams terminés (niveau atteint, note, temps, nombre de tentatives) et des révisions par thème. La formule reste à définir.
+- **Classements** : par promo (piscine ou année d'entrée en cursus), par campus et par exam. La promo et le campus viennent de la connexion 42.
+- **Ce qui est visible** : le login (ou un pseudo), le score et le rang, jamais le code rendu.
+
+**Ce qu'on prépare dès la phase 1**, pour ne pas tout refaire :
+- La session (étape 17) garde l'historique des exams terminés, en local. Rien ne quitte la machine en phase 1.
+- Le cœur renvoie les résultats sous forme de données (note, tentatives, durées) et non de texte, pour qu'on puisse les compter plus tard.
+- Seules les corrections faites sur le serveur (jalon 6) compteront pour le classement : en local, l'étudiant peut modifier le correcteur, donc un score local n'est pas fiable.
+
 ## Risques
 
 - **Un oracle faux donne des corrections fausses.** C'est le risque n°1. La parade est la double implémentation (oracle et `ref.c`), avec `check-catalog` obligatoire avant d'ajouter un exo.
@@ -154,15 +168,17 @@ Le déploiement doit pouvoir changer de serveur : tout passe par Docker Compose 
 - **La version de Python sur les postes du campus est inconnue.** On vise 3.10 et on vérifie dès l'étape 1.
 - **valgrind peut manquer sur certains postes.** Dans ce cas, le contrôle des fuites est désactivé avec un avertissement.
 - **Le cœur doit rester sans affichage**, sinon le web ne pourra pas s'y brancher.
+- **Un classement pousse à tricher.** En local, le correcteur et l'oracle sont modifiables : seuls les exams corrigés sur le serveur comptent pour le classement.
 
 ## Questions ouvertes
 
 - Sujets Python : à fournir plus tard, uniquement comme source de thèmes.
 - Au vrai exam, après un échec, retente-t-on le même sujet ? C'est le comportement par défaut ici, et c'est réglable.
+- Gamification : quelle formule de score ? Classement par login ou par pseudo ?
 
 ## Hors périmètre (phase 1)
 
-- Le web, les comptes, la connexion 42 et le classement (phase 2).
+- Le web, les comptes, la connexion 42, le score et le classement (phase 2, voir « Plus tard : gamification »).
 - La génération de sujets par IA.
 - L'anti-triche.
 - Le support macOS testé (le vrai exam est sous Linux).
