@@ -5,7 +5,11 @@ Run all the tests from the project root with: python3 -m unittest -v
 
 import getpass
 import os
+import pty
+import re
+import select
 import subprocess
+import time
 import io
 import tempfile
 import unittest
@@ -157,6 +161,15 @@ class TestShell(unittest.TestCase):
 		self.assertIn(f"subjects/{name}/subject.en.txt", output(shell))
 		self.assertIn(f"rendu/{name}/", output(shell))
 
+	def test_panel_comes_before_the_subject_and_is_as_wide(self):
+		"""First the panel (where to read and hand in), 80 wide like the subject."""
+		shell = make_shell(Script(), self.root)
+		shell.start(load_exam("rank02", catalog=CATALOG, themes=THEMES), 2)
+		text = output(shell)
+		self.assertLess(text.index("Lis-le"), text.index("Assignment name"))
+		top_border = next(line for line in text.splitlines() if line.startswith("╭"))
+		self.assertEqual(len(top_border), 80)
+
 	def test_start_also_prints_the_whole_subject(self):
 		"""The subject is in subject.en.txt and also printed, as plain text."""
 		shell = make_shell(Script(), self.root)
@@ -243,3 +256,50 @@ class TestTypewriter(unittest.TestCase):
 		display.typewriter(console, "42pal", sleep=pauses.append)
 		self.assertEqual(console.file.getvalue(), "42pal\n")
 		self.assertEqual(pauses, [])
+
+@unittest.skipUnless(hasattr(os, "fork"), "needs a pseudo-terminal (Linux, macOS)")
+class TestRealTerminal(unittest.TestCase):
+	"""./42pal in a pseudo-terminal: what a student really sees on the screen."""
+
+	def test_enter_alone_goes_to_a_new_line(self):
+		"""Enter with nothing typed: the next prompt starts on a new line."""
+		with tempfile.TemporaryDirectory() as home:
+			screen = run_in_terminal(home, [
+				("login:", ""), ("password:", "x"), ("choix :", "2"),
+				("départ :", ""), ("examshell>", ""), ("examshell>", "finish"),
+			])
+		self.assertNotIn("examshell> examshell>", screen)
+		self.assertNotRegex(screen, "login:.*password:")
+		self.assertIn("Fin de l'exam", screen)
+
+def run_in_terminal(home, steps, timeout=15):
+	"""Run ./42pal in a pseudo-terminal; for each (prompt, answer), wait, then type.
+
+	Returns everything the screen got, without the color codes. With a
+	pseudo-terminal, readline and the echo behave as in a real terminal.
+	"""
+	pid, fd = pty.fork()
+	if pid == 0:
+		# The child: becomes ./42pal, with HOME set to the temporary folder.
+		os.environ["HOME"] = home
+		os.execv(str(ROOT / "42pal"), ["42pal"])
+	screen = b""
+	deadline = time.monotonic() + timeout
+
+	def read_until(text):
+		nonlocal screen
+		start = len(screen)
+		while text.encode() not in screen[start:] and time.monotonic() < deadline:
+			if select.select([fd], [], [], 0.1)[0]:
+				try:
+					screen += os.read(fd, 4096)
+				except OSError:
+					return
+
+	for prompt, answer in steps:
+		read_until(prompt)
+		os.write(fd, answer.encode() + b"\r")
+	read_until("Fin de l'exam")
+	os.waitpid(pid, 0)
+	os.close(fd)
+	return re.sub(r"\x1b\[[0-9;?]*[a-zA-Z]", "", screen.decode(errors="replace")).replace("\r", "")

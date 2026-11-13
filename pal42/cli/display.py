@@ -29,7 +29,8 @@ def subject_panel(exam, level, variant, subject, rendu):
 		f"Lis-le : {escape(short_path(subject))}",
 		f"Rends  : {escape(short_path(rendu))}/",
 	]
-	return Panel("\n".join(lines), title="42pal", expand=False)
+	# 80 wide, like the subject printed under it (narrower if the terminal is).
+	return Panel("\n".join(lines), title="42pal", width=80)
 
 def duration(seconds):
 	"""Write a number of seconds as H:MM:SS, like 0:10:00."""

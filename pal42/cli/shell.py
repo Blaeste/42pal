@@ -99,12 +99,14 @@ class Shell:
 		subject = self.workspace.give_subject(self.variant)
 		self.started_at = self.clock()
 		rendu = self.workspace.rendu / self.variant.name
-		# The subject as plain text: markup=False so that rich changes nothing,
-		# and no frame, so that the examples can be copied as they are.
+		# First the panel (where to read and hand in), then the subject as
+		# plain text: markup=False so that rich changes nothing, and no frame,
+		# so that the examples can be copied as they are.
+		self.console.print()
+		self.console.print(display.subject_panel(exam, level, self.variant, subject, rendu))
 		self.console.print()
 		self.console.print(subject.read_text(encoding="utf-8"), markup=False, highlight=False, end="")
 		self.console.print()
-		self.console.print(display.subject_panel(exam, level, self.variant, subject, rendu))
 
 	def command_loop(self):
 		"""Read and run the examshell commands until finish or Ctrl-D."""
@@ -157,7 +159,9 @@ def main():
 	def ask(prompt, default=None):
 		"""Read a line; Enter alone gives `default`, shown in brackets."""
 		shown = f"{prompt} [{default}] " if default else f"{prompt} "
-		answer = console.input(escape(shown)).strip()
+		# The prompt goes to input() itself, not printed before by rich:
+		# readline must know it, or Enter alone stays on the same line.
+		answer = input(shown).strip()
 		return answer if answer or default is None else default
 
 	def ask_password(prompt):
