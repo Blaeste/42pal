@@ -11,7 +11,8 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 
 ## Décisions
 
-- **Langage** : Python 3.10 minimum (à confirmer sur un poste du campus), bibliothèque standard uniquement, tests compris (`unittest`), car personne n'a le droit d'installer quoi que ce soit sur les postes.
+- **Langage** : Python 3.10 minimum (à confirmer sur un poste du campus), bibliothèque standard uniquement pour le cœur et les tests (`unittest`), car personne n'a le droit d'installer quoi que ce soit sur les postes.
+- **Affichage** : `rich` (licence MIT) est embarqué dans `vendor/` avec `typing_extensions`, soit environ 1,2 Mo, sans `pygments` ni `markdown_it`. Il n'y a rien à installer et pas besoin de sudo. Seul `pal42/cli/` s'en sert : le cœur reste en bibliothèque standard, sans affichage. Vérifié sur le Python 3.10.12 du système, sans aucun paquet : console, couleurs, tableaux, panneaux, affichage en direct, prompt et barres de progression marchent.
 - **Exo** : un modèle composé de paramètres (avec des combinaisons interdites possibles), d'un sujet à trous, d'un **oracle** Python, d'un générateur de tests, et d'une solution de référence `ref.c` paramétrée par `-D`.
 - **Variante** : identifiée par `exo#seed`, donc reproductible.
 - **Les exams pointent vers des thèmes.** Au tirage, on prend un thème du niveau, puis un modèle de ce thème, puis une seed.
@@ -33,6 +34,7 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 ├── exercises/c/char_filter/   # exercise.py, ref.c
 ├── themes.json
 ├── exams/               # rank02.json, piscine_*.json
+├── vendor/              # rich et typing_extensions, embarqués (rien à installer)
 └── tests/
 ```
 
@@ -122,7 +124,7 @@ Diff KO
 - Test : sauvegarder puis recharger donne le même état (l'horloge est injectée pour les tests).
 - Test : un exam terminé s'ajoute à l'historique, qui survit à une nouvelle session.
 
-**18. Le shell examshell.** Choix de l'exam, puis tout se passe dans `~/42pal_exam/` (pas `~/42pal`, qui est souvent le dépôt cloné), avec les commandes `status`, `grademe`, `finish` et `help`. Au tirage : un thème du niveau, puis un modèle, puis une seed. Fichiers : `cli/shell.py` et `cli/display.py`.
+**18. Le shell examshell.** Choix de l'exam, puis tout se passe dans `~/42pal_exam/` (pas `~/42pal`, qui est souvent le dépôt cloné), avec les commandes `status`, `grademe`, `finish` et `help`. Au tirage : un thème du niveau, puis un modèle, puis une seed. L'affichage passe par `rich` (couleurs, tableau des résultats, minuteur en direct), et le prompt utilise `readline` pour l'historique et la complétion des commandes. C'est à cette étape qu'on copie `rich` dans `vendor/` et que `./42pal` l'ajoute au chemin de Python. Fichiers : `cli/shell.py` et `cli/display.py`.
 
 ```
 ~/42pal_exam/
