@@ -24,6 +24,12 @@ class TestRealExams(unittest.TestCase):
 		self.assertEqual(exam.level_count, 4)
 		self.assertIn("char_filter", [exo.name for exo in exam.exercises_at(2)])
 
+	def test_rank02_and_piscine_start_at_level_1(self):
+		"""A level 1 exercise exists (shift_letters): the exam starts at level 1."""
+		for exam_id in ["rank02", "piscine"]:
+			with self.subTest(exam_id):
+				self.assertEqual(load_exam(exam_id).playable_levels[0], 1)
+
 	def test_every_exam_file_loads(self):
 		"""Each file of exams/ is a valid exam with at least one playable level."""
 		self.assertIn("rank02", list_exams())
