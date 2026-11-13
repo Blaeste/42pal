@@ -31,12 +31,13 @@ class TestBadThemesFile(unittest.TestCase):
 		self.tmp.cleanup()
 
 	def test_badly_written_theme_raises_an_error_naming_it(self):
-		"""No skill, no exam, no level, or a level that is not a number."""
+		"""No skill, no exam, no level, or a level that is not a number from 1."""
 		bad = {
 			"no_skill": {"exams": {"rank02": [2]}},
 			"no_exam": {"skill": "Do things", "exams": {}},
 			"no_level": {"skill": "Do things", "exams": {"rank02": []}},
 			"text_level": {"skill": "Do things", "exams": {"rank02": ["2"]}},
+			"zero_level": {"skill": "Do things", "exams": {"rank02": [0, 1]}},
 		}
 		for theme_id, entry in bad.items():
 			# subTest: each case is reported on its own if it fails.

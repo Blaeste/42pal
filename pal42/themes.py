@@ -57,5 +57,7 @@ def _make_theme(theme_id, entry):
 			# bool is a kind of int in Python (True == 1): refuse it too.
 			if isinstance(level, bool) or not isinstance(level, int):
 				fail(f"le niveau {level!r} de « {exam} » n'est pas un nombre entier")
+			if level < 1:
+				fail(f"le niveau {level} de « {exam} » est invalide : les niveaux commencent à 1")
 	exams = {exam: tuple(levels) for exam, levels in entry["exams"].items()}
 	return Theme(theme_id, entry["skill"], exams)
