@@ -1,0 +1,7 @@
+{
+	"title": "Exam Rank 02",
+	"language": "c",
+	"levels": 4,
+	"duration_minutes": 180,
+	"compile": ["cc", "-Wall", "-Wextra", "-Werror"]
+}

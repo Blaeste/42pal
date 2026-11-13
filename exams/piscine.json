@@ -1,0 +1,7 @@
+{
+	"title": "Exam Piscine",
+	"language": "c",
+	"levels": 4,
+	"duration_minutes": 240,
+	"compile": ["cc", "-Wall", "-Wextra", "-Werror"]
+}
