@@ -40,6 +40,8 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 
 ## Étapes
 
+**Ordre de réalisation** : les étapes 1 à 8 sont faites. On fait ensuite l'interface d'abord (étapes 16 et 18), avec un `grademe` qui répond « pas encore branché », pour voir l'outil de bout en bout au plus tôt. Puis on reprend le correcteur (étapes 9 à 15), on le branche, et on continue avec les étapes 17, 19 et suivantes.
+
 ### Jalon 0 : squelette
 
 **1. Initialiser le dépôt.** `git init`, `.gitignore`, le paquet `pal42/` avec `__main__.py` (option `--version`) et le script `./42pal`, qui marche depuis n'importe quel dossier. Lancer `python3 --version` sur un poste du campus pour fixer la version minimale.
@@ -116,15 +118,16 @@ Diff KO
 
 ### Jalon 4 : le mode exam en terminal
 
-**16. Définition d'un exam.** Un fichier `exams/rank02.json` décrit les niveaux et leurs thèmes, la durée, la commande de compilation et les durées d'attente après un échec. Fichier : `exam.py`.
-- Test : 4 niveaux non vides.
-- Test : un thème inconnu, ou un thème sans aucun modèle, donne une erreur dès le chargement.
+**16. Définition d'un exam.** Un fichier par exam (`exams/rank02.json`, `exams/piscine.json`) donne le titre, le langage, le nombre de niveaux, la durée et la commande de compilation ; les durées d'attente après un échec viendront à l'étape 19. Les thèmes de chaque niveau viennent de `themes.json`, pour ne pas les écrire deux fois. Un niveau dont aucun thème n'a encore de modèle est signalé par un avertissement et ne peut pas être joué. Au tirage : un thème du niveau, puis un modèle de ce thème, puis une seed. Fichier : `exam.py`.
+- Test : le rank 02 a 4 niveaux, et `char_filter` est jouable au niveau 2.
+- Test : un niveau sans aucun modèle donne un avertissement.
+- Test : un fichier d'exam mal écrit donne une erreur dès le chargement.
 
 **17. Session.** On garde l'exam, le niveau, le sujet en cours (`exo#seed`), le début de l'exam, les tentatives et l'heure de la prochaine correction possible dans `~/.42pal/session.json`, pour pouvoir reprendre. On garde aussi, à part, l'historique des exams terminés (exam, niveau atteint, note, tentatives, durée) : c'est la base du futur score (voir « Plus tard : gamification »). Fichier : `session.py`.
 - Test : sauvegarder puis recharger donne le même état (l'horloge est injectée pour les tests).
 - Test : un exam terminé s'ajoute à l'historique, qui survit à une nouvelle session.
 
-**18. Le shell examshell.** Choix de l'exam, puis tout se passe dans `~/42pal_exam/` (pas `~/42pal`, qui est souvent le dépôt cloné), avec les commandes `status`, `grademe`, `finish` et `help`. Au tirage : un thème du niveau, puis un modèle, puis une seed. L'affichage passe par `rich` (couleurs, tableau des résultats, minuteur en direct), et le prompt utilise `readline` pour l'historique et la complétion des commandes. C'est à cette étape qu'on copie `rich` dans `vendor/` et que `./42pal` l'ajoute au chemin de Python. Fichiers : `cli/shell.py` et `cli/display.py`.
+**18. Le shell examshell.** D'abord un faux login comme à l'exam : le login est prérempli avec le nom d'utilisateur, et le mot de passe est masqué, accepte n'importe quoi, n'est jamais vérifié ni gardé. Puis le choix de l'exam et du niveau de départ (parmi les niveaux jouables), et tout se passe dans `~/42pal_exam/` (pas `~/42pal`, qui est souvent le dépôt cloné), avec les commandes `status`, `grademe`, `finish` et `help`. Au tirage : un thème du niveau, puis un modèle, puis une seed. L'affichage passe par `rich` (couleurs, tableau des résultats, minuteur en direct), et le prompt utilise `readline` pour l'historique et la complétion des commandes. C'est à cette étape qu'on copie `rich` dans `vendor/` et que `./42pal` l'ajoute au chemin de Python. Fichiers : `cli/shell.py` et `cli/display.py`.
 
 ```
 ~/42pal_exam/
