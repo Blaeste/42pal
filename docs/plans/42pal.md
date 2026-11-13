@@ -27,7 +27,7 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 ├── 42pal                # script de lancement (python3 -m pal42)
 ├── pal42/               # le cœur, sans aucun affichage, réutilisé par le web
 │   ├── model.py variant.py subject.py catalog.py
-│   ├── grader.py harness.py checks.py exam.py session.py
+│   ├── grader.py trace.py harness.py checks.py exam.py session.py
 │   ├── runners/         # base.py c.py cpp.py python.py
 │   └── cli/             # shell.py practice.py check.py display.py
 ├── exercises/c/char_filter/   # exercise.py, ref.c
@@ -75,9 +75,21 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 **9. Exécution.** On lance le programme avec des arguments ou une entrée standard, sous timeout, et on récupère stdout, le code de retour et le signal éventuel.
 - Test : une boucle infinie donne TIMEOUT, et `*(int*)0 = 0` donne SEGFAULT.
 
-**10. Correcteur d'exos « programme ».** Chaque test compare la sortie à l'oracle, on s'arrête au premier échec et on écrit une traceback (commande, ta sortie, sortie attendue, en `cat -e`). Fichier : `grader.py`.
+**10. Correcteur d'exos « programme ».** Chaque test compare la sortie à l'oracle, et on s'arrête au premier échec avec une **trace** comme celle de la moulinette : la commande du test, puis un diff en `cat -e` entre la sortie de l'étudiant (lignes `-`) et la sortie attendue (lignes `+`), et `Diff KO`. Un crash, un timeout ou une erreur de compilation donnent leur propre message à la place du diff. Le cœur renvoie le texte de la trace, et le shell l'écrit dans `traces/` (étape 18). Fichiers : `grader.py` et `trace.py`.
+
+```
+= Test 2 =======================================================================
+$> ./repeat_twice "ab c" | cat -e
+--- student
++++ moulinette
+-ab c$
++ab c ab c$
+
+Diff KO
+```
+
 - Test : une solution juste écrite par nous passe.
-- Test : une solution sans `\n` échoue, avec les arguments du test dans la traceback.
+- Test : une solution sans `\n` échoue, et sa trace montre `-hello` contre `+hello$`, avec la commande du test.
 
 **11. Exos « fonction ».** Un `main` de test est généré pour chaque variante. Fichier : `harness.py`, avec un modèle « fonction » original sur le thème « parcours de chaîne ».
 - Test : une fonction juste passe, une fonction décalée de 1 échoue.
@@ -109,8 +121,19 @@ Un outil pour les étudiants de 42 Mulhouse qui simule tous les exams (piscine e
 - Test : sauvegarder puis recharger donne le même état (l'horloge est injectée pour les tests).
 - Test : un exam terminé s'ajoute à l'historique, qui survit à une nouvelle session.
 
-**18. Le shell examshell.** Choix de l'exam, puis création de `subjects/<exo>/subject.en.txt` et `rendu/<exo>/`, avec les commandes `status`, `grademe`, `finish` et `help`. Au tirage : un thème du niveau, puis un modèle, puis une seed. Fichiers : `cli/shell.py` et `cli/display.py`.
-- Vérifier à la main : une bonne solution fait passer au niveau suivant, une mauvaise produit une traceback.
+**18. Le shell examshell.** Choix de l'exam, puis tout se passe dans `~/42pal_exam/` (pas `~/42pal`, qui est souvent le dépôt cloné), avec les commandes `status`, `grademe`, `finish` et `help`. Au tirage : un thème du niveau, puis un modèle, puis une seed. Fichiers : `cli/shell.py` et `cli/display.py`.
+
+```
+~/42pal_exam/
+├── subjects/<exo>/subject.en.txt   le sujet tiré
+├── rendu/<exo>/                    l'étudiant code ici
+└── traces/                         une trace par grademe raté
+```
+
+`rendu/` est un simple dossier : `grademe` corrige les fichiers présents, commités ou non. Pour garder les réflexes du vrai exam, c'est aussi un dépôt git local relié à un dépôt nu caché dans `~/.42pal/rendu.git`, donc `git add`, `git commit` et `git push` marchent, sans être obligatoires. Si git manque, ce n'est qu'un dossier.
+
+- Vérifier à la main : une bonne solution fait passer au niveau suivant, une mauvaise écrit une trace dans `traces/`.
+- Vérifier à la main : `git add . && git commit -m test && git push` marche dans `rendu/`.
 
 **19. Temps et nouvel essai.** L'exam s'arrête à la durée maximale. Après un échec, on retente le même sujet, et l'attente avant le prochain `grademe` augmente à chaque échec. L'option `--practice` supprime l'attente.
 - Test avec une horloge simulée : l'attente grandit d'un échec à l'autre, le sujet ne change pas, et l'exam se termine avec la note.
@@ -132,7 +155,7 @@ Chaque exo est une étape : un thème, un modèle original, sa `ref.c`, et `chec
 - Vérifier : un exam complet terminé à la main.
 
 **24. Correcteur Python** (exos programme et fonction), dans `runners/python.py`. Il est d'abord testé sur un modèle simple d'un thème déjà connu. Les vrais modèles Python viendront quand les sujets auront été fournis.
-- Test : une solution juste passe, une fausse échoue avec traceback.
+- Test : une solution juste passe, une fausse échoue avec une trace.
 
 **25. Correcteur C++** (`c++ -std=c++98 -Wall -Wextra -Werror`) et un premier modèle sur un thème du rank 05.
 
