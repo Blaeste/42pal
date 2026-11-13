@@ -13,7 +13,8 @@ from pathlib import Path
 from random import Random
 
 from pal42.cli.shell import Shell
-from pal42.catalog import Catalog
+from pal42.catalog import Catalog, load_catalog
+from pal42.cli import display
 from pal42.cli.workspace import Workspace
 from pal42.exam import list_exams, load_exam
 from pal42.subject import render
@@ -44,7 +45,7 @@ class TestWorkspace(unittest.TestCase):
 		"""A temporary folder stands for ~/42pal_exam in each test."""
 		self.tmp = tempfile.TemporaryDirectory()
 		self.root = Path(self.tmp.name) / "42pal_exam"
-		self.variant = Variant(load_exam("rank02").exercises_at(2)[0], 0,
+		self.variant = Variant(load_catalog().exercises["char_filter"], 0,
 			{"mode": "common", "order": "ascii", "separator": "space"})
 
 	def tearDown(self):
@@ -102,7 +103,7 @@ def make_shell(script, root, clock=None):
 	"""A shell that reads `script` and writes into a string, not the screen."""
 	console = Console(file=io.StringIO(), width=100, color_system=None)
 	return Shell(console, script.ask, script.ask_password, Workspace(root),
-		rng=Random(1), clock=clock or FakeClock())
+		rng=Random(1), clock=clock or FakeClock(), sleep=lambda seconds: None)
 
 def output(shell):
 	"""Everything the shell has printed."""
@@ -124,7 +125,7 @@ class TestShell(unittest.TestCase):
 		shell = make_shell(script, self.root)
 		shell.login()
 		self.assertEqual(shell.user, getpass.getuser())
-		self.assertIn(f"Bienvenue {getpass.getuser()}", output(shell))
+		self.assertIn(f"Bienvenue {getpass.getuser()} !\n\n", output(shell))
 		self.assertNotIn("my-secret-password", output(shell))
 		self.assertNotIn("my-secret-password", repr(vars(shell)))
 
@@ -155,6 +156,12 @@ class TestShell(unittest.TestCase):
 		self.assertIn(name, output(shell))
 		self.assertIn(f"subjects/{name}/subject.en.txt", output(shell))
 		self.assertIn(f"rendu/{name}/", output(shell))
+
+	def test_start_also_prints_the_whole_subject(self):
+		"""The subject is in subject.en.txt and also printed, as plain text."""
+		shell = make_shell(Script(), self.root)
+		shell.start(load_exam("rank02", catalog=CATALOG, themes=THEMES), 2)
+		self.assertIn(render(shell.variant), output(shell))
 
 	def test_commands_help_status_grademe_and_unknown(self):
 		"""Each command answers; status shows the time spent and the time left."""
@@ -217,3 +224,22 @@ class TestShellQuit(unittest.TestCase):
 			shell = make_shell(Script(), Path(tmp))
 			shell.run()
 			self.assertIn("Au revoir", output(shell))
+
+class TestTypewriter(unittest.TestCase):
+	"""The text that writes itself, one letter at a time."""
+
+	def test_typewriter_prints_one_letter_at_a_time_in_a_terminal(self):
+		"""In a terminal: one pause per letter, and the whole text in the end."""
+		console = Console(file=io.StringIO(), force_terminal=True, color_system=None)
+		pauses = []
+		display.typewriter(console, "42pal", sleep=pauses.append)
+		self.assertEqual(console.file.getvalue(), "42pal\n")
+		self.assertEqual(len(pauses), 5)
+
+	def test_typewriter_prints_at_once_outside_a_terminal(self):
+		"""In a pipe or a test: no pause, nothing to wait for."""
+		console = Console(file=io.StringIO(), color_system=None)
+		pauses = []
+		display.typewriter(console, "42pal", sleep=pauses.append)
+		self.assertEqual(console.file.getvalue(), "42pal\n")
+		self.assertEqual(pauses, [])

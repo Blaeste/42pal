@@ -3,6 +3,7 @@
 Each function returns something rich can print; the shell prints it.
 """
 
+import time
 from datetime import timedelta
 from pathlib import Path
 
@@ -50,3 +51,19 @@ def status_table(exam, level, variant, elapsed, left):
 	table.add_row("Temps passé", duration(elapsed))
 	table.add_row("Temps restant", duration(left))
 	return table
+
+def typewriter(console, text, sleep=time.sleep, delay=0.02):
+	"""Print `text` one letter at a time, as if someone were typing it.
+
+	Only in a real terminal: in a pipe or a test, it is printed at once.
+	sleep is given by the tests, so that they do not wait.
+	"""
+	if not console.is_terminal:
+		console.print(text, markup=False, highlight=False)
+		return
+	for char in text:
+		console.print(char, end="", markup=False, highlight=False)
+		# Without flush, the terminal would show the line only once complete.
+		console.file.flush()
+		sleep(delay)
+	console.print()

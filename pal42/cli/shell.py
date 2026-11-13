@@ -34,13 +34,16 @@ class Shell:
 	reads without showing it, and console is a rich Console.
 	"""
 
-	def __init__(self, console, ask, ask_password, workspace=None, rng=None, clock=time.monotonic):
+	def __init__(self, console, ask, ask_password, workspace=None, rng=None,
+			clock=time.monotonic, sleep=time.sleep):
 		self.console = console
 		self.ask = ask
 		self.ask_password = ask_password
 		self.workspace = workspace or Workspace()
 		self.rng = rng or random.Random()
 		self.clock = clock
+		# For the typewriter animation; the tests give one that does not wait.
+		self.sleep = sleep
 		self.user = None
 		# Set by start(): the exam, the level, the subject and when it began.
 		self.exam = None
@@ -62,10 +65,12 @@ class Shell:
 
 	def login(self):
 		"""Fake login, like at the exam: any password, never checked or kept."""
+		display.typewriter(self.console, "42pal · examshell", sleep=self.sleep)
 		self.user = self.ask("login:", getpass.getuser())
 		# The password is read, then dropped at once: not checked, not stored.
 		self.ask_password("password: ")
-		self.console.print(f"Bienvenue {self.user} !")
+		display.typewriter(self.console, f"Bienvenue {self.user} !", sleep=self.sleep)
+		self.console.print()
 
 	def choose_exam(self):
 		"""Show the exams as a numbered menu and return the one picked."""
@@ -94,6 +99,11 @@ class Shell:
 		subject = self.workspace.give_subject(self.variant)
 		self.started_at = self.clock()
 		rendu = self.workspace.rendu / self.variant.name
+		# The subject as plain text: markup=False so that rich changes nothing,
+		# and no frame, so that the examples can be copied as they are.
+		self.console.print()
+		self.console.print(subject.read_text(encoding="utf-8"), markup=False, highlight=False, end="")
+		self.console.print()
 		self.console.print(display.subject_panel(exam, level, self.variant, subject, rendu))
 
 	def command_loop(self):
