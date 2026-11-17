@@ -11,7 +11,7 @@ from pal42.session import Session, SessionStore
 
 SESSION = Session(
 	exam="rank02", level=2, variant="char_filter#17", started_at=1_700_000_000.0,
-	retry_mode="hard", attempts=3, oks=1, failures=2, passed_levels=[1],
+	mode="exam", attempts=3, oks=1, failures=2, passed_levels=[1],
 	next_grademe_at=1_700_000_600.0, warned=False,
 )
 

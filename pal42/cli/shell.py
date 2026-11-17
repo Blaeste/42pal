@@ -6,6 +6,7 @@ keyboard and terminal.
 """
 
 import getpass
+import math
 import random
 import sys
 import time
@@ -31,6 +32,11 @@ COMMANDS = {
 	"finish": "end the exam",
 	"help": "show this help",
 }
+
+# The two modes and the waits each one takes from the exam file: the exam
+# mode is 42_EXAM's (hard waits, the real duration), the revision mode is
+# softer (soft waits, no time limit).
+RETRY_OF_MODE = {"exam": "hard", "revision": "soft"}
 
 # Under this many seconds left, the student is warned once.
 WARNING_SECONDS = 10 * 60
@@ -63,7 +69,7 @@ class Shell:
 	"""
 
 	def __init__(self, console, ask, ask_password, workspace=None, rng=None,
-			clock=time.time, sleep=time.sleep, retry_mode="soft",
+			clock=time.time, sleep=time.sleep, mode="exam",
 			store=None, catalog=None, themes=None):
 		self.console = console
 		self.ask = ask
@@ -74,8 +80,8 @@ class Shell:
 		# For the typewriter animation; the tests give one that does not wait.
 		self.sleep = sleep
 		self.user = None
-		# "soft" or "hard" (./42pal --hard): its waits are taken from the exam.
-		self.retry_mode = retry_mode
+		# "exam" or "revision", chosen in a menu by run().
+		self.mode = mode
 		self._reset()
 		self.store = store
 		self.catalog = catalog
@@ -107,8 +113,9 @@ class Shell:
 			self.login()
 			if not self.resume():
 				exam = self.choose_exam()
+				self.mode = self.choose_mode(exam)
 				level = self.choose_level(exam)
-				self.retry = exam.retry[self.retry_mode]
+				self.retry = exam.retry[RETRY_OF_MODE[self.mode]]
 				self.start(exam, level)
 		# Ctrl-D before the exam has started: just leave.
 		except EOFError:
@@ -162,8 +169,8 @@ class Shell:
 		"""Put back the state of a saved exam."""
 		self.exam, self.level, self.variant = exam, session.level, variant
 		self.started_at = session.started_at
-		self.retry_mode = session.retry_mode
-		self.retry = exam.retry[session.retry_mode]
+		self.mode = session.mode
+		self.retry = exam.retry[RETRY_OF_MODE[session.mode]]
 		self.attempts, self.oks, self.failures = session.attempts, session.oks, session.failures
 		self.passed_levels = list(session.passed_levels)
 		self.next_grademe_at = session.next_grademe_at
@@ -171,7 +178,9 @@ class Shell:
 
 	def _forget(self, end):
 		"""Keep the restored exam in the history as `end`, then start afresh."""
-		elapsed = min(self.clock() - self.started_at, self.exam.duration_minutes * 60)
+		elapsed = self.clock() - self.started_at
+		if self.mode == "exam":
+			elapsed = min(elapsed, self.exam.duration_minutes * 60)
 		self.store.add_history(self._history_entry(end, elapsed))
 		self.store.clear()
 		self._reset()
@@ -187,6 +196,16 @@ class Shell:
 			self.console.print(f"  {number}. {exam.title}")
 		number = self._ask_choice("Your choice:", range(1, len(exams) + 1))
 		return exams[number - 1]
+
+	def choose_mode(self, exam):
+		"""Ask the mode: exam (hard waits, the real duration) or revision (soft, no limit)."""
+		hard = ", ".join(map(display.points, exam.retry["hard"].minutes))
+		soft = ", ".join(map(display.points, exam.retry["soft"].minutes))
+		self.console.print("Choose the mode:")
+		self.console.print(f"  1. Exam: hard waits ({hard} min), {exam.duration_minutes} min")
+		self.console.print(f"  2. Revision: soft waits ({soft} min), no time limit")
+		# Enter alone takes revision.
+		return ["exam", "revision"][self._ask_choice("Mode:", [1, 2], "2") - 1]
 
 	def choose_level(self, exam):
 		"""Ask the starting level, among the levels that have exercises."""
@@ -219,7 +238,7 @@ class Shell:
 		# so that the examples can be copied as they are.
 		self.console.print()
 		self.console.print(display.subject_panel(
-			exam, level, self.variant, subject, rendu, self.retry_mode,
+			exam, level, self.variant, subject, rendu, self.mode,
 		))
 		self.console.print()
 		self.console.print(subject.read_text(encoding="utf-8"), markup=False, highlight=False, end="")
@@ -365,7 +384,7 @@ class Shell:
 			"attempts": self.attempts,
 			"oks": self.oks,
 			"seconds": round(elapsed),
-			"retry_mode": self.retry_mode,
+			"mode": self.mode,
 			"end": end,
 		}
 
@@ -374,7 +393,7 @@ class Shell:
 		if self.store and self.variant:
 			self.store.save(Session(
 				self.exam.id, self.level, self.variant.id, self.started_at,
-				self.retry_mode, self.attempts, self.oks, self.failures,
+				self.mode, self.attempts, self.oks, self.failures,
 				self.passed_levels, self.next_grademe_at, self.warned,
 			))
 
@@ -386,7 +405,9 @@ class Shell:
 		return self.catalog, self.themes or load_themes()
 
 	def _time_left(self):
-		"""Seconds left before the end of the exam (0 or less: over)."""
+		"""Seconds left before the end of the exam (0 or less: over; revision: no end)."""
+		if self.mode == "revision":
+			return math.inf
 		return self.exam.duration_minutes * 60 - (self.clock() - self.started_at)
 
 	def show_status(self):
@@ -396,7 +417,8 @@ class Shell:
 		if_ko = self.retry.wait_after(self.failures + 1)
 		self.console.print(display.status_table(
 			self.exam, self.level, self.variant, elapsed, left, self._wait_left(), if_ko,
-			f"{self.retry_mode} ({', '.join(map(str, self.retry.minutes))} min)", self.grade,
+			f"{RETRY_OF_MODE[self.mode]} ({', '.join(map(display.points, self.retry.minutes))} min)",
+			self.grade, self.mode,
 		))
 
 	def _wait_left(self):
@@ -449,17 +471,13 @@ def terminal(commands):
 
 	return Console(), ask, ask_password
 
-def main(retry_mode="soft"):
-	"""Start the examshell on the real keyboard and terminal; return the exit code.
-
-	retry_mode is "soft", or "hard" with ./42pal --hard.
-	"""
+def main():
+	"""Start the examshell on the real keyboard and terminal; return the exit code."""
 	console, ask, ask_password = terminal(COMMANDS)
 	try:
 		# rendu/ is a git repository that pushes to a bare one in ~/.42pal.
 		workspace = Workspace(remote=STATE_DIR / "rendu.git")
-		Shell(console, ask, ask_password, workspace=workspace,
-			retry_mode=retry_mode, store=SessionStore()).run()
+		Shell(console, ask, ask_password, workspace=workspace, store=SessionStore()).run()
 	except KeyboardInterrupt:
 		console.print("\nExam stopped (Ctrl-C): run ./42pal again to resume it.")
 		return 130

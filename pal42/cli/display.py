@@ -20,12 +20,15 @@ def short_path(path):
 		return "~/" + path.relative_to(home).as_posix()
 	return path.as_posix()
 
-def subject_panel(exam, level, variant, subject, rendu, retry_mode="soft"):
-	"""The panel shown when a subject is given."""
+def subject_panel(exam, level, variant, subject, rendu, mode="exam"):
+	"""The panel shown when a subject is given; mode is "exam" or "revision"."""
+	if mode == "revision":
+		how = "revision mode · soft waits · no time limit"
+	else:
+		how = f"exam mode · hard waits · {exam.duration_minutes} min"
 	# escape: a [ in a path would otherwise be read as rich markup.
 	lines = [
-		f"[bold]{escape(exam.title)}[/] · level {level} · {exam.duration_minutes} min"
-		f" · retry: {retry_mode}",
+		f"[bold]{escape(exam.title)}[/] · level {level} · {how}",
 		f"This level is worth {points(exam.points_per_level)} points.",
 		"",
 		f"Subject: [bold cyan]{escape(variant.name)}[/]",
@@ -46,7 +49,8 @@ def help_table(commands):
 		table.add_row(f"[bold]{command}[/]", meaning)
 	return table
 
-def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry="", grade=0):
+def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry="", grade=0,
+		mode="exam"):
 	"""Where the student is: exam, level, subject, times, and the next grademe.
 
 	wait is the time left before grademe is allowed again; if_ko the wait
@@ -54,11 +58,12 @@ def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry="",
 	"""
 	table = Table(show_header=False, box=None)
 	table.add_row("Exam", escape(exam.title))
+	table.add_row("Mode", mode)
 	table.add_row("Level", f"{level} of {exam.level_count}")
 	table.add_row("Subject", f"[bold cyan]{escape(variant.name)}[/]")
 	table.add_row("Grade", f"{points(grade)}/100")
 	table.add_row("Time spent", duration(elapsed))
-	table.add_row("Time left", duration(left))
+	table.add_row("Time left", "no limit" if left == float("inf") else duration(left))
 	table.add_row("Next grademe", f"in {duration(wait)}" if wait else "now")
 	table.add_row("If KO", duration(if_ko) if if_ko else "no wait")
 	if retry:
@@ -153,8 +158,8 @@ def summary_table(exam, passed_levels, attempts, oks, elapsed, grade=0):
 
 def resume_question(exam, level, variant, left):
 	"""The question asked when a saved exam can be resumed."""
-	return (f"Resume your exam? {exam.title} · level {level} · {variant.name}"
-		f" · {duration(left)} left (y/n)")
+	time = "no time limit" if left == float("inf") else f"{duration(left)} left"
+	return f"Resume your exam? {exam.title} · level {level} · {variant.name} · {time} (y/n)"
 
 def time_ran_out_while_away(exam):
 	"""Said when the saved exam ended while the terminal was closed."""

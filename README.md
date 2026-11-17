@@ -33,8 +33,8 @@ No `pip`, no virtual environment: the only library used for the display,
 
 1. **Log in** like at the exam. The login defaults to your user name; the
    password can be anything, it is never checked nor kept.
-2. **Choose the exam** (Exam Piscine, 4 h, or Exam Rank 02, 3 h) and the
-   **starting level**, among the levels that have exercises.
+2. **Choose the exam**, the **mode** (see below) and the **starting level**,
+   among the levels that have exercises.
 3. **Read the subject**: it is printed in the terminal and written in
    `~/42pal_exam/subjects/<name>/subject.en.txt`.
 4. **Write your code** in `~/42pal_exam/rendu/<name>/`.
@@ -83,23 +83,25 @@ $> ./forward_shift_2 | cat -e
 Diff KO
 ```
 
-### Waiting between two grademe
+### Two modes: exam and revision
 
-After a KO, you keep the same subject. The first retry is free; then the
-wait grows with each failure:
+After a KO, you keep the same subject, and the next grademe must wait a
+little longer after each failure. The mode, chosen after the exam, sets
+these waits and the time:
 
-| Mode | Waits after the 1st, 2nd, 3rd... KO |
-|---|---|
-| soft (default) | 0, 1, 2, 3, 5 min |
-| hard: `./42pal --hard` | 0, 5, 10, 20, 40 min |
+| Mode | Waits after the 1st, 2nd, 3rd... KO | Time |
+|---|---|---|
+| Exam | 0.5, 2.5, 3, 5.5, 8.5, 14, 22.5... min, like 42_EXAM | the real duration (Exam Rank 02: 3 h) |
+| Revision (Enter) | 0, 1, 2, 3, 5 min: the first retry is free | no time limit |
 
 Each grademe tells what a KO would cost, and `status` shows when the next
-one is allowed.
+one is allowed. Each passed level is worth 100 divided by the number of
+levels (25 points at rank 02), for a grade out of 100.
 
 ### Time, resume and history
 
-- When the time is up, the next command ends the exam: a late grademe is not
-  graded. You are warned once, 10 minutes before the end.
+- In exam mode, when the time is up, the next command ends the exam: a late
+  grademe is not graded. You are warned once, 10 minutes before the end.
 - Closed the terminal, or pressed Ctrl-C? Run `./42pal` again: it offers to
   resume your exam, with the same subject; the time kept running.
 - Every finished exam is kept in `~/.42pal/history.json`.

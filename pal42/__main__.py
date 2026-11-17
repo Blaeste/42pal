@@ -14,10 +14,6 @@ def main(argv=None):
 	# The "version" action prints the string, then exits with code 0.
 	# %(prog)s is replaced by the program name given above.
 	parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
-	parser.add_argument(
-		"--hard", action="store_true",
-		help="hard retry timer: longer waits after each failed grademe (soft by default)",
-	)
 	commands = parser.add_subparsers(dest="command")
 	commands.add_parser(
 		"check-catalog", help="check that every ref.c passes its own exercise",
@@ -35,7 +31,7 @@ def main(argv=None):
 		from pal42.cli.practice import main as practice_main
 		return practice_main(arguments.theme)
 	from pal42.cli.shell import main as shell_main
-	return shell_main("hard" if arguments.hard else "soft")
+	return shell_main()
 
 if __name__ == "__main__":
 	# SystemExit turns the value returned by main() into the process exit code.

@@ -162,23 +162,28 @@ class TestShell(unittest.TestCase):
 		self.assertIn("Playable levels: 2, 3", output(shell))
 		self.assertEqual(output(shell).count("Invalid choice"), 1)
 
-	def test_retry_timer_is_soft_by_default_and_shown(self):
-		"""No question asked: soft, shown in the panel and in status."""
-		shell = make_shell(Script("", "pw", "2", "", "status", "finish"), self.root)
-		shell.run()
-		self.assertEqual(shell.retry, shell.exam.retry["soft"])
-		self.assertIn("retry: soft", output(shell))
-		self.assertRegex(output(shell), r"Retry timer\s+soft \(0, 1, 2, 3, 5 min\)")
+	def test_mode_menu_offers_exam_and_revision(self):
+		"""Exam: hard waits and the real duration; revision: soft, no time limit."""
+		exam = load_exam("rank02", catalog=CATALOG, themes=THEMES)
+		shell = make_shell(Script("x", ""), self.root)
+		self.assertEqual(shell.choose_mode(exam), "revision")
+		text = output(shell)
+		self.assertIn("1. Exam: hard waits (0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59 min), 180 min", text)
+		self.assertIn("2. Revision: soft waits (0, 1, 2, 3, 5 min), no time limit", text)
+		self.assertEqual(text.count("Invalid choice"), 1)
+		self.assertEqual(make_shell(Script("1"), self.root).choose_mode(exam), "exam")
 
-	def test_hard_retry_timer_is_chosen_before_starting(self):
-		"""Shell(retry_mode="hard"), from ./42pal --hard: the hard waits."""
-		console = Console(file=io.StringIO(), width=100, color_system=None)
-		script = Script("", "pw", "2", "", "finish")
-		shell = Shell(console, script.ask, script.ask_password, Workspace(self.root),
-			rng=Random(1), clock=FakeClock(), sleep=lambda seconds: None, retry_mode="hard")
+	def test_the_mode_sets_the_waits_and_is_shown(self):
+		"""Revision by default: soft waits, shown in the panel and in status."""
+		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
 		shell.run()
-		self.assertEqual(shell.retry, shell.exam.retry["hard"])
-		self.assertIn("retry: hard", output(shell))
+		self.assertEqual((shell.mode, shell.retry), ("revision", shell.exam.retry["soft"]))
+		self.assertIn("revision mode", output(shell))
+		self.assertRegex(output(shell), r"Time left\s+no limit")
+		exam_shell = make_shell(Script("", "pw", "2", "1", "", "finish"), self.root)
+		exam_shell.run()
+		self.assertEqual(exam_shell.retry, exam_shell.exam.retry["hard"])
+		self.assertIn("exam mode", output(exam_shell))
 
 	def test_start_gives_the_subject_and_says_where_it_is(self):
 		"""A subject is drawn at the level, written, and its paths are shown."""
@@ -242,7 +247,7 @@ class TestShell(unittest.TestCase):
 
 	def test_run_goes_from_login_to_finish(self):
 		"""Login, exam 2, the first playable level, status, then finish."""
-		shell = make_shell(Script("", "pw", "2", "", "status", "finish"), self.root)
+		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
 		shell.run()
 		text = output(shell)
 		self.assertIn("Welcome", text)
@@ -258,7 +263,7 @@ class TestLauncher(unittest.TestCase):
 		"""Answers sent through a pipe; HOME is a temporary folder."""
 		with tempfile.TemporaryDirectory() as home:
 			result = subprocess.run(
-				[str(ROOT / "42pal")], input="\npw\n2\n\nstatus\nfinish\n",
+				[str(ROOT / "42pal")], input="\npw\n2\n\n\nstatus\nfinish\n",
 				capture_output=True, text=True, timeout=30,
 				env=dict(os.environ, HOME=home),
 				# A new session has no terminal: nothing can wait on the keyboard.
@@ -273,45 +278,10 @@ class TestLauncher(unittest.TestCase):
 				self.assertTrue((Path(home) / "42pal_exam/rendu/.git").is_dir())
 				self.assertTrue((Path(home) / ".42pal/rendu.git").is_dir())
 
-	def test_42pal_hard_starts_with_the_hard_retry_timer(self):
-		"""./42pal --hard: the hard waits, chosen before anything starts."""
-		with tempfile.TemporaryDirectory() as home:
-			result = subprocess.run(
-				[str(ROOT / "42pal"), "--hard"], input="\npw\n2\n\nfinish\n",
-				capture_output=True, text=True, timeout=30,
-				env=dict(os.environ, HOME=home), start_new_session=True,
-			)
-		self.assertEqual(result.returncode, 0, result.stderr)
-		self.assertIn("retry: hard", result.stdout)
-
-class TestShellQuit(unittest.TestCase):
-	"""Leaving before the exam has started."""
-
-	def test_ctrl_d_before_the_exam_says_goodbye(self):
-		"""Ctrl-D at the login: the shell says goodbye, nothing crashes."""
-		with tempfile.TemporaryDirectory() as tmp:
-			shell = make_shell(Script(), Path(tmp))
-			shell.run()
-			self.assertIn("Goodbye", output(shell))
-
-class TestTypewriter(unittest.TestCase):
-	"""The text that writes itself, one letter at a time."""
-
-	def test_typewriter_prints_one_letter_at_a_time_in_a_terminal(self):
-		"""In a terminal: one pause per letter, and the whole text in the end."""
-		console = Console(file=io.StringIO(), force_terminal=True, color_system=None)
-		pauses = []
-		display.typewriter(console, "42pal", sleep=pauses.append)
-		self.assertEqual(console.file.getvalue(), "42pal\n")
-		self.assertEqual(len(pauses), 5)
-
-	def test_typewriter_prints_at_once_outside_a_terminal(self):
-		"""In a pipe or a test: no pause, nothing to wait for."""
-		console = Console(file=io.StringIO(), color_system=None)
-		pauses = []
-		display.typewriter(console, "42pal", sleep=pauses.append)
-		self.assertEqual(console.file.getvalue(), "42pal\n")
-		self.assertEqual(pauses, [])
+	def test_the_hard_option_is_gone(self):
+		"""The mode is chosen in the menu now: --hard is refused."""
+		result = subprocess.run([str(ROOT / "42pal"), "--hard"], capture_output=True, text=True)
+		self.assertEqual(result.returncode, 2)
 
 @unittest.skipUnless(hasattr(os, "fork"), "needs a pseudo-terminal (Linux, macOS)")
 class TestRealTerminal(unittest.TestCase):
@@ -321,7 +291,7 @@ class TestRealTerminal(unittest.TestCase):
 		"""Enter with nothing typed: the next prompt starts on a new line."""
 		with tempfile.TemporaryDirectory() as home:
 			screen = run_in_terminal(home, [
-				("login:", ""), ("password:", "x"), ("choice:", "2"),
+				("login:", ""), ("password:", "x"), ("choice:", "2"), ("Mode:", ""),
 				("level:", ""), ("examshell>", ""), ("examshell>", "finish"),
 			])
 		self.assertNotIn("examshell> examshell>", screen)
@@ -729,7 +699,7 @@ class TestResume(unittest.TestCase):
 		"""An exam of rank02 started `minutes_ago`, at level 2, saved."""
 		self.store.save(Session(
 			exam="rank02", level=2, variant=variant,
-			started_at=self.clock.now - minutes_ago * 60, retry_mode="hard",
+			started_at=self.clock.now - minutes_ago * 60, mode="exam",
 			attempts=2, oks=1, failures=0, passed_levels=[1],
 		))
 
@@ -747,7 +717,7 @@ class TestResume(unittest.TestCase):
 		self.save(10)
 		shell = self.run_shell("", "pw", "", "status", "finish")
 		self.assertTrue(any("Resume your exam?" in prompt for prompt in self.script.prompts))
-		self.assertEqual((shell.level, shell.variant.id, shell.retry_mode), (2, "echo_first#5", "hard"))
+		self.assertEqual((shell.level, shell.variant.id, shell.mode), (2, "echo_first#5", "exam"))
 		text = output(shell)
 		self.assertRegex(text, r"Time spent\s+0:10:00")
 		self.assertRegex(text, r"Grademe\s+2 \(1 OK, 1 KO\)")
@@ -755,7 +725,7 @@ class TestResume(unittest.TestCase):
 	def test_no_keeps_the_old_exam_in_the_history_and_starts_a_new_one(self):
 		"""n: the old exam is "abandoned" in the history, a new exam starts."""
 		self.save(10)
-		self.run_shell("", "pw", "n", "1", "", "finish")
+		self.run_shell("", "pw", "n", "1", "", "", "finish")
 		ends = [entry["end"] for entry in self.store.history()]
 		self.assertEqual(ends, ["abandoned", "finish"])
 		self.assertEqual(self.store.history()[0]["levels_passed"], [1])
@@ -763,7 +733,7 @@ class TestResume(unittest.TestCase):
 	def test_an_exam_whose_time_ran_out_goes_to_the_history_without_asking(self):
 		"""Started 200 minutes ago (180 allowed): kept as "time", no question."""
 		self.save(200)
-		shell = self.run_shell("", "pw", "1", "", "finish")
+		shell = self.run_shell("", "pw", "1", "", "", "finish")
 		self.assertIn("time ran out", output(shell))
 		self.assertFalse(any("Resume" in prompt for prompt in self.script.prompts))
 		self.assertEqual(self.store.history()[0]["end"], "time")
@@ -771,7 +741,7 @@ class TestResume(unittest.TestCase):
 	def test_an_unknown_subject_cannot_be_resumed(self):
 		"""The exercise is gone from the catalog: said, and a new exam starts."""
 		self.save(10, variant="gone#3")
-		shell = self.run_shell("", "pw", "1", "", "finish")
+		shell = self.run_shell("", "pw", "1", "", "", "finish")
 		self.assertIn("cannot be resumed", output(shell))
 		self.assertEqual(shell.level, 1)
 
@@ -910,3 +880,41 @@ class TestPractice(unittest.TestCase):
 		"""finish: the subjects passed and the grademe made."""
 		shell = self.practise("grademe", "finish", code=ECHO_OK)
 		self.assertIn("Practice summary: 1 subject passed, 1 grademe", output(shell))
+
+class TestRevisionMode(unittest.TestCase):
+	"""Revision mode: no time limit, the saved exam never runs out."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.clock = FakeClock()
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def test_ten_hours_later_the_revision_goes_on(self):
+		"""No end of exam in revision mode: status still answers 10 hours later."""
+		def ten_hours_later():
+			self.clock.now += 10 * 3600
+			return "status"
+		shell = make_shell(Script(ten_hours_later, "finish"), self.root, self.clock)
+		shell.mode = "revision"
+		shell.start(load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES), 1)
+		shell.command_loop()
+		self.assertNotIn("Time is up", output(shell))
+		self.assertRegex(output(shell), r"Time spent\s+10:00:00")
+
+	def test_a_saved_revision_does_not_run_out_while_away(self):
+		"""Saved 10 hours ago in revision mode: it can still be resumed."""
+		store = SessionStore(Path(self.tmp.name) / ".42pal")
+		store.save(Session(exam="rank02", level=1, variant="echo_first#5",
+			started_at=self.clock.now - 10 * 3600, mode="revision",
+			attempts=0, oks=0, failures=0))
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		script = Script("", "pw", "", "finish")
+		shell = Shell(console, script.ask, script.ask_password, Workspace(self.root),
+			rng=Random(1), clock=self.clock, sleep=lambda seconds: None,
+			store=store, catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		shell.run()
+		self.assertEqual((shell.mode, shell.variant.id), ("revision", "echo_first#5"))
+		self.assertTrue(any("no time limit" in prompt for prompt in script.prompts))

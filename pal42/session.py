@@ -16,7 +16,8 @@ STATE_DIR = Path.home() / ".42pal"
 class Session:
 	"""An exam in progress, as saved in session.json.
 
-	variant is the subject as exo#seed, enough to draw it again. Times are
+	variant is the subject as exo#seed, enough to draw it again; mode is
+	"exam" or "revision". Times are
 	seconds since 1970 (time.time()), so that they still make sense after
 	the terminal was closed and opened again.
 	"""
@@ -24,7 +25,7 @@ class Session:
 	level: int
 	variant: str
 	started_at: float
-	retry_mode: str
+	mode: str
 	attempts: int
 	oks: int
 	failures: int
