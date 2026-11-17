@@ -125,8 +125,9 @@ A passed `grademe` gives the next subject; `next` skips to another one;
 | `shift_letters` | program | char_transform | 1, 2 | 18 |
 | `char_position` | function | string_basics | 1, 2 | 6 |
 | `char_filter` | program | char_sets | 2, 3 | 11 |
+| `split_fields` | function, leaks checked | split | 4 | 7 |
 
-Levels 1 to 3 can be played; level 4 has no exercise yet. The subjects are
+Every level, from 1 to 4, can be played. The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
 themes and the levels where they appear is in [themes.json](themes.json).
 

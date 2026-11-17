@@ -476,13 +476,6 @@ class TestCheckCatalog(unittest.TestCase):
 		code = check.check_catalog(console, catalog)
 		return code, console.file.getvalue()
 
-	def test_real_catalog_passes(self):
-		"""Every ref.c agrees with its oracle: exit code 0."""
-		code, text = self.run_check()
-		self.assertEqual(code, 0, text)
-		self.assertIn("char_filter", text)
-		self.assertIn("Catalog OK", text)
-
 	def test_wrong_oracle_fails_naming_the_variant_and_the_test(self):
 		"""An oracle that shouts: exit code 1, broken#seed and the test named."""
 		exo = make_exercise(

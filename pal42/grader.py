@@ -12,6 +12,10 @@ from pathlib import Path
 
 from pal42 import checks, trace
 
+# valgrind is slow (about 0.4 s a test): leaks are checked on this many tests
+# at most, the first ones, which are the fixed edge cases of an exercise.
+MAX_LEAK_TESTS = 6
+
 # The test main of a function exercise, written next to the student's files.
 HARNESS_FILE = "main_42pal.c"
 
@@ -85,13 +89,14 @@ def grade(variant, rendu, runner, progress=None, valgrind="valgrind"):
 	return Grade(True, "", len(tests), len(tests))
 
 def _check_leaks(variant, program, tests, progress, valgrind):
-	"""Run every test under valgrind; the first leak or memory error fails.
+	"""Run the first MAX_LEAK_TESTS tests under valgrind; a leak or memory error fails.
 
 	Only called once every output is right: valgrind is slow.
 	"""
-	for number, test in enumerate(tests, start=1):
+	checked = tests[:MAX_LEAK_TESTS]
+	for number, test in enumerate(checked, start=1):
 		if progress:
-			progress(number, len(tests), "memory")
+			progress(number, len(checked), "memory")
 		report = checks.memory_report(program, test, valgrind=valgrind)
 		if report is None:
 			warning = "valgrind not found: memory leaks were not checked"

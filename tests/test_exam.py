@@ -31,6 +31,12 @@ class TestRealExams(unittest.TestCase):
 			with self.subTest(exam_id):
 				self.assertEqual(load_exam(exam_id).playable_levels[0], 1)
 
+	def test_every_level_from_1_to_4_can_be_played(self):
+		"""split_fields fills level 4: the whole exam can be played."""
+		for exam_id in ["rank02", "piscine"]:
+			with self.subTest(exam_id):
+				self.assertEqual(load_exam(exam_id).playable_levels, [1, 2, 3, 4])
+
 	def test_retry_waits_come_from_the_exam_file(self):
 		"""soft and hard: the waits after each failed grademe, in minutes."""
 		exam = load_exam("rank02")

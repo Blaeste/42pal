@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 from pal42.catalog import load_catalog
-from pal42.grader import grade
+from pal42.grader import MAX_LEAK_TESTS, grade
 from pal42.model import TestCase
 from pal42.runners.c import CRunner
 from pal42.variant import Variant
@@ -299,6 +299,21 @@ class TestLeaks(unittest.TestCase):
 		result = self.grade(CLEAN_ECHO)
 		self.assertTrue(result.passed, result.trace)
 		self.assertEqual(result.warnings, ())
+
+	@unittest.skipUnless(shutil.which("valgrind"), "valgrind is not installed")
+	def test_leaks_are_checked_on_the_first_tests_only(self):
+		"""valgrind is slow: it runs on MAX_LEAK_TESTS tests at most."""
+		exo = make_exercise(
+			name="echo_first", expected_files=("echo_first.c",),
+			allowed_functions=("write", "malloc", "free"), check_leaks=True,
+			oracle=echo_oracle,
+			generate_tests=lambda params, rng: [TestCase(("word",))] * (MAX_LEAK_TESTS + 4),
+		)
+		(self.rendu / "echo_first.c").write_text(CLEAN_ECHO, encoding="utf-8")
+		steps = []
+		grade(Variant(exo, 0, {"mode": "common"}), self.rendu, CRunner(),
+			progress=lambda number, total, step="output": steps.append(step))
+		self.assertEqual(steps.count("memory"), MAX_LEAK_TESTS)
 
 	def test_leaks_are_not_checked_unless_the_exercise_asks(self):
 		"""check_leaks off: the leak is not looked for."""
