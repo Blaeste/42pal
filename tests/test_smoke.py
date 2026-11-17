@@ -56,3 +56,11 @@ class TestLauncher(unittest.TestCase):
 			result = run_script("--version", cwd=tmp, script=link)
 		self.assertEqual(result.returncode, 0, result.stderr)
 		self.assertRegex(result.stdout.strip(), VERSION_LINE)
+
+	def test_check_catalog_command_passes_on_the_real_catalog(self):
+		"""`./42pal check-catalog` checks every ref.c and exits with 0."""
+		result = subprocess.run(
+			[str(SCRIPT), "check-catalog"], capture_output=True, text=True, timeout=120,
+		)
+		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+		self.assertIn("Catalog OK", result.stdout)

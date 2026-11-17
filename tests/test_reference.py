@@ -8,8 +8,10 @@ import unittest
 from pathlib import Path
 
 from pal42.catalog import load_catalog
+from pal42.reference import check_variant, variants_to_check
 from pal42.runners.c import DEFAULT_COMMAND, CRunner
-from pal42.variant import Variant
+from pal42.variant import Variant, draw
+from tests.helpers import ECHO_OK, echo_oracle, echo_tests, make_exercise
 
 CATALOG = load_catalog()
 
@@ -46,3 +48,44 @@ class TestReferences(unittest.TestCase):
 				result = compile_reference(name, exo.combinations()[0], work, flags=())
 				self.assertFalse(result.ok)
 				self.assertIn("choose", result.output)
+
+class TestVariantsToCheck(unittest.TestCase):
+	"""variants_to_check(exo): which variants check-catalog grades."""
+
+	def test_every_combination_once_with_a_seed_that_draws_it_again(self):
+		"""Each combination once; exo#seed draws the same variant again."""
+		exo = CATALOG.exercises["char_filter"]
+		variants = variants_to_check(exo)
+		combinations = [variant.params for variant in variants]
+		self.assertEqual(len(variants), len(exo.combinations()))
+		self.assertCountEqual(combinations, exo.combinations())
+		for variant in variants:
+			self.assertEqual(draw(exo, variant.seed).params, variant.params)
+
+	def test_too_many_combinations_gives_at_most_max_variants(self):
+		"""18 combinations, at most 5 asked: 5 variants, seeds 0 to 4."""
+		variants = variants_to_check(CATALOG.exercises["shift_letters"], max_variants=5)
+		self.assertEqual([variant.seed for variant in variants], [0, 1, 2, 3, 4])
+
+class TestCheckVariant(unittest.TestCase):
+	"""check_variant(variant, ref): ref.c graded like a student's rendu."""
+
+	def test_real_ref_c_passes_its_variant(self):
+		"""char_filter#0: ref.c, with its -D flags, passes every test."""
+		variant = draw(CATALOG.exercises["char_filter"], 0)
+		result = check_variant(variant, CATALOG.folders["char_filter"] / "ref.c")
+		self.assertTrue(result.passed, result.trace)
+
+	def test_wrong_oracle_makes_the_reference_fail(self):
+		"""An oracle that shouts (upper case) disagrees with ref.c: KO, with the trace."""
+		exo = make_exercise(
+			name="echo_first", expected_files=("echo_first.c",),
+			oracle=lambda params, test: echo_oracle(params, test).upper(),
+			generate_tests=echo_tests,
+		)
+		with tempfile.TemporaryDirectory() as tmp:
+			ref = Path(tmp) / "ref.c"
+			ref.write_text(ECHO_OK, encoding="utf-8")
+			result = check_variant(Variant(exo, 3, {"mode": "common"}), ref)
+		self.assertFalse(result.passed)
+		self.assertIn("-hello$\n+HELLO$", result.trace)

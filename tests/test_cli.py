@@ -19,7 +19,7 @@ from random import Random
 
 from pal42.cli.shell import Shell
 from pal42.catalog import Catalog, load_catalog
-from pal42.cli import display
+from pal42.cli import check, display
 from pal42.cli.workspace import Workspace
 from pal42.exam import list_exams, load_exam
 from pal42.grader import Grade
@@ -425,3 +425,44 @@ class TestGrademeWithLeaks(unittest.TestCase):
 			(root / "rendu/echo_first/echo_first.c").write_text(ECHO_OK, encoding="utf-8")
 			shell.command_loop()
 			self.assertIn("✓ OK", output(shell))
+
+class TestCheckCatalog(unittest.TestCase):
+	"""check_catalog(): every ref.c against its oracle, for the whole catalog."""
+
+	def run_check(self, catalog=None):
+		"""Run the check; return its exit code and what it printed."""
+		console = Console(file=io.StringIO(), width=120, color_system=None)
+		code = check.check_catalog(console, catalog)
+		return code, console.file.getvalue()
+
+	def test_real_catalog_passes(self):
+		"""Every ref.c agrees with its oracle: exit code 0."""
+		code, text = self.run_check()
+		self.assertEqual(code, 0, text)
+		self.assertIn("char_filter", text)
+		self.assertIn("Catalog OK", text)
+
+	def test_wrong_oracle_fails_naming_the_variant_and_the_test(self):
+		"""An oracle that shouts: exit code 1, broken#seed and the test named."""
+		exo = make_exercise(
+			name="broken", expected_files=("broken.c",),
+			oracle=lambda params, test: echo_oracle(params, test).upper(),
+			generate_tests=echo_tests,
+		)
+		with tempfile.TemporaryDirectory() as folder:
+			(Path(folder) / "ref.c").write_text(ECHO_OK, encoding="utf-8")
+			code, text = self.run_check(Catalog({"broken": exo}, [], {"broken": Path(folder)}))
+		self.assertEqual(code, 1)
+		self.assertRegex(text, r"broken#\d+")
+		self.assertIn("= Test 1", text)
+		self.assertIn("Catalog KO", text)
+
+	def test_missing_ref_c_and_catalog_warnings_fail(self):
+		"""No ref.c, or a folder skipped by the catalog: both are errors here."""
+		with tempfile.TemporaryDirectory() as folder:
+			catalog = Catalog({"lonely": make_exercise(name="lonely")},
+				["c/empty: no exercise.py, folder skipped"], {"lonely": Path(folder)})
+			code, text = self.run_check(catalog)
+		self.assertEqual(code, 1)
+		self.assertIn("lonely: no ref.c", text)
+		self.assertIn("c/empty: no exercise.py", text)
