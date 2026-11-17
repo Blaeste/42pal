@@ -158,6 +158,7 @@ Five exams, like in 42_EXAM:
 | `base_print` | program | print_in_base | 8 |
 | `list_measure` | function, header given | linked_lists | 10 |
 | `number_read` | function | base_parse | 11 |
+| `tab_index` | function | int_arrays | 10 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
