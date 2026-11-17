@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from pal42.catalog import load_catalog
+from pal42.catalog import EXERCISES_DIR, load_catalog
 
 # A valid exercise.py, to write in a temporary exercises/ folder.
 EXERCISE_SOURCE = """
@@ -84,6 +84,11 @@ class TestRealCatalog(unittest.TestCase):
 		catalog = load_catalog()
 		names = [exo.name for exo in catalog.find("c", "char_sets")]
 		self.assertIn("char_filter", names)
+
+	def test_catalog_knows_the_folder_of_each_exercise(self):
+		"""The folder holds exercise.py and ref.c, the reference solution."""
+		catalog = load_catalog()
+		self.assertEqual(catalog.folders["char_filter"], EXERCISES_DIR / "c" / "char_filter")
 
 	def test_real_catalog_has_no_warning(self):
 		"""Every folder of exercises/ gives an exercise: none is skipped."""

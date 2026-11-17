@@ -5,7 +5,7 @@ exercise.py defines EXERCISE. Like the rest of the core, this module never
 prints.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from runpy import run_path
 
@@ -20,9 +20,11 @@ class Catalog:
 	"""The exercises found, by name, and the warnings about skipped folders.
 
 	The front-ends show the warnings: the core itself never prints.
+	folders gives the folder of each exercise, which also holds its ref.c.
 	"""
 	exercises: dict[str, Exercise]
 	warnings: list[str]
+	folders: dict[str, Path] = field(default_factory=dict)
 
 	def find(self, language, theme):
 		"""Return the exercises of `language` that train `theme`."""
@@ -45,8 +47,9 @@ def load_catalog(root=EXERCISES_DIR, themes=None):
 		themes = load_themes()
 	exercises = {}
 	warnings = []
-	# The folder each name was found in, like "c/char_filter".
+	# The folder each name was found in, like "c/char_filter", and its path.
 	found_in = {}
+	folders = {}
 	# sorted: the same order on every machine, whatever the file system says.
 	for folder in sorted(path for path in root.glob("*/*") if path.is_dir()):
 		# Shown as "c/char_filter" in the warnings.
@@ -66,7 +69,8 @@ def load_catalog(root=EXERCISES_DIR, themes=None):
 			continue
 		exercises[exo.name] = exo
 		found_in[exo.name] = where
-	return Catalog(exercises, warnings)
+		folders[exo.name] = folder
+	return Catalog(exercises, warnings, folders)
 
 def _load_exercise(folder):
 	"""Return the EXERCISE defined by folder/exercise.py, or raise SkippedFolder."""

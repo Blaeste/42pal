@@ -6,7 +6,7 @@ Run all the tests from the project root with: python3 -m unittest -v
 import unittest
 
 from pal42.model import Param
-from pal42.variant import draw
+from pal42.variant import Variant, draw
 from tests.helpers import make_exercise
 
 # Enough seeds for every value to come out, as the plan asks (step 3).
@@ -46,6 +46,11 @@ class TestDraw(unittest.TestCase):
 		for seed in range(10):
 			variant = draw(exo, seed)
 			self.assertEqual(variant.expected_files, (variant.name + ".c",))
+
+	def test_defines_give_one_flag_per_param_for_the_reference(self):
+		"""-D<PARAM>_<VALUE> in capitals: ref.c tests them with #if defined(...)."""
+		variant = Variant(make_two_param_exercise(), 0, {"mode": "only_first", "order": "second"})
+		self.assertEqual(variant.defines, ("-DMODE_ONLY_FIRST", "-DORDER_SECOND"))
 
 	def test_name_defaults_to_exercise_name(self):
 		"""Without assignment_name, the student sees the exercise name."""

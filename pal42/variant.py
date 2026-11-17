@@ -37,6 +37,16 @@ class Variant:
 		)
 
 	@property
+	def defines(self):
+		"""The -D flags that make ref.c this variant: -D<PARAM>_<VALUE>, in capitals.
+
+		ref.c chooses its code with #if defined(MODE_COMMON) and the like.
+		"""
+		return tuple(
+			f"-D{name.upper()}_{value.upper()}" for name, value in self.params.items()
+		)
+
+	@property
 	def harness(self):
 		"""C source of the test main of a function exercise, holes filled like the name."""
 		return Template(self.exercise.harness).substitute(self.params)
