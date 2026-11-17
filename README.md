@@ -154,6 +154,7 @@ Five exams, like in 42_EXAM:
 | `sequence_array` | function, leaks checked | allocation | 10 |
 | `list_drop` | function + header handed in, leaks checked | list_changes | 12 |
 | `name_style` | program | case_style | 18 |
+| `word_pick` | program | words | 10 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
