@@ -23,6 +23,7 @@ from pal42.cli import check, display
 from pal42.cli.workspace import Workspace
 from pal42.exam import list_exams, load_exam
 from pal42.grader import Grade
+from pal42.session import Session, SessionStore
 from pal42.subject import render
 from pal42.themes import Theme
 from pal42.variant import Variant
@@ -624,6 +625,12 @@ class TestExamTime(unittest.TestCase):
 		shell = self.run_commands(self.later(171, "help"), self.later(1, "help"), "finish")
 		self.assertEqual(output(shell).count("Less than 10 minutes left"), 1)
 
+	def test_the_exam_time_keeps_running_across_levels(self):
+		"""20 minutes, OK (level 2), 10 more minutes: 0:30:00 spent, not 0:10:00."""
+		shell = self.run_commands(self.later(20, "grademe"), self.later(10, "finish"))
+		self.assertEqual(shell.level, 2)
+		self.assertRegex(output(shell), r"Time spent\s+0:30:00")
+
 	def test_the_end_of_the_exam_shows_a_summary(self):
 		"""One OK (level 1), then finish: levels passed, grademe, time spent."""
 		shell = self.run_commands("grademe", self.later(30, "finish"))
@@ -632,3 +639,109 @@ class TestExamTime(unittest.TestCase):
 		self.assertRegex(text, r"Levels passed\s+1")
 		self.assertRegex(text, r"Grademe\s+1 \(1 OK, 0 KO\)")
 		self.assertRegex(text, r"Time spent\s+0:30:00")
+
+class TestSessionInShell(unittest.TestCase):
+	"""The shell saves the exam in progress and keeps the finished ones."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.store = SessionStore(Path(self.tmp.name) / ".42pal")
+		self.exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.clock = FakeClock()
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def shell(self, *answers):
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		script = Script(*answers)
+		return Shell(console, script.ask, script.ask_password, Workspace(self.root),
+			rng=Random(1), clock=self.clock, sleep=lambda seconds: None,
+			store=self.store, catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+
+	def test_the_exam_is_saved_after_start_and_after_each_command(self):
+		"""After start, and after a grademe: level, subject and attempts saved."""
+		seen = []
+		def look_at_the_saved_exam():
+			seen.append(self.store.load())
+			return "finish"
+		shell = self.shell("grademe", look_at_the_saved_exam)
+		shell.start(self.exam, 1)
+		self.assertEqual(self.store.load().variant, shell.variant.id)
+		shell.command_loop()
+		self.assertEqual((seen[0].level, seen[0].attempts, seen[0].failures), (1, 1, 1))
+
+	def test_the_end_of_the_exam_goes_to_the_history_and_clears_the_session(self):
+		"""grademe OK then finish: one entry in the history, nothing to resume."""
+		shell = self.shell("grademe", "finish")
+		shell.start(self.exam, 1)
+		(self.root / "rendu/echo_first/echo_first.c").write_text(ECHO_OK, encoding="utf-8")
+		shell.command_loop()
+		self.assertIsNone(self.store.load())
+		[entry] = self.store.history()
+		self.assertEqual(entry["exam"], "rank02")
+		self.assertEqual((entry["levels_passed"], entry["attempts"], entry["oks"]), ([1], 1, 1))
+		self.assertEqual(entry["end"], "finish")
+
+class TestResume(unittest.TestCase):
+	"""./42pal again after the terminal was closed: resume the exam."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.store = SessionStore(Path(self.tmp.name) / ".42pal")
+		self.clock = FakeClock()
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def save(self, minutes_ago, variant="echo_first#5"):
+		"""An exam of rank02 started `minutes_ago`, at level 2, saved."""
+		self.store.save(Session(
+			exam="rank02", level=2, variant=variant,
+			started_at=self.clock.now - minutes_ago * 60, retry_mode="hard",
+			attempts=2, oks=1, failures=0, passed_levels=[1],
+		))
+
+	def run_shell(self, *answers):
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		self.script = Script(*answers)
+		shell = Shell(console, self.script.ask, self.script.ask_password, Workspace(self.root),
+			rng=Random(1), clock=self.clock, sleep=lambda seconds: None,
+			store=self.store, catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		shell.run()
+		return shell
+
+	def test_enter_resumes_the_saved_exam(self):
+		"""Same level, subject and mode; the time kept running while away."""
+		self.save(10)
+		shell = self.run_shell("", "pw", "", "status", "finish")
+		self.assertTrue(any("Resume your exam?" in prompt for prompt in self.script.prompts))
+		self.assertEqual((shell.level, shell.variant.id, shell.retry_mode), (2, "echo_first#5", "hard"))
+		text = output(shell)
+		self.assertRegex(text, r"Time spent\s+0:10:00")
+		self.assertRegex(text, r"Grademe\s+2 \(1 OK, 1 KO\)")
+
+	def test_no_keeps_the_old_exam_in_the_history_and_starts_a_new_one(self):
+		"""n: the old exam is "abandoned" in the history, a new exam starts."""
+		self.save(10)
+		self.run_shell("", "pw", "n", "1", "", "finish")
+		ends = [entry["end"] for entry in self.store.history()]
+		self.assertEqual(ends, ["abandoned", "finish"])
+		self.assertEqual(self.store.history()[0]["levels_passed"], [1])
+
+	def test_an_exam_whose_time_ran_out_goes_to_the_history_without_asking(self):
+		"""Started 200 minutes ago (180 allowed): kept as "time", no question."""
+		self.save(200)
+		shell = self.run_shell("", "pw", "1", "", "finish")
+		self.assertIn("time ran out", output(shell))
+		self.assertFalse(any("Resume" in prompt for prompt in self.script.prompts))
+		self.assertEqual(self.store.history()[0]["end"], "time")
+
+	def test_an_unknown_subject_cannot_be_resumed(self):
+		"""The exercise is gone from the catalog: said, and a new exam starts."""
+		self.save(10, variant="gone#3")
+		shell = self.run_shell("", "pw", "1", "", "finish")
+		self.assertIn("cannot be resumed", output(shell))
+		self.assertEqual(shell.level, 1)

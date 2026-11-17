@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from pal42.catalog import EXERCISES_DIR, load_catalog
+from pal42.variant import draw
 
 # A valid exercise.py, to write in a temporary exercises/ folder.
 EXERCISE_SOURCE = """
@@ -89,6 +90,15 @@ class TestRealCatalog(unittest.TestCase):
 		"""The folder holds exercise.py and ref.c, the reference solution."""
 		catalog = load_catalog()
 		self.assertEqual(catalog.folders["char_filter"], EXERCISES_DIR / "c" / "char_filter")
+
+	def test_variant_is_found_again_from_its_id(self):
+		"""exo#seed gives the variant drawn with that seed; a bad id gives None."""
+		catalog = load_catalog()
+		variant = catalog.variant("char_filter#17")
+		self.assertEqual(variant.id, "char_filter#17")
+		self.assertEqual(variant.params, draw(catalog.exercises["char_filter"], 17).params)
+		for bad in ["gone#3", "char_filter", "char_filter#x"]:
+			self.assertIsNone(catalog.variant(bad), bad)
 
 	def test_real_catalog_has_no_warning(self):
 		"""Every folder of exercises/ gives an exercise: none is skipped."""

@@ -11,6 +11,7 @@ from runpy import run_path
 
 from pal42.model import Exercise
 from pal42.themes import load_themes
+from pal42.variant import draw
 
 # exercises/ is next to the pal42 package, at the root of the project.
 EXERCISES_DIR = Path(__file__).resolve().parent.parent / "exercises"
@@ -32,6 +33,17 @@ class Catalog:
 			exo for exo in self.exercises.values()
 			if exo.language == language and theme in exo.themes
 		]
+
+	def variant(self, variant_id):
+		"""Return the variant named `variant_id` (exo#seed), or None if unknown.
+
+		The same exercise and seed give the same variant: that is how a saved
+		exam finds its subject again.
+		"""
+		name, _, seed = variant_id.partition("#")
+		if name not in self.exercises or not seed.isdigit():
+			return None
+		return draw(self.exercises[name], int(seed))
 
 class SkippedFolder(Exception):
 	"""A folder of exercises/ that gives no exercise; the message says why."""

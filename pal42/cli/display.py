@@ -148,3 +148,17 @@ def summary_table(exam, passed_levels, attempts, oks, elapsed):
 	table.add_row("Grademe", f"{attempts} ({oks} OK, {attempts - oks} KO)")
 	table.add_row("Time spent", duration(elapsed))
 	return table
+
+def resume_question(exam, level, variant, left):
+	"""The question asked when a saved exam can be resumed."""
+	return (f"Resume your exam? {exam.title} · level {level} · {variant.name}"
+		f" · {duration(left)} left (y/n)")
+
+def time_ran_out_while_away(exam):
+	"""Said when the saved exam ended while the terminal was closed."""
+	return (f"[yellow]Your last exam ({escape(exam.title)}) time ran out while you were"
+		" away: it is kept in your history.[/]")
+
+def cannot_resume(variant_id):
+	"""Said when the subject of the saved exam no longer exists."""
+	return f"[yellow]Your last exam cannot be resumed: its subject {escape(variant_id)} is gone.[/]"
