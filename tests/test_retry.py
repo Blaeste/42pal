@@ -21,3 +21,8 @@ class TestRetryPolicy(unittest.TestCase):
 	def test_no_failure_means_no_wait(self):
 		"""Before any failure, grademe is always possible."""
 		self.assertEqual(RetryPolicy((0, 5)).wait_after(0), 0)
+
+	def test_minutes_can_be_halves(self):
+		"""42_EXAM waits half a minute after the first failure: 30 seconds."""
+		self.assertEqual(RetryPolicy((0.5, 2.5)).wait_after(1), 30)
+		self.assertEqual(RetryPolicy((0.5, 2.5)).wait_after(2), 150)

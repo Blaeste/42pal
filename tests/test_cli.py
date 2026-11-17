@@ -24,6 +24,7 @@ from pal42.cli import check, display
 from pal42.cli.workspace import Workspace
 from pal42.exam import list_exams, load_exam
 from pal42.grader import Grade
+from pal42.retry import RetryPolicy
 from pal42.session import Session, SessionStore
 from pal42.subject import render
 from pal42.themes import Theme
@@ -529,7 +530,7 @@ class TestCheckCatalog(unittest.TestCase):
 		self.assertIn("c/empty: no exercise.py", text)
 
 class TestRetryTimer(unittest.TestCase):
-	"""The wait between two grademe, in hard mode: 0, 5, 10, 20, 40 minutes."""
+	"""The wait between two grademe, with a rule of 0, 5, 10, 20, 40 minutes."""
 
 	def setUp(self):
 		self.tmp = tempfile.TemporaryDirectory()
@@ -541,9 +542,10 @@ class TestRetryTimer(unittest.TestCase):
 		self.tmp.cleanup()
 
 	def run_commands(self, *answers, code=None):
-		"""Start at level 1 in hard mode, hand in `code` (wrong by default), run."""
+		"""Start at level 1, hand in `code` (wrong by default), run."""
 		shell = make_shell(Script(*answers), self.root, self.clock)
-		shell.retry = self.exam.retry["hard"]
+		# Its own rule, so that these tests do not depend on the exam files.
+		shell.retry = RetryPolicy((0, 5, 10, 20, 40))
 		shell.start(self.exam, 1)
 		(self.root / "rendu/echo_first/echo_first.c").write_text(
 			code or "int\tmain(void)\n{\n\treturn (0);\n}\n", encoding="utf-8")

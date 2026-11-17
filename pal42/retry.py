@@ -12,13 +12,13 @@ class RetryPolicy:
 
 	minutes[0] is the wait after the 1st failure (0: the first retry is
 	free), minutes[1] after the 2nd, and so on; past the end, the last one
-	repeats.
+	repeats. Halves are fine: 42_EXAM waits 0.5 minute after the first one.
 	"""
-	minutes: tuple[int, ...]
+	minutes: tuple[float, ...]
 
 	def wait_after(self, failures):
 		"""Return the seconds to wait after `failures` failures (0 for none)."""
 		if failures == 0:
 			return 0
 		index = min(failures, len(self.minutes)) - 1
-		return self.minutes[index] * 60
+		return round(self.minutes[index] * 60)

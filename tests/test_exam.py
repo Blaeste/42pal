@@ -45,7 +45,8 @@ class TestRealExams(unittest.TestCase):
 		"""soft and hard: the waits after each failed grademe, in minutes."""
 		exam = load_exam("rank02")
 		self.assertEqual(exam.retry["soft"], RetryPolicy((0, 1, 2, 3, 5)))
-		self.assertEqual(exam.retry["hard"], RetryPolicy((0, 5, 10, 20, 40)))
+		# hard is 42_EXAM's own: a Fibonacci-like list, from half a minute.
+		self.assertEqual(exam.retry["hard"], RetryPolicy((0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59)))
 
 	def test_every_exam_file_loads(self):
 		"""Each file of exams/ is a valid exam with at least one playable level."""

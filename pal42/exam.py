@@ -18,7 +18,8 @@ from pal42.variant import draw as draw_variant
 EXAMS_DIR = Path(__file__).resolve().parent.parent / "exams"
 
 # The waits after a failed grademe, in minutes, when the exam file gives none.
-DEFAULT_RETRY_MINUTES = {"soft": [0, 1, 2, 3, 5], "hard": [0, 5, 10, 20, 40]}
+# hard is 42_EXAM's: its exercise.cpp waits along a Fibonacci-like list.
+DEFAULT_RETRY_MINUTES = {"soft": [0, 1, 2, 3, 5], "hard": [0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59]}
 
 class ExamError(ValueError):
 	"""An exam file is missing or badly written; the message says why."""
@@ -120,7 +121,8 @@ def _read_exam_file(path):
 	for mode in ("soft", "hard"):
 		minutes = data["retry_minutes"].get(mode)
 		if not minutes or any(
-			isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in minutes
+			isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0
+			for value in minutes
 		):
-			fail(f"'retry_minutes' needs a '{mode}' list of minutes (integers from 0), not {minutes!r}")
+			fail(f"'retry_minutes' needs a '{mode}' list of minutes (numbers from 0), not {minutes!r}")
 	return data
