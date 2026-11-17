@@ -1,4 +1,4 @@
-"""list_drop: an original function model on the theme "linked lists".
+"""list_drop: an original function model on the theme "change a linked list".
 
 The student hands in a function and the header node.h that declares the
 nodes. The function removes from a linked list of ints every node, the first
@@ -127,7 +127,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_drop_${which}_${condition}",
 	expected_files=("ft_drop_${which}_${condition}.c", "node.h"),
 	allowed_functions=("free",),
-	themes=("linked_lists",),
+	themes=("list_changes",),
 	params=(
 		Param("which", ("all", "first", "last"), {
 			"all": "every node",

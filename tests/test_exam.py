@@ -125,3 +125,26 @@ class TestBadExamFile(unittest.TestCase):
 			with self.subTest(field):
 				with self.assertRaisesRegex(ExamError, f"demo.json.*{field}"):
 					self.load(data)
+
+class TestDifficulty(unittest.TestCase):
+	"""The real catalog: a model is drawn at the levels of the real subjects it is close to."""
+
+	def names_at(self, exam_id, level):
+		return {exo.name for exo in load_exam(exam_id).exercises_at(level)}
+
+	def test_models_of_level_4_subjects_are_not_drawn_at_the_first_levels(self):
+		"""base_string is close to ft_itoa, word_order to rev_wstr, list_drop to remove_if."""
+		for exam_id, level, name in [
+			("rank02", 1, "base_string"), ("piscine_final", 1, "base_string"),
+			("rank02", 1, "word_order"), ("piscine_01", 7, "word_order"),
+			("rank02", 3, "list_drop"), ("piscine_final", 1, "list_drop"),
+		]:
+			with self.subTest(exam=exam_id, level=level, exercise=name):
+				self.assertNotIn(name, self.names_at(exam_id, level))
+
+	def test_they_are_still_drawn_where_the_real_subjects_are(self):
+		"""Level 4 of the rank 02, level 3 of the final exam."""
+		for exam_id, level in [("rank02", 4), ("piscine_final", 3)]:
+			names = self.names_at(exam_id, level)
+			for name in ["base_string", "word_order", "list_drop"]:
+				self.assertIn(name, names, f"{exam_id} level {level}")

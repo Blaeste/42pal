@@ -1,4 +1,4 @@
-"""word_order: an original program model on the theme "the words of a string".
+"""word_order: an original program model on the theme "reorder the words of a string".
 
 The program takes one string and displays its words in another order:
 reversed, rotated one way or the other, sorted, or by length, with one of
@@ -65,7 +65,7 @@ EXERCISE = Exercise(
 	assignment_name="${order}_words_${separator}",
 	expected_files=("${order}_words_${separator}.c",),
 	allowed_functions=("write",),
-	themes=("words",),
+	themes=("reorder_words",),
 	params=(
 		Param("order", ("reverse", "rotate_left", "rotate_right", "sort", "by_length"), {
 			"reverse": "from the last one to the first one",

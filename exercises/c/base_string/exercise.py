@@ -1,4 +1,4 @@
-"""base_string: an original function model on the theme "print an integer in a base".
+"""base_string: an original function model on the theme "turn an integer into a string".
 
 The student writes a function that returns a new string, allocated with
 malloc, holding an int written in binary, octal or hexadecimal, with or
@@ -56,7 +56,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_${base}_string_${format}",
 	expected_files=("ft_${base}_string_${format}.c",),
 	allowed_functions=("malloc",),
-	themes=("number_print",),
+	themes=("number_string",),
 	params=(
 		Param("base", ("binary", "octal", "hex"), {
 			"binary": "in binary (base 2)",
