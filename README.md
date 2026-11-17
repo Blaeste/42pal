@@ -122,14 +122,24 @@ A passed `grademe` gives the next subject; `next` skips to another one;
 
 ## What the catalog has today
 
-| Exercise | Kind | Theme | Levels (rank 02 and piscine) | Variants |
-|---|---|---|---|---|
-| `shift_letters` | program | char_transform | 1, 2 | 18 |
-| `char_position` | function | string_basics | 1, 2 | 6 |
-| `char_filter` | program | char_sets | 2, 3 | 11 |
-| `split_fields` | function, leaks checked | split | 4 | 7 |
+Five exams, like in 42_EXAM:
 
-Every level, from 1 to 4, can be played. The subjects are
+| Exam | Levels | Time | Levels that can be played today |
+|---|---|---|---|
+| Exam Rank 02 | 4 (25 points each) | 3 h | 1, 2, 3, 4 |
+| Piscine Exam 01 | 8 (12.5 points each) | 4 h | 5, 6, 7, 8 |
+| Piscine Exam 02 | 8 (12.5 points each) | 4 h | 1 to 8 |
+| Piscine Exam 03 | 4 (25 points each) | 4 h | 1, 2, 3 |
+| Piscine Final Exam | 4 (25 points each) | 8 h | 1, 3 |
+
+| Exercise | Kind | Theme | Variants |
+|---|---|---|---|
+| `shift_letters` | program | char_transform | 18 |
+| `char_position` | function | string_basics | 6 |
+| `char_filter` | program | char_sets | 11 |
+| `split_fields` | function, leaks checked | split | 7 |
+
+The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
 themes and the levels where they appear is in [themes.json](themes.json).
 

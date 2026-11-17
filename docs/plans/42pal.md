@@ -174,7 +174,7 @@ Chaque exo est une étape : un thème, un modèle original, sa `ref.c`, et `chec
 
 **26. Gros sujets** (thèmes shell et pipes, serveur réseau, printf, lecture ligne par ligne) : un sujet original par thème, avec peu ou pas de paramètres et un correcteur sur mesure. Un sujet par étape.
 
-**27. Exams de la piscine** (`exams/piscine_*.json`), en réutilisant les thèmes C.
+**27. Exams de la piscine** (`exams/piscine_*.json`), en réutilisant les thèmes C. Fait : 4 exams comme dans 42_EXAM, `piscine_01` (8 niveaux, 4 h), `piscine_02` (8, 4 h), `piscine_03` (4, 4 h) et `piscine_final` (4, 8 h), avec les niveaux des thèmes repris des noms d'exos de 42_EXAM (thèmes seulement) et 4 nouveaux thèmes pour la finale (`stack_parsing`, `interpreters`, `memory_dump`, `string_search`). Le rank 02 et la piscine 02 sont entièrement jouables ; il manque des exos aux niveaux 1 à 4 de la piscine 01, 4 de la piscine 03, 2 et 4 de la finale.
 
 ### Jalon 6 : web (plan séparé, après les premiers retours du campus)
 

@@ -25,21 +25,23 @@ class TestRealExams(unittest.TestCase):
 		self.assertEqual(exam.level_count, 4)
 		self.assertIn("char_filter", [exo.name for exo in exam.exercises_at(2)])
 
-	def test_rank02_and_piscine_start_at_level_1(self):
-		"""A level 1 exercise exists (shift_letters): the exam starts at level 1."""
-		for exam_id in ["rank02", "piscine"]:
-			with self.subTest(exam_id):
-				self.assertEqual(load_exam(exam_id).playable_levels[0], 1)
+	def test_the_four_piscine_exams_follow_42_exam(self):
+		"""Like 42_EXAM: weeks 01 and 02 have 8 levels, week 03 and the final 4."""
+		shape = {exam_id: (load_exam(exam_id).level_count, load_exam(exam_id).duration_minutes)
+			for exam_id in ["piscine_01", "piscine_02", "piscine_03", "piscine_final"]}
+		self.assertEqual(shape, {
+			"piscine_01": (8, 240), "piscine_02": (8, 240),
+			"piscine_03": (4, 240), "piscine_final": (4, 480),
+		})
+		self.assertEqual(load_exam("piscine_01").points_per_level, 12.5)
 
 	def test_each_level_is_worth_100_divided_by_the_number_of_levels(self):
 		"""Like 42_EXAM: 4 levels give 25 points each, 8 levels 12.5."""
 		self.assertEqual(load_exam("rank02").points_per_level, 25)
 
-	def test_every_level_from_1_to_4_can_be_played(self):
+	def test_every_level_of_rank02_can_be_played(self):
 		"""split_fields fills level 4: the whole exam can be played."""
-		for exam_id in ["rank02", "piscine"]:
-			with self.subTest(exam_id):
-				self.assertEqual(load_exam(exam_id).playable_levels, [1, 2, 3, 4])
+		self.assertEqual(load_exam("rank02").playable_levels, [1, 2, 3, 4])
 
 	def test_retry_waits_come_from_the_exam_file(self):
 		"""soft and hard: the waits after each failed grademe, in minutes."""
@@ -50,8 +52,7 @@ class TestRealExams(unittest.TestCase):
 
 	def test_every_exam_file_loads(self):
 		"""Each file of exams/ is a valid exam with at least one playable level."""
-		self.assertIn("rank02", list_exams())
-		self.assertIn("piscine", list_exams())
+		self.assertEqual(list_exams(), ["piscine_01", "piscine_02", "piscine_03", "piscine_final", "rank02"])
 		for exam_id in list_exams():
 			with self.subTest(exam_id):
 				self.assertTrue(load_exam(exam_id).playable_levels)

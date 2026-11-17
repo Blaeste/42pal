@@ -150,8 +150,8 @@ class TestShell(unittest.TestCase):
 		shell = make_shell(Script("9", "x", "2"), self.root)
 		exam = shell.choose_exam()
 		self.assertEqual(exam.id, list_exams()[1])
-		self.assertIn("1. Exam Piscine", output(shell))
-		self.assertIn("2. Exam Rank 02", output(shell))
+		self.assertIn("1. Piscine Exam 01", output(shell))
+		self.assertIn("5. Exam Rank 02", output(shell))
 		self.assertEqual(output(shell).count("Invalid choice"), 2)
 
 	def test_level_choice_only_accepts_playable_levels(self):
@@ -175,12 +175,12 @@ class TestShell(unittest.TestCase):
 
 	def test_the_mode_sets_the_waits_and_is_shown(self):
 		"""Revision by default: soft waits, shown in the panel and in status."""
-		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
+		shell = make_shell(Script("", "pw", "5", "", "", "status", "finish"), self.root)
 		shell.run()
 		self.assertEqual((shell.mode, shell.retry), ("revision", shell.exam.retry["soft"]))
 		self.assertIn("revision mode", output(shell))
 		self.assertRegex(output(shell), r"Time left\s+no limit")
-		exam_shell = make_shell(Script("", "pw", "2", "1", "", "finish"), self.root)
+		exam_shell = make_shell(Script("", "pw", "5", "1", "", "finish"), self.root)
 		exam_shell.run()
 		self.assertEqual(exam_shell.retry, exam_shell.exam.retry["hard"])
 		self.assertIn("exam mode", output(exam_shell))
@@ -247,7 +247,7 @@ class TestShell(unittest.TestCase):
 
 	def test_run_goes_from_login_to_finish(self):
 		"""Login, exam 2, the first playable level, status, then finish."""
-		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
+		shell = make_shell(Script("", "pw", "5", "", "", "status", "finish"), self.root)
 		shell.run()
 		text = output(shell)
 		self.assertIn("Welcome", text)
@@ -263,7 +263,7 @@ class TestLauncher(unittest.TestCase):
 		"""Answers sent through a pipe; HOME is a temporary folder."""
 		with tempfile.TemporaryDirectory() as home:
 			result = subprocess.run(
-				[str(ROOT / "42pal")], input="\npw\n2\n\n\nstatus\nfinish\n",
+				[str(ROOT / "42pal")], input="\npw\n5\n\n\nstatus\nfinish\n",
 				capture_output=True, text=True, timeout=30,
 				env=dict(os.environ, HOME=home),
 				# A new session has no terminal: nothing can wait on the keyboard.
@@ -291,7 +291,7 @@ class TestRealTerminal(unittest.TestCase):
 		"""Enter with nothing typed: the next prompt starts on a new line."""
 		with tempfile.TemporaryDirectory() as home:
 			screen = run_in_terminal(home, [
-				("login:", ""), ("password:", "x"), ("choice:", "2"), ("Mode:", ""),
+				("login:", ""), ("password:", "x"), ("choice:", "5"), ("Mode:", ""),
 				("level:", ""), ("examshell>", ""), ("examshell>", "finish"),
 			])
 		self.assertNotIn("examshell> examshell>", screen)

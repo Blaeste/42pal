@@ -1,70 +1,86 @@
 {
 	"print_basics": {
 		"skill": "Print fixed characters, the alphabet or digits with write",
-		"exams": {"piscine": [1]}
+		"exams": {"piscine_01": [1, 2, 3, 4]}
 	},
 	"program_args": {
 		"skill": "Use argc and argv: print, pick or count the arguments",
-		"exams": {"piscine": [1, 3], "rank02": [3]}
+		"exams": {"piscine_01": [3], "piscine_03": [4], "piscine_final": [2, 4], "rank02": [3]}
 	},
 	"string_basics": {
 		"skill": "Rewrite the basic string functions: length, copy, compare, print, reverse",
-		"exams": {"piscine": [1, 2], "rank02": [1, 2]}
+		"exams": {"piscine_01": [5, 7, 8], "piscine_02": [1, 3, 4, 7], "piscine_03": [2], "rank02": [1, 2]}
 	},
 	"pointers": {
 		"skill": "Change the caller's values through pointers",
-		"exams": {"piscine": [1], "rank02": [1]}
+		"exams": {"piscine_01": [7], "piscine_02": [3], "rank02": [1]}
 	},
 	"char_transform": {
 		"skill": "Transform each character of a string: rotation, case, mirror, repetition, replacement",
-		"exams": {"piscine": [1, 2], "rank02": [1, 2]}
+		"exams": {"piscine_01": [6, 8], "piscine_02": [1, 2, 4, 7], "piscine_03": [2], "rank02": [1, 2]}
 	},
 	"words": {
 		"skill": "Find, extract, clean up or reorder the words of a string",
-		"exams": {"piscine": [1, 2, 3, 4], "rank02": [1, 2, 3, 4]}
+		"exams": {"piscine_01": [7], "piscine_02": [3, 6], "piscine_03": [1, 3, 4], "piscine_final": [1, 2, 3], "rank02": [1, 2, 3, 4]}
 	},
 	"case_style": {
 		"skill": "Change the writing style of words: camelCase, snake_case, capitals",
-		"exams": {"piscine": [2, 3], "rank02": [2, 3]}
+		"exams": {"piscine_03": [3, 4], "piscine_final": [1, 2], "rank02": [2, 3]}
 	},
 	"char_sets": {
 		"skill": "Compare the characters of two strings: found in both, in one only, in order",
-		"exams": {"piscine": [2, 3], "rank02": [2, 3]}
+		"exams": {"piscine_02": [5, 6, 8], "piscine_03": [1, 2, 3], "piscine_final": [1], "rank02": [2, 3]}
 	},
 	"number_parse": {
 		"skill": "Turn a string into an integer, in base 10 or another base",
-		"exams": {"piscine": [2, 3], "rank02": [2, 3]}
+		"exams": {"piscine_02": [5], "piscine_03": [1, 4], "piscine_final": [2], "rank02": [2, 3]}
 	},
 	"number_print": {
 		"skill": "Print an integer in base 10 or another base, or turn it into a string",
-		"exams": {"piscine": [1, 3, 4], "rank02": [1, 3, 4]}
+		"exams": {"piscine_03": [3], "piscine_final": [1, 3], "rank02": [1, 3, 4]}
 	},
 	"arithmetic": {
 		"skill": "Integer arithmetic: operations, gcd, lcm, prime numbers, tables",
-		"exams": {"piscine": [2, 3, 4], "rank02": [2, 3, 4]}
+		"exams": {"piscine_02": [7], "piscine_03": [2, 3, 4], "piscine_final": [1, 2, 3], "rank02": [2, 3, 4]}
 	},
 	"bits": {
 		"skill": "Read and change the bits of a byte or an integer",
-		"exams": {"piscine": [2], "rank02": [2]}
+		"exams": {"piscine_02": [6, 8], "piscine_03": [1, 2], "rank02": [2]}
 	},
 	"allocation": {
 		"skill": "Allocate memory: copy a string, build an array of numbers",
-		"exams": {"piscine": [2, 3], "rank02": [2, 3]}
+		"exams": {"piscine_02": [5], "piscine_03": [1, 3, 4], "piscine_final": [1, 2], "rank02": [2, 3]}
 	},
 	"split": {
 		"skill": "Split a string into an allocated array of words",
-		"exams": {"piscine": [4], "rank02": [4]}
+		"exams": {"piscine_final": [3], "rank02": [4]}
 	},
 	"int_arrays": {
 		"skill": "Go through or sort an array of integers",
-		"exams": {"piscine": [2, 4], "rank02": [2, 4]}
+		"exams": {"piscine_02": [8], "piscine_03": [2], "piscine_final": [3], "rank02": [2]}
 	},
 	"linked_lists": {
 		"skill": "Go through and change a linked list",
-		"exams": {"rank02": [3, 4]}
+		"exams": {"piscine_03": [3], "piscine_final": [1, 3, 4], "rank02": [3, 4]}
 	},
 	"grids": {
 		"skill": "Explore a 2D grid of characters, like a flood fill",
-		"exams": {"rank02": [4]}
+		"exams": {"piscine_final": [3], "rank02": [4]}
+	},
+	"stack_parsing": {
+		"skill": "Read an expression with a stack: brackets that match, reverse Polish notation",
+		"exams": {"piscine_final": [4]}
+	},
+	"interpreters": {
+		"skill": "Run a tiny language: a tape of bytes, a pointer and loops",
+		"exams": {"piscine_final": [3]}
+	},
+	"memory_dump": {
+		"skill": "Print the bytes of memory in hexadecimal and as characters",
+		"exams": {"piscine_final": [4]}
+	},
+	"string_search": {
+		"skill": "Search inside a string, like the longest palindrome",
+		"exams": {"piscine_final": [4]}
 	}
 }
