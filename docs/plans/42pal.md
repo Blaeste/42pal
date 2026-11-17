@@ -154,6 +154,7 @@ Diff KO
 
 **21. Installation au campus.** Un `README.md` (`git clone … && ./42pal`).
 - Vérifier : sur un poste du campus, avec le `python3` du système, ça se lance sans pip ni sudo.
+- Fait : `README.md` écrit (installation, exam, révision, catalogue, contribution). Vérifié depuis un clone neuf, avec `PATH=/usr/bin:/bin` (Python 3.10.12 du système) : exam, `practice`, `check-catalog` et les tests passent, sans rien installer.
 
 ### Jalon 5 : remplir le catalogue
 
