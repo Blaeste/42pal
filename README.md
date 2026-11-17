@@ -140,6 +140,7 @@ Five exams, like in 42_EXAM:
 | `split_fields` | function, leaks checked | split | 7 |
 | `print_range` | function (void, prints) | print_basics | 10 |
 | `arg_pick` | program | program_args | 6 |
+| `word_order` | program | words | 13 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
