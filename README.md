@@ -145,6 +145,7 @@ Five exams, like in 42_EXAM:
 | `base_string` | function, leaks checked | number_print | 6 |
 | `byte_rotate` | function | bits | 12 |
 | `sequence_array` | function, leaks checked | allocation | 10 |
+| `list_drop` | function + header handed in, leaks checked | linked_lists | 12 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
@@ -159,7 +160,9 @@ python3 -m unittest
 ```
 
 Check that the whole catalog grades right: each exercise has a reference
-solution (`ref.c`) that must pass every one of its variants.
+solution (`ref.c`) that must pass every one of its variants. When the
+student hands in a header too, the reference header sits next to `ref.c`,
+under its own name.
 
 ```sh
 ./42pal check-catalog
@@ -169,7 +172,7 @@ solution (`ref.c`) that must pass every one of its variants.
 |---|---|
 | `pal42/` | the core: exercises, variants, subjects, grading (no display) |
 | `pal42/cli/` | the terminal: examshell, practice, check-catalog |
-| `exercises/c/<name>/` | one exercise: `exercise.py` and its `ref.c` |
+| `exercises/c/<name>/` | one exercise: `exercise.py`, its `ref.c` (and the header the student hands in, if any) |
 | `exams/` | the exams: title, duration, compile command, retry waits |
 | `tests/` | the tests |
 

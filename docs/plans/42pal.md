@@ -97,7 +97,7 @@ Diff KO
 - Test : une solution juste écrite par nous passe.
 - Test : une solution sans `\n` échoue, et sa trace montre `-hello` contre `+hello$`, avec la commande du test.
 
-**11. Exos « fonction ».** Un `main` de test est généré pour chaque variante. Le contrôle des fonctions interdites (étape 12, déjà faite) ne doit alors regarder que le code de l'étudiant, pas ce `main` de test (par exemple avec `nm -u` sur l'objet de l'étudiant seul). Fait : la compilation passe par des objets (`cc -c`), puis l'édition de liens avec le `main` de test. Fait aussi : un exo « fonction » peut donner `call` (un test écrit comme un appel C, `ft_x("abc", 'a')`), utilisé par les traces et par les exemples automatiques de son sujet. Les rendus en plusieurs fichiers (un header + un `.c`) marchent : seuls les `.c` sont compilés, les headers sont copiés. Un exo peut aussi fournir des fichiers (`provided_files`, un header avec une structure par exemple), écrits à côté du sujet et ajoutés à la compilation. Reste : `check-catalog` ne copie que `ref.c` ; un exo dont l'étudiant rend aussi un header devra fournir ce header de référence. Fichier : `harness.py`, avec un modèle « fonction » original sur le thème « parcours de chaîne ».
+**11. Exos « fonction ».** Un `main` de test est généré pour chaque variante. Le contrôle des fonctions interdites (étape 12, déjà faite) ne doit alors regarder que le code de l'étudiant, pas ce `main` de test (par exemple avec `nm -u` sur l'objet de l'étudiant seul). Fait : la compilation passe par des objets (`cc -c`), puis l'édition de liens avec le `main` de test. Fait aussi : un exo « fonction » peut donner `call` (un test écrit comme un appel C, `ft_x("abc", 'a')`), utilisé par les traces et par les exemples automatiques de son sujet. Les rendus en plusieurs fichiers (un header + un `.c`) marchent : seuls les `.c` sont compilés, les headers sont copiés. Un exo peut aussi fournir des fichiers (`provided_files`, un header avec une structure par exemple), écrits à côté du sujet et ajoutés à la compilation. Fait aussi : quand l'étudiant rend aussi un header, `check-catalog` prend le header de référence à côté de `ref.c`, sous son nom (`exercises/c/list_drop/node.h`). Fichier : `harness.py`, avec un modèle « fonction » original sur le thème « parcours de chaîne ».
 - Test : une fonction juste passe, une fonction décalée de 1 échoue.
 - Test : un rendu qui contient un `main` donne une erreur claire.
 
@@ -164,7 +164,7 @@ Chaque exo est une étape : un thème, un modèle original, sa `ref.c`, et `chec
 **22. ~~Guide de contribution.~~ Abandonné** : les exos sont écrits par nous seulement, pas de guide ni de dossier modèle pour d'autres. Ancien texte : `CONTRIBUTING.md` et un dossier modèle `exercises/_template/`. La règle n°1 : décris le thème, écris ton propre nom, ton propre énoncé et tes propres exemples, et ne copie jamais un sujet réel.
 - Vérifier : ajouter un deuxième modèle du thème `char_sets` en suivant uniquement le guide.
 
-**23. Rank 02 jouable de bout en bout.** Un modèle par niveau d'abord, puis compléter les thèmes.
+**23. Rank 02 jouable de bout en bout.** Un modèle par niveau d'abord, puis compléter les thèmes. Fait : tous les niveaux sont jouables. En cours : un exo par thème qui n'en a pas encore, dans l'ordre `bits` (`byte_rotate`, fait), `allocation` (`sequence_array`, fait), `linked_lists` (`list_drop`, fait, l'étudiant rend aussi le header), puis `case_style`, `number_parse`, `int_arrays` et les thèmes de la finale. `check-catalog` note les variantes d'un exo en parallèle, pour que la suite de tests reste rapide.
 - Vérifier : un exam complet terminé à la main.
 
 **24. Correcteur Python** (exos programme et fonction), dans `runners/python.py`. Il est d'abord testé sur un modèle simple d'un thème déjà connu. Les vrais modèles Python viendront quand les sujets auront été fournis.
@@ -174,7 +174,7 @@ Chaque exo est une étape : un thème, un modèle original, sa `ref.c`, et `chec
 
 **26. Gros sujets** (thèmes shell et pipes, serveur réseau, printf, lecture ligne par ligne) : un sujet original par thème, avec peu ou pas de paramètres et un correcteur sur mesure. Un sujet par étape.
 
-**27. Exams de la piscine** (`exams/piscine_*.json`), en réutilisant les thèmes C. Fait : 4 exams comme dans 42_EXAM, `piscine_01` (8 niveaux, 4 h), `piscine_02` (8, 4 h), `piscine_03` (4, 4 h) et `piscine_final` (4, 8 h), avec les niveaux des thèmes repris des noms d'exos de 42_EXAM (thèmes seulement) et 4 nouveaux thèmes pour la finale (`stack_parsing`, `interpreters`, `memory_dump`, `string_search`). Le rank 02 et la piscine 02 sont entièrement jouables ; il manque des exos aux niveaux 1 à 4 de la piscine 01, 4 de la piscine 03, 2 et 4 de la finale.
+**27. Exams de la piscine** (`exams/piscine_*.json`), en réutilisant les thèmes C. Fait : 4 exams comme dans 42_EXAM, `piscine_01` (8 niveaux, 4 h), `piscine_02` (8, 4 h), `piscine_03` (4, 4 h) et `piscine_final` (4, 8 h), avec les niveaux des thèmes repris des noms d'exos de 42_EXAM (thèmes seulement) et 4 nouveaux thèmes pour la finale (`stack_parsing`, `interpreters`, `memory_dump`, `string_search`). Tous les niveaux des 5 exams sont jouables.
 
 ### Jalon 6 : web (plan séparé, après les premiers retours du campus)
 
