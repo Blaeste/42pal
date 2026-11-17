@@ -1,5 +1,6 @@
 {
 	"title": "Piscine Exam 03",
+	"audience": "piscine",
 	"language": "c",
 	"levels": 4,
 	"duration_minutes": 240,

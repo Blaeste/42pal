@@ -186,6 +186,66 @@ def points(value):
 	"""Write points without a useless .0: 25, but 12.5."""
 	return f"{value:g}"
 
+# The menus before the exam. Their lines stay under 80 characters.
+
+# How the first menu names each audience (see AUDIENCES in pal42/exam.py).
+AUDIENCE_TEXTS = {"piscine": "Piscine (piscineux)", "student": "Student (cursus)"}
+
+def exam_length(minutes):
+	"""Write a duration for a menu: 3 h, 4 h 30, or 45 min."""
+	hours, rest = divmod(minutes, 60)
+	if not hours:
+		return f"{rest} min"
+	return f"{hours} h {rest:02d}" if rest else f"{hours} h"
+
+def exam_summary(exam):
+	"""The size of an exam, for a menu: 8 levels, 4 h."""
+	return f"{exam.level_count} levels, {exam_length(exam.duration_minutes)}"
+
+def audience_menu(exams_by_audience):
+	"""The first menu: who the student is, and the exams it leads to."""
+	lines = ["Who are you?"]
+	for number, (audience, exams) in enumerate(exams_by_audience.items(), start=1):
+		leads_to = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
+		lines.append(f"  {number}. {AUDIENCE_TEXTS[audience]:22}{leads_to}")
+	return lines
+
+def exam_menu(exams):
+	"""The menu of the exams: each title with its levels and duration."""
+	width = max(len(exam.title) for exam in exams) + 3
+	lines = ["Choose your exam:"]
+	for number, exam in enumerate(exams, start=1):
+		lines.append(f"  {number}. {exam.title:{width}}{exam_summary(exam)}")
+	return lines
+
+def mode_menu(exam):
+	"""The menu of the modes: what each one means for the time and the waits."""
+	hard = ", ".join(map(points, exam.retry["hard"].minutes))
+	soft = ", ".join(map(points, exam.retry["soft"].minutes))
+	indent = " " * 15
+	return [
+		"Choose the mode:",
+		f"  1. Exam      The real conditions: {exam_length(exam.duration_minutes)}, "
+			"then the exam ends.",
+		f"{indent}Waits after a failed grademe grow fast (minutes):",
+		f"{indent}{hard}",
+		"  2. Revision  No time limit.",
+		f"{indent}Waits after a failed grademe stay short (minutes):",
+		f"{indent}{soft}",
+		"Enter alone takes revision.",
+	]
+
+def level_menu(exam):
+	"""What the starting level means: the points of a level, the levels skipped."""
+	playable = ", ".join(map(str, exam.playable_levels))
+	return [
+		"Choose the starting level:",
+		f"  {exam.level_count} levels, worth {points(exam.points_per_level)} points each: "
+			"pass them all for 100/100.",
+		"  If you start higher, the levels before it give no points.",
+		f"  Levels you can play: {playable}.",
+	]
+
 def points_won(won, grade):
 	"""Said after an OK: the points of the level, and the grade now."""
 	return f"[bold green]+{points(won)} points[/] · grade {points(grade)}/100"

@@ -1,5 +1,6 @@
 {
 	"title": "Piscine Final Exam",
+	"audience": "piscine",
 	"language": "c",
 	"levels": 4,
 	"duration_minutes": 480,

@@ -18,7 +18,7 @@ from rich.markup import escape
 from pal42.catalog import load_catalog
 from pal42.cli import display
 from pal42.cli.workspace import Workspace
-from pal42.exam import ExamError, list_exams, load_exam
+from pal42.exam import AUDIENCES, ExamError, list_exams, load_exam
 from pal42.grader import grade
 from pal42.retry import RetryPolicy
 from pal42.runners.c import CRunner
@@ -112,7 +112,7 @@ class Shell:
 		try:
 			self.login()
 			if not self.resume():
-				exam = self.choose_exam()
+				exam = self.choose_exam(self.choose_audience())
 				self.mode = self.choose_mode(exam)
 				level = self.choose_level(exam)
 				self.retry = exam.retry[RETRY_OF_MODE[self.mode]]
@@ -185,34 +185,64 @@ class Shell:
 		self.store.clear()
 		self._reset()
 
-	def choose_exam(self):
-		"""Show the exams as a numbered menu and return the one picked."""
-		catalog, themes = self._catalog()
-		exams = [load_exam(exam_id, catalog=catalog, themes=themes) for exam_id in list_exams()]
-		# An exam with no exercise at any level cannot be played: not offered.
-		exams = [exam for exam in exams if exam.playable_levels]
-		self.console.print("Choose your exam:")
-		for number, exam in enumerate(exams, start=1):
-			self.console.print(f"  {number}. {exam.title}")
-		number = self._ask_choice("Your choice:", range(1, len(exams) + 1))
+	def choose_audience(self):
+		"""Ask who the student is: "piscine" or "student"; return the answer.
+
+		Asked only when both have exams that can be played.
+		"""
+		by_audience = {}
+		for exam in self._exams():
+			by_audience.setdefault(exam.audience, []).append(exam)
+		by_audience = {audience: by_audience[audience] for audience in AUDIENCES
+			if audience in by_audience}
+		if len(by_audience) == 1:
+			return next(iter(by_audience))
+		self._print_lines(display.audience_menu(by_audience))
+		number = self._ask_choice("Your choice:", range(1, len(by_audience) + 1))
+		self.console.print()
+		return list(by_audience)[number - 1]
+
+	def choose_exam(self, audience):
+		"""Show the exams of `audience` as a numbered menu; return the one picked.
+
+		A single exam is taken without asking, and said.
+		"""
+		exams = [exam for exam in self._exams() if exam.audience == audience]
+		if len(exams) == 1:
+			exam = exams[0]
+			self.console.print(f"Your exam: {exam.title} ({display.exam_summary(exam)})")
+			self.console.print()
+			return exam
+		self._print_lines(display.exam_menu(exams))
+		number = self._ask_choice("Exam:", range(1, len(exams) + 1))
+		self.console.print()
 		return exams[number - 1]
 
 	def choose_mode(self, exam):
 		"""Ask the mode: exam (hard waits, the real duration) or revision (soft, no limit)."""
-		hard = ", ".join(map(display.points, exam.retry["hard"].minutes))
-		soft = ", ".join(map(display.points, exam.retry["soft"].minutes))
-		self.console.print("Choose the mode:")
-		self.console.print(f"  1. Exam: hard waits ({hard} min), {exam.duration_minutes} min")
-		self.console.print(f"  2. Revision: soft waits ({soft} min), no time limit")
+		self._print_lines(display.mode_menu(exam))
 		# Enter alone takes revision.
-		return ["exam", "revision"][self._ask_choice("Mode:", [1, 2], "2") - 1]
+		mode = ["exam", "revision"][self._ask_choice("Mode:", [1, 2], "2") - 1]
+		self.console.print()
+		return mode
 
 	def choose_level(self, exam):
 		"""Ask the starting level, among the levels that have exercises."""
 		playable = exam.playable_levels
-		self.console.print(f"Playable levels: {', '.join(map(str, playable))}")
+		self._print_lines(display.level_menu(exam))
 		# Enter alone takes the first playable level.
 		return self._ask_choice("Starting level:", playable, str(playable[0]))
+
+	def _exams(self):
+		"""The exams that can be played: those with exercises at one level at least."""
+		catalog, themes = self._catalog()
+		exams = [load_exam(exam_id, catalog=catalog, themes=themes) for exam_id in list_exams()]
+		return [exam for exam in exams if exam.playable_levels]
+
+	def _print_lines(self, lines):
+		"""Print the lines of a menu as they are: no rich markup is read in them."""
+		for line in lines:
+			self.console.print(line, markup=False, highlight=False)
 
 	def start(self, exam, level):
 		"""Draw a subject at `level`, write it in the workspace and show it.

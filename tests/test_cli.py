@@ -155,42 +155,74 @@ class TestShell(unittest.TestCase):
 		self.assertNotIn("my-secret-password", output(shell))
 		self.assertNotIn("my-secret-password", repr(vars(shell)))
 
-	def test_exam_menu_asks_again_until_the_answer_is_valid(self):
-		"""Numbered titles; 9 and x are refused, 2 picks the second exam."""
-		shell = make_shell(Script("9", "x", "2"), self.root)
-		exam = shell.choose_exam()
-		self.assertEqual(exam.id, list_exams()[1])
-		self.assertIn("1. Piscine Exam 01", output(shell))
-		self.assertIn("5. Exam Rank 02", output(shell))
-		self.assertEqual(output(shell).count("Invalid choice"), 2)
+	def test_the_first_menu_asks_piscine_or_student(self):
+		"""3 and x are refused; 1 is the piscine, 2 the students of the cursus."""
+		shell = make_shell(Script("3", "x", "1"), self.root)
+		self.assertEqual(shell.choose_audience(), "piscine")
+		text = output(shell)
+		self.assertIn("1. Piscine (piscineux)", text)
+		self.assertIn("2. Student (cursus)", text)
+		self.assertEqual(text.count("Invalid choice"), 2)
+		self.assertEqual(make_shell(Script("2"), self.root).choose_audience(), "student")
 
-	def test_level_choice_only_accepts_playable_levels(self):
-		"""Level 1 has no exercise yet: refused; Enter takes the first playable."""
+	def test_exam_menu_shows_the_exams_of_the_audience_with_levels_and_time(self):
+		"""Piscine: its 4 exams only, each with its levels and duration; 9 is refused."""
+		shell = make_shell(Script("9", "2"), self.root)
+		exam = shell.choose_exam("piscine")
+		self.assertEqual(exam.id, "piscine_02")
+		text = output(shell)
+		self.assertRegex(text, r"1\. Piscine Exam 01 +8 levels, 4 h")
+		self.assertRegex(text, r"4\. Piscine Final Exam +4 levels, 8 h")
+		self.assertNotIn("Rank 02", text)
+		self.assertEqual(text.count("Invalid choice"), 1)
+
+	def test_a_student_goes_from_the_first_menu_to_the_mode(self):
+		"""2 (student): the rank 02 is taken, the next questions are the mode and the level."""
+		script = Script("", "pw", "2", "", "", "finish")
+		shell = make_shell(script, self.root)
+		shell.run()
+		self.assertEqual(shell.exam.id, "rank02")
+		self.assertEqual(script.prompts[2:5], ["Your choice:", "Mode:", "Starting level:"])
+
+	def test_a_single_exam_is_taken_without_asking(self):
+		"""The students have the rank 02 only: no question, it is said."""
+		shell = make_shell(Script(), self.root)
+		self.assertEqual(shell.choose_exam("student").id, "rank02")
+		self.assertIn("Your exam: Exam Rank 02 (4 levels, 3 h)", output(shell))
+
+	def test_level_menu_says_what_a_level_is_worth(self):
+		"""25 points a level; the levels skipped give none; level 1 is not playable here."""
 		shell = make_shell(Script("1", ""), self.root)
 		level = shell.choose_level(load_exam("rank02", catalog=CATALOG, themes=THEMES))
 		self.assertEqual(level, 2)
-		self.assertIn("Playable levels: 2, 3", output(shell))
-		self.assertEqual(output(shell).count("Invalid choice"), 1)
+		text = " ".join(output(shell).split())
+		self.assertIn("4 levels, worth 25 points each: pass them all for 100/100.", text)
+		self.assertIn("If you start higher, the levels before it give no points.", text)
+		self.assertIn("Levels you can play: 2, 3", text)
+		self.assertEqual(text.count("Invalid choice"), 1)
 
-	def test_mode_menu_offers_exam_and_revision(self):
-		"""Exam: hard waits and the real duration; revision: soft, no time limit."""
+	def test_mode_menu_explains_exam_and_revision(self):
+		"""Exam: the real duration and the hard waits; revision: no limit, soft waits."""
 		exam = load_exam("rank02", catalog=CATALOG, themes=THEMES)
 		shell = make_shell(Script("x", ""), self.root)
 		self.assertEqual(shell.choose_mode(exam), "revision")
-		text = output(shell)
-		self.assertIn("1. Exam: hard waits (0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59 min), 180 min", text)
-		self.assertIn("2. Revision: soft waits (0, 1, 2, 3, 5 min), no time limit", text)
+		text = " ".join(output(shell).split())
+		self.assertIn("1. Exam The real conditions: 3 h, then the exam ends. Waits after a "
+			"failed grademe grow fast (minutes): 0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59", text)
+		self.assertIn("2. Revision No time limit. Waits after a failed grademe stay short "
+			"(minutes): 0, 1, 2, 3, 5", text)
+		self.assertIn("Enter alone takes revision.", text)
 		self.assertEqual(text.count("Invalid choice"), 1)
 		self.assertEqual(make_shell(Script("1"), self.root).choose_mode(exam), "exam")
 
 	def test_the_mode_sets_the_waits_and_is_shown(self):
 		"""Revision by default: soft waits, shown in the panel and in status."""
-		shell = make_shell(Script("", "pw", "5", "", "", "status", "finish"), self.root)
+		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
 		shell.run()
 		self.assertEqual((shell.mode, shell.retry), ("revision", shell.exam.retry["soft"]))
 		self.assertIn("revision mode", output(shell))
 		self.assertRegex(output(shell), r"Time left\s+no limit")
-		exam_shell = make_shell(Script("", "pw", "5", "1", "", "finish"), self.root)
+		exam_shell = make_shell(Script("", "pw", "2", "1", "", "finish"), self.root)
 		exam_shell.run()
 		self.assertEqual(exam_shell.retry, exam_shell.exam.retry["hard"])
 		self.assertIn("exam mode", output(exam_shell))
@@ -257,7 +289,7 @@ class TestShell(unittest.TestCase):
 
 	def test_run_goes_from_login_to_finish(self):
 		"""Login, exam 2, the first playable level, status, then finish."""
-		shell = make_shell(Script("", "pw", "5", "", "", "status", "finish"), self.root)
+		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
 		shell.run()
 		text = output(shell)
 		self.assertIn("Welcome", text)
@@ -273,7 +305,7 @@ class TestLauncher(unittest.TestCase):
 		"""Answers sent through a pipe; HOME is a temporary folder."""
 		with tempfile.TemporaryDirectory() as home:
 			result = subprocess.run(
-				[str(ROOT / "42pal")], input="\npw\n5\n\n\nstatus\nfinish\n",
+				[str(ROOT / "42pal")], input="\npw\n2\n\n\nstatus\nfinish\n",
 				capture_output=True, text=True, timeout=30,
 				env=dict(os.environ, HOME=home),
 				# A new session has no terminal: nothing can wait on the keyboard.
@@ -301,7 +333,7 @@ class TestRealTerminal(unittest.TestCase):
 		"""Enter with nothing typed: the next prompt starts on a new line."""
 		with tempfile.TemporaryDirectory() as home:
 			screen = run_in_terminal(home, [
-				("login:", ""), ("password:", "x"), ("choice:", "5"), ("Mode:", ""),
+				("login:", ""), ("password:", "x"), ("choice:", "2"), ("Mode:", ""),
 				("level:", ""), ("examshell>", ""), ("examshell>", "finish"),
 			])
 		self.assertNotIn("examshell> examshell>", screen)
@@ -749,7 +781,7 @@ class TestResume(unittest.TestCase):
 	def test_no_keeps_the_old_exam_in_the_history_and_starts_a_new_one(self):
 		"""n: the old exam is "abandoned" in the history, a new exam starts."""
 		self.save(10)
-		self.run_shell("", "pw", "n", "1", "", "", "finish")
+		self.run_shell("", "pw", "n", "", "", "finish")
 		ends = [entry["end"] for entry in self.store.history()]
 		self.assertEqual(ends, ["abandoned", "finish"])
 		self.assertEqual(self.store.history()[0]["levels_passed"], [1])
@@ -757,7 +789,7 @@ class TestResume(unittest.TestCase):
 	def test_an_exam_whose_time_ran_out_goes_to_the_history_without_asking(self):
 		"""Started 200 minutes ago (180 allowed): kept as "time", no question."""
 		self.save(200)
-		shell = self.run_shell("", "pw", "1", "", "", "finish")
+		shell = self.run_shell("", "pw", "", "", "finish")
 		self.assertIn("time ran out", output(shell))
 		self.assertFalse(any("Resume" in prompt for prompt in self.script.prompts))
 		self.assertEqual(self.store.history()[0]["end"], "time")
@@ -765,7 +797,7 @@ class TestResume(unittest.TestCase):
 	def test_an_unknown_subject_cannot_be_resumed(self):
 		"""The exercise is gone from the catalog: said, and a new exam starts."""
 		self.save(10, variant="gone#3")
-		shell = self.run_shell("", "pw", "1", "", "", "finish")
+		shell = self.run_shell("", "pw", "", "", "finish")
 		self.assertIn("cannot be resumed", output(shell))
 		self.assertEqual(shell.level, 1)
 

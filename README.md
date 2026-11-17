@@ -33,8 +33,13 @@ No `pip`, no virtual environment: the only library used for the display,
 
 1. **Log in** like at the exam. The login defaults to your user name; the
    password can be anything, it is never checked nor kept.
-2. **Choose the exam**, the **mode** (see below) and the **starting level**,
-   among the levels that have exercises.
+2. **Say who you are**: piscine (piscineux) or student (cursus). Then
+   **choose the exam** among the ones for you: a piscine student picks one
+   of the 4 piscine exams; a student gets the Exam Rank 02, the only one so
+   far. Then choose the **mode** (see below) and the **starting level**,
+   among the levels that have exercises. Each menu says what its choices
+   mean: the levels and length of each exam, the waits of each mode, the
+   points of a level.
 3. **Read the subject**: it is printed in the terminal and written in
    `~/42pal_exam/subjects/<name>/subject.en.txt`.
 4. **Write your code** in `~/42pal_exam/rendu/<name>/`.

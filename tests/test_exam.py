@@ -112,10 +112,11 @@ class TestBadExamFile(unittest.TestCase):
 
 	def test_badly_written_exam_gives_an_error_naming_the_field(self):
 		"""A missing field, a count that is not a positive integer, no command."""
-		good = {"title": "Demo", "language": "c", "levels": 4,
+		good = {"title": "Demo", "audience": "student", "language": "c", "levels": 4,
 			"duration_minutes": 180, "compile": ["cc"]}
 		cases = {
 			"title": {key: value for key, value in good.items() if key != "title"},
+			"audience": dict(good, audience="teacher"),
 			"levels": dict(good, levels=0),
 			"duration_minutes": dict(good, duration_minutes="3h"),
 			"compile": dict(good, compile=[]),
@@ -125,6 +126,17 @@ class TestBadExamFile(unittest.TestCase):
 			with self.subTest(field):
 				with self.assertRaisesRegex(ExamError, f"demo.json.*{field}"):
 					self.load(data)
+
+class TestAudience(unittest.TestCase):
+	"""Who an exam is for: the piscine or the students of the cursus."""
+
+	def test_the_real_exams_are_for_the_piscine_or_the_students(self):
+		"""The four piscine exams for the piscine, the rank 02 for the students."""
+		audiences = {exam_id: load_exam(exam_id).audience for exam_id in list_exams()}
+		self.assertEqual(audiences, {
+			"piscine_01": "piscine", "piscine_02": "piscine", "piscine_03": "piscine",
+			"piscine_final": "piscine", "rank02": "student",
+		})
 
 class TestDifficulty(unittest.TestCase):
 	"""The real catalog: a model is drawn at the levels of the real subjects it is close to."""

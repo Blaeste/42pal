@@ -21,6 +21,9 @@ EXAMS_DIR = Path(__file__).resolve().parent.parent / "exams"
 # hard is 42_EXAM's: its exercise.cpp waits along a Fibonacci-like list.
 DEFAULT_RETRY_MINUTES = {"soft": [0, 1, 2, 3, 5], "hard": [0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59]}
 
+# Who an exam is for: the piscine, or the students of the cursus.
+AUDIENCES = ("piscine", "student")
+
 class ExamError(ValueError):
 	"""An exam file is missing or badly written; the message says why."""
 
@@ -42,6 +45,8 @@ class Exam:
 	warnings: list
 	# {"soft": RetryPolicy, "hard": RetryPolicy}: the waits after a failure.
 	retry: dict = field(default_factory=dict)
+	# One of AUDIENCES: the menu first asks who the student is.
+	audience: str = "student"
 
 	@property
 	def points_per_level(self):
@@ -95,6 +100,7 @@ def load_exam(exam_id, exams_dir=EXAMS_DIR, catalog=None, themes=None):
 	return Exam(
 		exam_id, data["title"], data["language"], data["levels"],
 		data["duration_minutes"], tuple(data["compile"]), levels, warnings, retry,
+		audience=data["audience"],
 	)
 
 def list_exams(exams_dir=EXAMS_DIR):
@@ -107,9 +113,11 @@ def _read_exam_file(path):
 		raise ExamError(f"{path.name}: {reason}")
 
 	data = json.loads(path.read_text(encoding="utf-8"))
-	for field in ("title", "language", "levels", "duration_minutes", "compile"):
+	for field in ("title", "audience", "language", "levels", "duration_minutes", "compile"):
 		if field not in data:
 			fail(f"the field '{field}' is missing")
+	if data["audience"] not in AUDIENCES:
+		fail(f"'audience' must be one of {', '.join(AUDIENCES)}, not {data['audience']!r}")
 	for field in ("levels", "duration_minutes"):
 		value = data[field]
 		# bool is a kind of int in Python (True == 1): refuse it too.
