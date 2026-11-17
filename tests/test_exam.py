@@ -160,3 +160,12 @@ class TestDifficulty(unittest.TestCase):
 			names = self.names_at(exam_id, level)
 			for name in ["base_string", "word_order", "list_drop"]:
 				self.assertIn(name, names, f"{exam_id} level {level}")
+
+	def test_the_easy_models_are_drawn_at_the_first_levels(self):
+		"""word_pick and base_print at level 1 of the rank 02, list_measure at level 3."""
+		for exam_id, level, name in [
+			("rank02", 1, "word_pick"), ("rank02", 1, "base_print"),
+			("rank02", 3, "list_measure"), ("piscine_final", 1, "list_measure"),
+		]:
+			with self.subTest(exam=exam_id, level=level, exercise=name):
+				self.assertIn(name, self.names_at(exam_id, level))

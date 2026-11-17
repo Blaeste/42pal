@@ -19,15 +19,20 @@ def compile_reference(name, params, work, flags=None):
 	"""Compile the ref.c of exercise `name` for `params`; return the CompileResult.
 
 	The other expected files (a header) are taken next to ref.c, like
-	check-catalog does. flags are the -D flags of the variant unless given.
+	check-catalog does, and the files given with the subject are written in
+	`work`, like the grader does. flags are the -D flags of the variant unless given.
 	A function exercise is compiled with its test main, like a student's
 	rendu.
 	"""
 	variant = Variant(CATALOG.exercises[name], 0, params)
 	extra = []
+	# The files given with the subject (a header), like the grader writes them.
+	for file, content in variant.provided_files.items():
+		extra.append(Path(work) / file)
+		extra[-1].write_text(content, encoding="utf-8")
 	if variant.exercise.kind == "function":
 		extra.append(Path(work) / "main_42pal.c")
-		extra[0].write_text(variant.harness, encoding="utf-8")
+		extra[-1].write_text(variant.harness, encoding="utf-8")
 	command = DEFAULT_COMMAND + (variant.defines if flags is None else flags)
 	# ref.c, with the header the student hands in too, if any, next to it.
 	sources = list(reference_files(variant, CATALOG.folders[name] / "ref.c").values())
