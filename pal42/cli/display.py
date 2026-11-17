@@ -162,3 +162,15 @@ def time_ran_out_while_away(exam):
 def cannot_resume(variant_id):
 	"""Said when the subject of the saved exam no longer exists."""
 	return f"[yellow]Your last exam cannot be resumed: its subject {escape(variant_id)} is gone.[/]"
+
+def practice_panel(theme, variant, subject, rendu):
+	"""The panel shown when a practice subject is given."""
+	lines = [
+		f"[bold]Practice · {escape(theme.id)}[/] · {escape(theme.skill)}",
+		"No timer, no wait: grademe, next, finish",
+		"",
+		f"Subject: [bold cyan]{escape(variant.name)}[/]",
+		f"Read it: {escape(short_path(subject))}",
+		f"Hand in: {escape(short_path(rendu))}/",
+	]
+	return Panel("\n".join(lines), title="42pal", width=80)

@@ -22,11 +22,18 @@ def main(argv=None):
 	commands.add_parser(
 		"check-catalog", help="check that every ref.c passes its own exercise",
 	)
+	practice = commands.add_parser(
+		"practice", help="practise one theme: subjects one after the other, no timer",
+	)
+	practice.add_argument("--theme", help="the theme to practise (a menu if not given)")
 	arguments = parser.parse_args(argv)
 	# Imported here: --version must work even if the terminal front-end breaks.
 	if arguments.command == "check-catalog":
 		from pal42.cli.check import check_catalog
 		return check_catalog()
+	if arguments.command == "practice":
+		from pal42.cli.practice import main as practice_main
+		return practice_main(arguments.theme)
 	from pal42.cli.shell import main as shell_main
 	return shell_main("hard" if arguments.hard else "soft")
 

@@ -17,6 +17,7 @@ import unittest
 from pathlib import Path
 from random import Random
 
+from pal42.cli.practice import PracticeShell
 from pal42.cli.shell import Shell, complete_command
 from pal42.catalog import Catalog, load_catalog
 from pal42.cli import check, display
@@ -815,3 +816,73 @@ class TestCompletion(unittest.TestCase):
 			found.append(command)
 			state += 1
 		self.assertCountEqual(found, ["status", "grademe", "finish", "help"])
+
+class TestPractice(unittest.TestCase):
+	"""./42pal practice: subjects of one theme, no timer, no wait."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def practise(self, *answers, code=None, theme="char_sets"):
+		"""Practise `theme`, with `code` handed in once the first subject is given."""
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		self.script = Script(*answers)
+		shell = PracticeShell(console, self.script.ask, Workspace(self.root), rng=Random(1),
+			catalog=ECHO_CATALOG, themes=ECHO_THEMES, sleep=lambda seconds: None)
+		if code:
+			rendu = self.root / "rendu/echo_first"
+			rendu.mkdir(parents=True)
+			(rendu / "echo_first.c").write_text(code, encoding="utf-8")
+		shell.run(theme)
+		return shell
+
+	def test_a_subject_of_the_theme_with_no_login_and_no_timer(self):
+		"""The subject is given at once: no login, no time left anywhere."""
+		shell = self.practise("finish")
+		text = output(shell)
+		self.assertIn("Practice · char_sets", text)
+		self.assertIn("Assignment name  : echo_first", text)
+		self.assertNotIn("login:", self.script.prompts)
+		self.assertNotIn("Time left", text)
+
+	def test_ok_moves_to_another_subject_of_the_theme(self):
+		"""A passed grademe gives the next subject of the same theme."""
+		shell = self.practise("grademe", "finish", code=ECHO_OK)
+		self.assertEqual(output(shell).count("Practice · char_sets"), 2)
+		self.assertEqual((shell.passed, len(shell.seen)), (1, 2))
+
+	def test_no_wait_between_two_failures(self):
+		"""Three KO in a row: all three are graded."""
+		shell = self.practise("grademe", "grademe", "grademe", "finish",
+			code="int\\tmain(void)\\n{\\n\\treturn (0);\\n}\\n")
+		self.assertEqual(output(shell).count("✗ KO"), 3)
+		self.assertNotIn("Wait", output(shell))
+
+	def test_next_gives_another_subject(self):
+		"""next: a new subject of the theme, without grading."""
+		shell = self.practise("next", "finish")
+		self.assertEqual(len(shell.seen), 2)
+
+	def test_without_a_theme_a_menu_lists_the_themes_that_have_exercises(self):
+		"""No theme given: a numbered menu with each theme's skill, then practice."""
+		shell = self.practise("1", "finish", theme=None)
+		text = output(shell)
+		self.assertIn("1. char_sets · Compare characters", text)
+		self.assertIn("Practice · char_sets", text)
+
+	def test_an_unknown_theme_lists_the_themes_that_can_be_practised(self):
+		"""A theme with no exercise (or a typo): said, with the ones that work."""
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		shell = PracticeShell(console, Script().ask, Workspace(self.root),
+			catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.assertEqual(shell.run("words"), 1)
+		self.assertIn("No exercise to practise 'words' yet. Themes: char_sets", output(shell))
+
+	def test_finish_shows_how_it_went(self):
+		"""finish: the subjects passed and the grademe made."""
+		shell = self.practise("grademe", "finish", code=ECHO_OK)
+		self.assertIn("Practice summary: 1 subject passed, 1 grademe", output(shell))

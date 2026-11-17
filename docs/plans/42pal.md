@@ -150,6 +150,7 @@ Diff KO
 
 **20. Révision par thème.** `./42pal practice --theme <id>` enchaîne des variantes du même thème, sans timer. Fichier : `cli/practice.py`.
 - Vérifier : 5 tirages donnent 5 seeds différentes, toutes du même thème.
+- Fait : pas de login, pas de minuteur ni d'attente ; `grademe` (un OK passe au sujet suivant), `next`, `help`, `finish` (avec un bilan). Sans `--theme`, un menu des thèmes qui ont un exo ; un thème sans exo donne la liste des thèmes et le code de sortie 1.
 
 **21. Installation au campus.** Un `README.md` (`git clone … && ./42pal`).
 - Vérifier : sur un poste du campus, avec le `python3` du système, ça se lance sans pip ni sudo.

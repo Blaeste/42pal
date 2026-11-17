@@ -38,14 +38,19 @@ WARNING_SECONDS = 10 * 60
 # The grademe spinner stays at least this long, even if the grading is quicker.
 ANIMATION_SECONDS = 0.8
 
-def complete_command(text, state):
-	"""readline's completer: the state-th command that starts with `text`.
+def make_completer(commands):
+	"""Return readline's completer for `commands`.
 
-	readline calls it with state 0, 1, 2... until it returns None, then
-	completes (one match) or lists the matches (several).
+	readline calls it with the text typed and state 0, 1, 2... until it
+	returns None, then completes (one match) or lists the matches (several).
 	"""
-	matches = [command for command in COMMANDS if command.startswith(text)]
-	return matches[state] if state < len(matches) else None
+	def complete(text, state):
+		matches = [command for command in commands if command.startswith(text)]
+		return matches[state] if state < len(matches) else None
+	return complete
+
+# The completer of the examshell commands.
+complete_command = make_completer(COMMANDS)
 
 class Shell:
 	"""One exam session in the terminal.
@@ -274,9 +279,35 @@ class Shell:
 			return False
 		# What a KO would cost, said before grading.
 		self.console.print(display.retry_preview(self.retry.wait_after(self.failures + 1)))
+		result = self._grade_and_show(self.exam.compile_command)
+		if not result.passed:
+			self.failures += 1
+			wait = self.retry.wait_after(self.failures)
+			self.next_grademe_at = self.clock() + wait
+			self.console.print(display.next_grademe(wait, self.retry.wait_after(self.failures + 1)))
+			return False
+		# Passed: the next subject starts with no failure and no wait.
+		self.failures = 0
+		self.next_grademe_at = None
+		self.oks += 1
+		self.passed_levels.append(self.level)
+		next_levels = [level for level in self.exam.playable_levels if level > self.level]
+		if not next_levels:
+			self.console.print(display.exam_passed_panel(self.exam))
+			self.end_exam("passed")
+			return True
+		self.start(self.exam, next_levels[0])
+		return False
+
+	def _grade_and_show(self, compile_command):
+		"""Grade the current subject's rendu, show the result; return the Grade.
+
+		A spinner while grading, then OK or KO with the clickable log (written
+		in traces/ at each grademe), then the trace of a failure.
+		"""
 		self.attempts += 1
 		rendu = self.workspace.rendu / self.variant.name
-		runner = CRunner(self.exam.compile_command)
+		runner = CRunner(compile_command)
 		# A spinner while grading, with the number of the test being run;
 		# rich shows it only in a real terminal.
 		with self.console.status("Grading…", spinner="dots") as status:
@@ -296,23 +327,7 @@ class Shell:
 		self.console.print(display.grade_result(result, log))
 		if not result.passed:
 			self.console.print(display.trace_panel(result.trace))
-			self.failures += 1
-			wait = self.retry.wait_after(self.failures)
-			self.next_grademe_at = self.clock() + wait
-			self.console.print(display.next_grademe(wait, self.retry.wait_after(self.failures + 1)))
-			return False
-		# Passed: the next subject starts with no failure and no wait.
-		self.failures = 0
-		self.next_grademe_at = None
-		self.oks += 1
-		self.passed_levels.append(self.level)
-		next_levels = [level for level in self.exam.playable_levels if level > self.level]
-		if not next_levels:
-			self.console.print(display.exam_passed_panel(self.exam))
-			self.end_exam("passed")
-			return True
-		self.start(self.exam, next_levels[0])
-		return False
+		return result
 
 	def end_exam(self, end="finish"):
 		"""Show the summary of the exam, keep it in the history, say goodbye.
@@ -388,16 +403,15 @@ class Shell:
 			choices = ", ".join(map(str, allowed))
 			self.console.print(f"Invalid choice: type one of these numbers: {choices}.")
 
-def main(retry_mode="soft"):
-	"""Start the examshell on the real keyboard and terminal; return the exit code.
+def terminal(commands):
+	"""Prepare the real keyboard and terminal; return (console, ask, ask_password).
 
-	retry_mode is "soft", or "hard" with ./42pal --hard.
+	readline gives input() the arrow keys (history, editing) and Tab to
+	complete the `commands`.
 	"""
-	# Once imported, readline gives input() the arrow keys (history, editing)
-	# and, with a completer, Tab to complete the commands.
 	try:
 		import readline
-		readline.set_completer(complete_command)
+		readline.set_completer(make_completer(commands))
 		# macOS ships libedit instead of GNU readline: another syntax.
 		if "libedit" in (readline.__doc__ or ""):
 			readline.parse_and_bind("bind ^I rl_complete")
@@ -405,7 +419,6 @@ def main(retry_mode="soft"):
 			readline.parse_and_bind("tab: complete")
 	except ImportError:
 		pass
-	console = Console()
 
 	def ask(prompt, default=None):
 		"""Read a line; Enter alone gives `default`, shown in brackets."""
@@ -422,6 +435,14 @@ def main(retry_mode="soft"):
 		# Answers sent through a pipe: getpass would wait on the keyboard.
 		return input(prompt)
 
+	return Console(), ask, ask_password
+
+def main(retry_mode="soft"):
+	"""Start the examshell on the real keyboard and terminal; return the exit code.
+
+	retry_mode is "soft", or "hard" with ./42pal --hard.
+	"""
+	console, ask, ask_password = terminal(COMMANDS)
 	try:
 		# rendu/ is a git repository that pushes to a bare one in ~/.42pal.
 		workspace = Workspace(remote=STATE_DIR / "rendu.git")
