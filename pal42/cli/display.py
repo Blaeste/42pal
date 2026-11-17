@@ -20,11 +20,12 @@ def short_path(path):
 		return "~/" + path.relative_to(home).as_posix()
 	return path.as_posix()
 
-def subject_panel(exam, level, variant, subject, rendu):
+def subject_panel(exam, level, variant, subject, rendu, retry_mode="soft"):
 	"""The panel shown when a subject is given."""
 	# escape: a [ in a path would otherwise be read as rich markup.
 	lines = [
-		f"[bold]{escape(exam.title)}[/] · level {level} · {exam.duration_minutes} min",
+		f"[bold]{escape(exam.title)}[/] · level {level} · {exam.duration_minutes} min"
+		f" · retry: {retry_mode}",
 		"",
 		f"Subject: [bold cyan]{escape(variant.name)}[/]",
 		f"Read it: {escape(short_path(subject))}",
@@ -44,11 +45,11 @@ def help_table(commands):
 		table.add_row(f"[bold]{command}[/]", meaning)
 	return table
 
-def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0):
+def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry=""):
 	"""Where the student is: exam, level, subject, times, and the next grademe.
 
 	wait is the time left before grademe is allowed again; if_ko the wait
-	that a failed grademe would bring.
+	that a failed grademe would bring; retry describes the retry timer.
 	"""
 	table = Table(show_header=False, box=None)
 	table.add_row("Exam", escape(exam.title))
@@ -58,6 +59,8 @@ def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0):
 	table.add_row("Time left", duration(left))
 	table.add_row("Next grademe", f"in {duration(wait)}" if wait else "now")
 	table.add_row("If KO", duration(if_ko) if if_ko else "no wait")
+	if retry:
+		table.add_row("Retry timer", retry)
 	return table
 
 def retry_preview(wait):

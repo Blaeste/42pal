@@ -44,7 +44,7 @@ class Shell:
 	"""
 
 	def __init__(self, console, ask, ask_password, workspace=None, rng=None,
-			clock=time.monotonic, sleep=time.sleep):
+			clock=time.monotonic, sleep=time.sleep, retry_mode="soft"):
 		self.console = console
 		self.ask = ask
 		self.ask_password = ask_password
@@ -61,8 +61,10 @@ class Shell:
 		self.started_at = None
 		# Number of grademe so far: it numbers the logs in traces/.
 		self.attempts = 0
-		# The waits after a failure (chosen by run(); none until then), the
-		# failures on the current subject, and when grademe is allowed again.
+		# "soft" or "hard" (./42pal --hard): its waits are taken from the exam
+		# by run(). Then the failures on the current subject, and when
+		# grademe is allowed again.
+		self.retry_mode = retry_mode
 		self.retry = RetryPolicy((0,))
 		self.failures = 0
 		self.next_grademe_at = None
@@ -78,7 +80,7 @@ class Shell:
 			self.login()
 			exam = self.choose_exam()
 			level = self.choose_level(exam)
-			self.retry = exam.retry[self.choose_retry_mode(exam)]
+			self.retry = exam.retry[self.retry_mode]
 			self.start(exam, level)
 		# Ctrl-D before the exam has started: just leave.
 		except EOFError:
@@ -126,7 +128,9 @@ class Shell:
 		# plain text: markup=False so that rich changes nothing, and no frame,
 		# so that the examples can be copied as they are.
 		self.console.print()
-		self.console.print(display.subject_panel(exam, level, self.variant, subject, rendu))
+		self.console.print(display.subject_panel(
+			exam, level, self.variant, subject, rendu, self.retry_mode,
+		))
 		self.console.print()
 		self.console.print(subject.read_text(encoding="utf-8"), markup=False, highlight=False, end="")
 		self.console.print()
@@ -242,6 +246,7 @@ class Shell:
 		if_ko = self.retry.wait_after(self.failures + 1)
 		self.console.print(display.status_table(
 			self.exam, self.level, self.variant, elapsed, left, self._wait_left(), if_ko,
+			f"{self.retry_mode} ({', '.join(map(str, self.retry.minutes))} min)",
 		))
 
 	def _wait_left(self):
@@ -249,16 +254,6 @@ class Shell:
 		if self.next_grademe_at is None:
 			return 0
 		return max(0, self.next_grademe_at - self.clock())
-
-	def choose_retry_mode(self, exam):
-		"""Ask soft or hard: how long to wait after each failed grademe."""
-		modes = ["soft", "hard"]
-		self.console.print("Retry timer, after each failed grademe:")
-		for number, mode in enumerate(modes, start=1):
-			minutes = ", ".join(map(str, exam.retry[mode].minutes))
-			self.console.print(f"  {number}. {mode}: {minutes} min")
-		# Enter alone takes soft.
-		return modes[self._ask_choice("Retry mode:", [1, 2], "1") - 1]
 
 	def _ask_choice(self, prompt, allowed, default=None):
 		"""Ask until the answer is one of the numbers of `allowed`; return it."""
@@ -270,8 +265,11 @@ class Shell:
 			choices = ", ".join(map(str, allowed))
 			self.console.print(f"Invalid choice: type one of these numbers: {choices}.")
 
-def main():
-	"""Start the examshell on the real keyboard and terminal; return the exit code."""
+def main(retry_mode="soft"):
+	"""Start the examshell on the real keyboard and terminal; return the exit code.
+
+	retry_mode is "soft", or "hard" with ./42pal --hard.
+	"""
 	# Once imported, readline gives input() the arrow keys: history and editing.
 	try:
 		import readline  # noqa: F401
@@ -295,7 +293,7 @@ def main():
 		return input(prompt)
 
 	try:
-		Shell(console, ask, ask_password).run()
+		Shell(console, ask, ask_password, retry_mode=retry_mode).run()
 	except KeyboardInterrupt:
 		console.print("\nExam stopped (Ctrl-C).")
 		return 130

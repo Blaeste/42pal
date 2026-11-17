@@ -159,15 +159,23 @@ class TestShell(unittest.TestCase):
 		self.assertIn("Playable levels: 2, 3", output(shell))
 		self.assertEqual(output(shell).count("Invalid choice"), 1)
 
-	def test_retry_mode_menu_shows_the_waits_and_defaults_to_soft(self):
-		"""soft and hard with their waits; x is refused, Enter takes soft, 2 hard."""
-		exam = load_exam("rank02", catalog=CATALOG, themes=THEMES)
-		shell = make_shell(Script("x", ""), self.root)
-		self.assertEqual(shell.choose_retry_mode(exam), "soft")
-		self.assertIn("1. soft: 0, 1, 2, 3, 5 min", output(shell))
-		self.assertIn("2. hard: 0, 5, 10, 20, 40 min", output(shell))
-		self.assertEqual(output(shell).count("Invalid choice"), 1)
-		self.assertEqual(make_shell(Script("2"), self.root).choose_retry_mode(exam), "hard")
+	def test_retry_timer_is_soft_by_default_and_shown(self):
+		"""No question asked: soft, shown in the panel and in status."""
+		shell = make_shell(Script("", "pw", "2", "", "status", "finish"), self.root)
+		shell.run()
+		self.assertEqual(shell.retry, shell.exam.retry["soft"])
+		self.assertIn("retry: soft", output(shell))
+		self.assertRegex(output(shell), r"Retry timer\s+soft \(0, 1, 2, 3, 5 min\)")
+
+	def test_hard_retry_timer_is_chosen_before_starting(self):
+		"""Shell(retry_mode="hard"), from ./42pal --hard: the hard waits."""
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		script = Script("", "pw", "2", "", "finish")
+		shell = Shell(console, script.ask, script.ask_password, Workspace(self.root),
+			rng=Random(1), clock=FakeClock(), sleep=lambda seconds: None, retry_mode="hard")
+		shell.run()
+		self.assertEqual(shell.retry, shell.exam.retry["hard"])
+		self.assertIn("retry: hard", output(shell))
 
 	def test_start_gives_the_subject_and_says_where_it_is(self):
 		"""A subject is drawn at the level, written, and its paths are shown."""
@@ -231,7 +239,7 @@ class TestShell(unittest.TestCase):
 
 	def test_run_goes_from_login_to_finish(self):
 		"""Login, exam 2, the first playable level, status, then finish."""
-		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
+		shell = make_shell(Script("", "pw", "2", "", "status", "finish"), self.root)
 		shell.run()
 		text = output(shell)
 		self.assertIn("Welcome", text)
@@ -247,7 +255,7 @@ class TestLauncher(unittest.TestCase):
 		"""Answers sent through a pipe; HOME is a temporary folder."""
 		with tempfile.TemporaryDirectory() as home:
 			result = subprocess.run(
-				[str(ROOT / "42pal")], input="\npw\n2\n\n\nstatus\nfinish\n",
+				[str(ROOT / "42pal")], input="\npw\n2\n\nstatus\nfinish\n",
 				capture_output=True, text=True, timeout=30,
 				env=dict(os.environ, HOME=home),
 				# A new session has no terminal: nothing can wait on the keyboard.
@@ -257,6 +265,17 @@ class TestLauncher(unittest.TestCase):
 			self.assertIn("Welcome", result.stdout)
 			self.assertIn("End of the exam", result.stdout)
 			self.assertEqual(len(list(Path(home).glob("42pal_exam/subjects/*/subject.en.txt"))), 1)
+
+	def test_42pal_hard_starts_with_the_hard_retry_timer(self):
+		"""./42pal --hard: the hard waits, chosen before anything starts."""
+		with tempfile.TemporaryDirectory() as home:
+			result = subprocess.run(
+				[str(ROOT / "42pal"), "--hard"], input="\npw\n2\n\nfinish\n",
+				capture_output=True, text=True, timeout=30,
+				env=dict(os.environ, HOME=home), start_new_session=True,
+			)
+		self.assertEqual(result.returncode, 0, result.stderr)
+		self.assertIn("retry: hard", result.stdout)
 
 class TestShellQuit(unittest.TestCase):
 	"""Leaving before the exam has started."""
@@ -296,7 +315,7 @@ class TestRealTerminal(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as home:
 			screen = run_in_terminal(home, [
 				("login:", ""), ("password:", "x"), ("choice:", "2"),
-				("level:", ""), ("mode:", ""), ("examshell>", ""), ("examshell>", "finish"),
+				("level:", ""), ("examshell>", ""), ("examshell>", "finish"),
 			])
 		self.assertNotIn("examshell> examshell>", screen)
 		self.assertNotRegex(screen, "login:.*password:")
