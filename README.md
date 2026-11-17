@@ -129,8 +129,8 @@ Five exams, like in 42_EXAM:
 | Exam Rank 02 | 4 (25 points each) | 3 h | 1, 2, 3, 4 |
 | Piscine Exam 01 | 8 (12.5 points each) | 4 h | 1 to 8 |
 | Piscine Exam 02 | 8 (12.5 points each) | 4 h | 1 to 8 |
-| Piscine Exam 03 | 4 (25 points each) | 4 h | 1, 2, 3 |
-| Piscine Final Exam | 4 (25 points each) | 8 h | 1, 3 |
+| Piscine Exam 03 | 4 (25 points each) | 4 h | 1 to 4 |
+| Piscine Final Exam | 4 (25 points each) | 8 h | 1 to 4 |
 
 | Exercise | Kind | Theme | Variants |
 |---|---|---|---|
