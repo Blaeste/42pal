@@ -10,6 +10,7 @@ from pathlib import Path
 from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text
 
 def short_path(path):
 	"""Write `path` with ~ for the home folder, like a shell does."""
@@ -68,3 +69,36 @@ def typewriter(console, text, sleep=time.sleep, delay=0.02):
 		console.file.flush()
 		sleep(delay)
 	console.print()
+
+# A trace longer than this is cut on screen; the whole of it is in its file.
+TRACE_LINES_SHOWN = 25
+
+def grade_result(grade, log):
+	"""The result of a grademe: OK or KO, the tests passed, the clickable log."""
+	if grade.passed:
+		verdict = f"[bold green]✓ OK[/]  {grade.tests_passed}/{grade.tests_total} tests"
+	else:
+		verdict = f"[bold red]✗ KO[/]  {grade.tests_passed}/{grade.tests_total} tests réussis"
+	# [link=...]: the terminal opens the file when the path is clicked.
+	link = f"[link={log.resolve().as_uri()}]{escape(short_path(log))}[/link]"
+	return f"{verdict}\nTrace : {link}"
+
+def trace_panel(trace):
+	"""The trace in a red frame, cut after TRACE_LINES_SHOWN lines."""
+	lines = trace.rstrip("\n").splitlines()
+	shown = "\n".join(lines[:TRACE_LINES_SHOWN])
+	# Text: the trace is shown as it is, with no rich markup read in it.
+	text = Text(shown)
+	if len(lines) > TRACE_LINES_SHOWN:
+		more = len(lines) - TRACE_LINES_SHOWN
+		text.append(f"\n… {more} lignes de plus : voir le fichier de trace", style="dim")
+	# 84 wide: the 80 columns of a trace line, plus the frame and its margins.
+	return Panel(text, title="trace", border_style="red", width=84)
+
+def exam_passed_panel(exam):
+	"""The panel shown when the last playable level is passed."""
+	return Panel(
+		f"[bold green]Bravo ! Exam réussi[/] : tous les niveaux jouables de "
+		f"{escape(exam.title)} sont validés.",
+		border_style="green", width=80,
+	)

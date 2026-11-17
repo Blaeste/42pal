@@ -17,6 +17,8 @@ from pal42.catalog import load_catalog
 from pal42.cli import display
 from pal42.cli.workspace import Workspace
 from pal42.exam import list_exams, load_exam
+from pal42.grader import grade
+from pal42.runners.c import CRunner
 from pal42.themes import load_themes
 
 # The examshell commands and what they do, shown by help.
@@ -26,6 +28,9 @@ COMMANDS = {
 	"finish": "termine l'exam",
 	"help": "affiche cette aide",
 }
+
+# The grademe spinner stays at least this long, even if the grading is quicker.
+ANIMATION_SECONDS = 0.8
 
 class Shell:
 	"""One exam session in the terminal.
@@ -50,6 +55,8 @@ class Shell:
 		self.level = None
 		self.variant = None
 		self.started_at = None
+		# Number of grademe so far: it numbers the logs in traces/.
+		self.attempts = 0
 
 	def run(self):
 		"""The whole session: login, exam, level, subject, then the commands."""
@@ -124,9 +131,8 @@ class Shell:
 			elif command == "status":
 				self.show_status()
 			elif command == "grademe":
-				self.console.print(
-					"Le correcteur n'est pas encore branché : il arrive avec les étapes 9 à 15."
-				)
+				if self.grademe():
+					return
 			elif command:
 				# escape: what the student typed must not be read as rich markup.
 				self.console.print(f"Commande inconnue : {escape(command)}. Tape help pour la liste.")
@@ -134,6 +140,40 @@ class Shell:
 			# Enter alone gave no answer, so it adds nothing.
 			if command:
 				self.console.print()
+
+	def grademe(self):
+		"""Grade the rendu and show the result; return True when the exam is over.
+
+		Passed: the next playable level, with a new subject, or the end of the
+		exam after the last one. Failed: the trace, and the same subject.
+		"""
+		self.attempts += 1
+		rendu = self.workspace.rendu / self.variant.name
+		runner = CRunner(self.exam.compile_command)
+		# A spinner while grading, with the number of the test being run;
+		# rich shows it only in a real terminal.
+		with self.console.status("Correction en cours…", spinner="dots") as status:
+			def progress(number, total):
+				status.update(f"Correction en cours… test {number}/{total}")
+			started = self.clock()
+			result = grade(self.variant, rendu, runner, progress)
+			# A grading often takes a tenth of a second: the spinner stays a
+			# moment, so that it can be seen. Only in a real terminal.
+			left = ANIMATION_SECONDS - (self.clock() - started)
+			if self.console.is_terminal and left > 0:
+				self.sleep(left)
+		log_text = result.trace or f"OK : {result.tests_passed}/{result.tests_total} tests réussis\n"
+		log = self.workspace.write_trace(self.attempts, self.variant.name, log_text)
+		self.console.print(display.grade_result(result, log))
+		if not result.passed:
+			self.console.print(display.trace_panel(result.trace))
+			return False
+		next_levels = [level for level in self.exam.playable_levels if level > self.level]
+		if not next_levels:
+			self.console.print(display.exam_passed_panel(self.exam))
+			return True
+		self.start(self.exam, next_levels[0])
+		return False
 
 	def show_status(self):
 		"""Show the exam, the level, the subject, the time spent and left."""

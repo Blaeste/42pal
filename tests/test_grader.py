@@ -9,42 +9,9 @@ from pathlib import Path
 
 from pal42.catalog import load_catalog
 from pal42.grader import grade
-from pal42.model import TestCase
 from pal42.runners.c import CRunner
 from pal42.variant import Variant
-from tests.helpers import make_exercise
-
-def echo_oracle(params, test):
-	"""Made-up exercise: print the only argument, or just a newline."""
-	return test.args[0] + "\n" if len(test.args) == 1 else "\n"
-
-def echo_tests(params, rng):
-	"""The tests of the made-up exercise."""
-	return [TestCase(("hello",)), TestCase(("a b",)), TestCase(())]
-
-ECHO = Variant(
-	make_exercise(name="echo_first", expected_files=("echo_first.c",),
-		oracle=echo_oracle, generate_tests=echo_tests),
-	0, {"mode": "common"},
-)
-
-ECHO_OK = r"""#include <unistd.h>
-
-int	main(int ac, char **av)
-{
-	int	n;
-
-	if (ac == 2)
-	{
-		n = 0;
-		while (av[1][n])
-			n++;
-		write(1, av[1], n);
-	}
-	write(1, "\n", 1);
-	return (0);
-}
-"""
+from tests.helpers import ECHO, ECHO_OK
 
 class TestGrade(unittest.TestCase):
 	"""grade(variant, rendu, runner) on a made-up exercise."""
@@ -68,6 +35,13 @@ class TestGrade(unittest.TestCase):
 		self.assertTrue(result.passed, result.trace)
 		self.assertEqual(result.trace, "")
 		self.assertEqual((result.tests_passed, result.tests_total), (3, 3))
+
+	def test_progress_is_called_before_each_test(self):
+		"""progress(number, total) lets the shell show "test 2/3" while grading."""
+		self.hand_in(ECHO_OK)
+		calls = []
+		grade(ECHO, self.rendu, CRunner(), progress=lambda number, total: calls.append((number, total)))
+		self.assertEqual(calls, [(1, 3), (2, 3), (3, 3)])
 
 	def test_missing_newline_fails_with_a_diff_trace(self):
 		"""No \\n at the end: stopped at test 1, student in -, moulinette in +."""

@@ -139,6 +139,7 @@ Diff KO
 
 `rendu/` est un simple dossier : `grademe` corrige les fichiers présents, commités ou non. Pour garder les réflexes du vrai exam, c'est aussi un dépôt git local relié à un dépôt nu caché dans `~/.42pal/rendu.git`, donc `git add`, `git commit` et `git push` marchent, sans être obligatoires. Si git manque, ce n'est qu'un dossier.
 
+`grademe` affiche un spinner pendant la correction (« test 3/18 »), puis OK ou KO avec le chemin cliquable du journal (`traces/01_<nom>.trace`, écrit à chaque grademe), puis la trace elle-même dans le terminal, coupée après 25 lignes (entière dans le fichier).
 - Vérifier à la main : une bonne solution fait passer au niveau suivant, une mauvaise écrit une trace dans `traces/`.
 - Vérifier à la main : `git add . && git commit -m test && git push` marche dans `rendu/`.
 

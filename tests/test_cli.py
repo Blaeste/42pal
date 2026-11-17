@@ -25,13 +25,16 @@ from pal42.subject import render
 from pal42.themes import Theme
 from pal42.variant import Variant
 from rich.console import Console
-from tests.helpers import make_exercise
+from tests.helpers import ECHO, ECHO_OK, make_exercise
 
 ROOT = Path(__file__).resolve().parent.parent
 
 # Made-up themes and catalog: one exercise, playable at rank02 levels 2 and 3.
 THEMES = {"char_sets": Theme("char_sets", "Compare characters", {"rank02": (2, 3)})}
 CATALOG = Catalog({"char_filter": make_exercise()}, [])
+# echo_first, an exercise that can really be graded, at rank02 levels 1 and 2.
+ECHO_THEMES = {"char_sets": Theme("char_sets", "Compare characters", {"rank02": (1, 2)})}
+ECHO_CATALOG = Catalog({"echo_first": ECHO.exercise}, [])
 
 class TestVendoredRich(unittest.TestCase):
 	"""rich comes from vendor/: nothing to install, no sudo."""
@@ -188,17 +191,17 @@ class TestShell(unittest.TestCase):
 			self.assertIn(command, text)
 		self.assertIn("0:10:00", text)
 		self.assertIn("2:50:00", text)
-		self.assertIn("pas encore branché", text)
+		self.assertIn("Fichier manquant", text)
 		self.assertIn("Commande inconnue : foo", text)
 		self.assertIn("Fin de l'exam", text)
 
 	def test_a_blank_line_separates_each_answer_from_the_next_prompt(self):
 		"""After each command's answer, a blank line; Enter alone adds nothing."""
-		shell = make_shell(Script("grademe", "", "foo", "finish"), self.root)
+		shell = make_shell(Script("foo", "", "bar", "finish"), self.root)
 		shell.start(load_exam("rank02", catalog=CATALOG, themes=THEMES), 2)
 		shell.command_loop()
 		text = output(shell)
-		self.assertIn("étapes 9 à 15.\n\nCommande inconnue", text)
+		self.assertIn("Tape help pour la liste.\n\nCommande inconnue : bar", text)
 		self.assertIn("Tape help pour la liste.\n\nFin de l'exam", text)
 
 	def test_ctrl_d_ends_the_exam_cleanly(self):
@@ -312,3 +315,85 @@ def run_in_terminal(home, steps, timeout=15):
 	os.waitpid(pid, 0)
 	os.close(fd)
 	return re.sub(r"\x1b\[[0-9;?]*[a-zA-Z]", "", screen.decode(errors="replace")).replace("\r", "")
+
+class TestGrademe(unittest.TestCase):
+	"""grademe in the shell: grade, show the result and the trace, move on."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def start(self, level, *answers):
+		"""A shell at `level` of the exam, which will read `answers`."""
+		self.script = Script(*answers)
+		shell = make_shell(self.script, self.root)
+		shell.start(self.exam, level)
+		return shell
+
+	def hand_in(self, code):
+		"""Write the student's echo_first.c in rendu/echo_first/."""
+		(self.root / "rendu/echo_first/echo_first.c").write_text(code, encoding="utf-8")
+
+	def test_right_solution_gives_ok_a_log_and_the_next_level(self):
+		"""OK with 3/3, a log in traces/ shown with its path, then level 2."""
+		shell = self.start(1, "grademe", "finish")
+		self.hand_in(ECHO_OK)
+		shell.command_loop()
+		text = output(shell)
+		self.assertIn("OK", text)
+		self.assertIn("3/3", text)
+		log = self.root / "traces/01_echo_first.trace"
+		self.assertIn("OK", log.read_text(encoding="utf-8"))
+		self.assertIn("traces/01_echo_first.trace", text)
+		self.assertEqual(shell.level, 2)
+
+	def test_last_level_passed_ends_the_exam(self):
+		"""grademe OK at the last playable level: the exam is passed and over."""
+		shell = self.start(2, "grademe")
+		self.hand_in(ECHO_OK)
+		shell.command_loop()
+		self.assertIn("Exam réussi", output(shell))
+		self.assertEqual(len(self.script.prompts), 1)
+
+	def test_wrong_solution_shows_the_trace_and_keeps_the_subject(self):
+		"""KO: the trace in the terminal and in traces/; same subject, same level."""
+		shell = self.start(1, "grademe", "finish")
+		subject = shell.variant
+		self.hand_in(ECHO_OK.replace('\twrite(1, "\\n", 1);\n', ""))
+		shell.command_loop()
+		text = output(shell)
+		self.assertIn("KO", text)
+		self.assertIn("-hello", text)
+		self.assertIn("Diff KO", text)
+		# The 80-wide lines of the trace fit in its frame: none is cut in two.
+		self.assertIn("= Test 1 " + "=" * 71, text)
+		log = self.root / "traces/01_echo_first.trace"
+		self.assertIn("Diff KO", log.read_text(encoding="utf-8"))
+		self.assertEqual((shell.level, shell.variant), (1, subject))
+
+	def test_long_trace_is_cut_on_screen_but_whole_in_the_file(self):
+		"""60 wrong lines: the start on screen, a note, all of it in the file."""
+		shell = self.start(1, "grademe", "finish")
+		self.hand_in(
+			"#include <unistd.h>\n\nint\tmain(void)\n{\n\tfor (int i = 0; i < 60; i++)\n"
+			"\t\twrite(1, \"x\\n\", 2);\n\treturn (0);\n}\n"
+		)
+		shell.command_loop()
+		self.assertIn("lignes de plus", output(shell))
+		log = self.root / "traces/01_echo_first.trace"
+		self.assertEqual(log.read_text(encoding="utf-8").count("-x$"), 60)
+
+	def test_the_animation_lasts_long_enough_to_be_seen_in_a_terminal(self):
+		"""In a terminal, a quick grading still shows the spinner a moment."""
+		pauses = []
+		console = Console(file=io.StringIO(), width=100, force_terminal=True, color_system=None)
+		shell = Shell(console, Script("grademe", "finish").ask, None, Workspace(self.root),
+			rng=Random(1), clock=FakeClock(), sleep=pauses.append)
+		shell.start(self.exam, 1)
+		self.hand_in(ECHO_OK)
+		shell.command_loop()
+		self.assertGreater(sum(pauses), 0.5)

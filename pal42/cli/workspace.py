@@ -34,3 +34,13 @@ class Workspace:
 		subject.write_text(render(variant), encoding="utf-8")
 		(self.rendu / variant.name).mkdir(exist_ok=True)
 		return subject
+
+	def write_trace(self, attempt, name, text):
+		"""Write the log of grademe number `attempt` in traces/ and return its path.
+
+		Named like 01_<name>.trace, so that the logs sort in order.
+		"""
+		self.traces.mkdir(parents=True, exist_ok=True)
+		log = self.traces / f"{attempt:02d}_{name}.trace"
+		log.write_text(text, encoding="utf-8")
+		return log

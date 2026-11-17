@@ -17,7 +17,8 @@ Not a test module itself (its name does not start with test_), so unittest
 does not look for tests in it.
 """
 
-from pal42.model import Exercise, Param
+from pal42.model import Exercise, Param, TestCase
+from pal42.variant import Variant
 
 # An Exercise must be given two functions (like function pointers in C):
 # the oracle, which computes the expected output, and the test generator.
@@ -60,3 +61,38 @@ def make_exercise(**changes):
 	# **fields unpacks the dict back into named arguments: the same as
 	# Exercise(name="char_filter", language="c", kind="fonction", ...).
 	return Exercise(**fields)
+
+# A made-up exercise with a real oracle and tests, to grade C solutions:
+# print the only argument, or just a newline.
+
+def echo_oracle(params, test):
+	"""Made-up exercise: print the only argument, or just a newline."""
+	return test.args[0] + "\n" if len(test.args) == 1 else "\n"
+
+def echo_tests(params, rng):
+	"""The tests of the made-up exercise."""
+	return [TestCase(("hello",)), TestCase(("a b",)), TestCase(())]
+
+ECHO = Variant(
+	make_exercise(name="echo_first", expected_files=("echo_first.c",),
+		oracle=echo_oracle, generate_tests=echo_tests),
+	0, {"mode": "common"},
+)
+
+ECHO_OK = r"""#include <unistd.h>
+
+int	main(int ac, char **av)
+{
+	int	n;
+
+	if (ac == 2)
+	{
+		n = 0;
+		while (av[1][n])
+			n++;
+		write(1, av[1], n);
+	}
+	write(1, "\n", 1);
+	return (0);
+}
+"""

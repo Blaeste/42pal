@@ -24,12 +24,14 @@ class Grade:
 	tests_passed: int
 	tests_total: int
 
-def grade(variant, rendu, runner):
+def grade(variant, rendu, runner, progress=None):
 	"""Grade the files of `rendu` (the student's folder) for `variant`.
 
 	In order: the expected files must be there, they must compile, then each
 	test must neither crash nor time out, and print what the oracle says.
 	The first failure stops the grading and gives the trace.
+	progress(number, total), if given, is called before each test: the
+	front-ends use it to show how far the grading is.
 	"""
 	exo = variant.exercise
 	# The tests depend on the variant's seed: grading twice runs the same ones.
@@ -47,6 +49,8 @@ def grade(variant, rendu, runner):
 			return Grade(False, text, 0, len(tests))
 		program = compiled.binary
 		for number, test in enumerate(tests, start=1):
+			if progress:
+				progress(number, len(tests))
 			result = runner.run(program, test)
 			if result.timed_out or result.signal:
 				text = trace.crash_trace(number, variant.name, test, result)
