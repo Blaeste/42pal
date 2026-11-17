@@ -157,6 +157,7 @@ Five exams, like in 42_EXAM:
 | `word_pick` | program | words | 10 |
 | `base_print` | program | number_print | 8 |
 | `list_measure` | function, header given | linked_lists | 10 |
+| `number_read` | function | number_parse | 11 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
