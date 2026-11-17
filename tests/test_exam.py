@@ -39,6 +39,10 @@ class TestRealExams(unittest.TestCase):
 		"""Like 42_EXAM: 4 levels give 25 points each, 8 levels 12.5."""
 		self.assertEqual(load_exam("rank02").points_per_level, 25)
 
+	def test_every_level_of_piscine_01_can_be_played(self):
+		"""print_range (levels 1 to 4) and arg_pick (level 3) fill piscine 01."""
+		self.assertEqual(load_exam("piscine_01").playable_levels, list(range(1, 9)))
+
 	def test_every_level_of_rank02_can_be_played(self):
 		"""split_fields fills level 4: the whole exam can be played."""
 		self.assertEqual(load_exam("rank02").playable_levels, [1, 2, 3, 4])

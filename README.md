@@ -127,7 +127,7 @@ Five exams, like in 42_EXAM:
 | Exam | Levels | Time | Levels that can be played today |
 |---|---|---|---|
 | Exam Rank 02 | 4 (25 points each) | 3 h | 1, 2, 3, 4 |
-| Piscine Exam 01 | 8 (12.5 points each) | 4 h | 5, 6, 7, 8 |
+| Piscine Exam 01 | 8 (12.5 points each) | 4 h | 1 to 8 |
 | Piscine Exam 02 | 8 (12.5 points each) | 4 h | 1 to 8 |
 | Piscine Exam 03 | 4 (25 points each) | 4 h | 1, 2, 3 |
 | Piscine Final Exam | 4 (25 points each) | 8 h | 1, 3 |
@@ -138,6 +138,8 @@ Five exams, like in 42_EXAM:
 | `char_position` | function | string_basics | 6 |
 | `char_filter` | program | char_sets | 11 |
 | `split_fields` | function, leaks checked | split | 7 |
+| `print_range` | function (void, prints) | print_basics | 10 |
+| `arg_pick` | program | program_args | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
