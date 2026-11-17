@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pal42 import checks, trace
+from pal42.subject import test_command
 
 # valgrind is slow (about 0.4 s a test): leaks are checked on this many tests
 # at most, the first ones, which are the fixed edge cases of an exercise.
@@ -78,11 +79,11 @@ def grade(variant, rendu, runner, progress=None, valgrind="valgrind"):
 				progress(number, len(tests))
 			result = runner.run(program, test)
 			if result.timed_out or result.signal:
-				text = trace.crash_trace(number, variant.name, test, result)
+				text = trace.crash_trace(number, test_command(variant, test), result)
 				return Grade(False, text, number - 1, len(tests))
 			expected = exo.oracle(variant.params, test)
 			if result.stdout != expected.encode():
-				text = trace.diff_trace(number, variant.name, test, result.stdout, expected)
+				text = trace.diff_trace(number, test_command(variant, test), result.stdout, expected)
 				return Grade(False, text, number - 1, len(tests))
 		if exo.check_leaks:
 			return _check_leaks(variant, program, tests, progress, valgrind)
@@ -102,6 +103,6 @@ def _check_leaks(variant, program, tests, progress, valgrind):
 			warning = "valgrind not found: memory leaks were not checked"
 			return Grade(True, "", len(tests), len(tests), (warning,))
 		if report:
-			text = trace.leak_trace(number, variant.name, test, report)
+			text = trace.leak_trace(number, test_command(variant, test), report)
 			return Grade(False, text, number - 1, len(tests))
 	return Grade(True, "", len(tests), len(tests))

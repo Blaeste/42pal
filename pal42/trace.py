@@ -1,12 +1,15 @@
 """The text of a trace, like the moulinette's, explaining a failed grademe.
 
+The traces of a test start with its command: "./name args | cat -e" for a
+program, the call for a function (see subject.test_command).
+
 Like the rest of the core, this module never prints: it returns the text,
 and the front-ends show it or write it in traces/.
 """
 
 import difflib
 
-from pal42.subject import cat_e, example_command
+from pal42.subject import cat_e
 
 # A trace is as wide as a subject.
 WIDTH = 80
@@ -16,7 +19,7 @@ def header(title):
 	start = f"= {title} "
 	return start + "=" * (WIDTH - len(start))
 
-def diff_trace(number, name, test, student, expected):
+def diff_trace(number, command, student, expected):
 	"""Return the trace of test `number`, whose output differs from the oracle's.
 
 	Both outputs are shown like cat -e, the student's lines as - and the
@@ -33,7 +36,7 @@ def diff_trace(number, name, test, student, expected):
 	lines = [line for line in diff if not line.startswith("@@")]
 	return "\n".join([
 		header(f"Test {number}"),
-		f"$> {example_command(name, test)} | cat -e",
+		f"$> {command}",
 		*lines,
 		"",
 		"Diff KO",
@@ -49,7 +52,7 @@ SIGNAL_MESSAGES = {
 	"SIGKILL": "Killed",
 }
 
-def crash_trace(number, name, test, result):
+def crash_trace(number, command, result):
 	"""Return the trace of test `number`, whose program timed out or crashed."""
 	if result.timed_out:
 		reason = "Timeout"
@@ -57,7 +60,7 @@ def crash_trace(number, name, test, result):
 		reason = SIGNAL_MESSAGES.get(result.signal, result.signal)
 	return "\n".join([
 		header(f"Test {number}"),
-		f"$> {example_command(name, test)} | cat -e",
+		f"$> {command}",
 		"",
 		reason,
 	]) + "\n"
@@ -101,11 +104,11 @@ def main_trace():
 		"Files KO",
 	]) + "\n"
 
-def leak_trace(number, name, test, report):
+def leak_trace(number, command, report):
 	"""Return the trace of test `number`, where valgrind found a leak or a memory error."""
 	return "\n".join([
 		header(f"Test {number}"),
-		f"$> {example_command(name, test)} | cat -e",
+		f"$> {command}",
 		"",
 		"Memory leaks or errors (valgrind):",
 		report.rstrip("\n"),

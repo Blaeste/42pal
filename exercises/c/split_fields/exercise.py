@@ -9,6 +9,7 @@ empty fields left out is the real exam subject of this theme: forbidden.
 import re
 
 from pal42.model import Exercise, Param, TestCase
+from pal42.subject import c_string
 
 # The characters each separator value cuts at.
 SEPARATORS = {"whitespace": " \t\n", "comma": ",", "colon": ":", "semicolon": ";"}
@@ -110,6 +111,8 @@ EXERCISE = Exercise(
 		"each field are allocated with malloc. With no field at all, the array only\n"
 		"holds NULL.\n"
 		"\n"
+		"In the examples, each field is shown between brackets, one per line.\n"
+		"\n"
 		"Your function must be declared as follows:\n"
 		"\n"
 		"char\t**$assignment(char *str);"
@@ -118,6 +121,12 @@ EXERCISE = Exercise(
 	generate_tests=generate_tests,
 	harness=HARNESS,
 	check_leaks=True,
+	call=lambda name, test: f"{name}({c_string(test.args[0])})",
+	examples=(
+		TestCase(("a,,b",)),
+		TestCase(("one:two;three four",)),
+		TestCase(("",)),
+	),
 	# Whitespace, empty fields left out: that is the real exam subject.
 	forbidden=({"separator": "whitespace", "empty": "skip"},),
 )

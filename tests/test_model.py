@@ -92,10 +92,12 @@ class TestExercise(unittest.TestCase):
 		with self.assertRaisesRegex(ExerciseError, "test main"):
 			make_exercise(harness="int\tmain(void)\n{\n\treturn (0);\n}\n")
 
-	def test_function_exercise_has_no_automatic_examples(self):
-		"""The examples run ./program args: they only make sense for programs."""
-		with self.assertRaisesRegex(ExerciseError, "examples"):
+	def test_function_examples_need_a_call(self):
+		"""Examples of a function show calls: without call, an error says so."""
+		with self.assertRaisesRegex(ExerciseError, "call"):
 			make_exercise(kind="function", harness="int\tmain(void);\n", examples=(TestCase(),))
+		make_exercise(kind="function", harness="int\tmain(void);\n", examples=(TestCase(),),
+			call=lambda name, test: f"{name}()")
 
 	def test_test_main_with_unknown_param_raises(self):
 		"""The holes of the harness are checked like those of the subject."""

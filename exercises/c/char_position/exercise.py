@@ -6,6 +6,7 @@ The variants also change whether the case of letters matters.
 """
 
 from pal42.model import Exercise, Param, TestCase
+from pal42.subject import c_char, c_string
 
 def oracle(params, test):
 	"""Return what the test main prints: the function's result, then a newline."""
@@ -92,4 +93,11 @@ EXERCISE = Exercise(
 	oracle=oracle,
 	generate_tests=generate_tests,
 	harness=HARNESS,
+	# A test is (str, c): written as the call ft_char_count("hello", 'l').
+	call=lambda name, test: f"{name}({c_string(test.args[0])}, {c_char(test.args[1])})",
+	examples=(
+		TestCase(("hello world", "o")),
+		TestCase(("Hello", "h")),
+		TestCase(("", "a")),
+	),
 )

@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from pal42.model import Param, TestCase
-from pal42.subject import cat_e, render, shell_quote
+from pal42.subject import c_char, c_string, cat_e, render, shell_quote
 from pal42.variant import Variant
 from tests.helpers import make_exercise
 
@@ -139,3 +139,36 @@ class TestGolden(unittest.TestCase):
 			path.write_text(subject, encoding="utf-8")
 			self.fail(f"snapshot written: read {path}, then run the tests again")
 		self.assertEqual(subject, path.read_text(encoding="utf-8"))
+
+class TestCLiterals(unittest.TestCase):
+	"""c_string and c_char write a test argument as C code, for a call."""
+
+	def test_c_string_escapes_what_c_needs(self):
+		"""Quotes, backslashes, newlines and tabs are escaped like in C."""
+		self.assertEqual(c_string('say "hi"'), '"say \\"hi\\""')
+		self.assertEqual(c_string("a\\b\n\t"), '"a\\\\b\\n\\t"')
+		self.assertEqual(c_string(""), '""')
+
+	def test_c_char_writes_one_character(self):
+		"""'a', and the quote or backslash escaped."""
+		self.assertEqual(c_char("a"), "'a'")
+		self.assertEqual(c_char("'"), "'\\''")
+		self.assertEqual(c_char("\\"), "'\\\\'")
+
+class TestFunctionExamples(unittest.TestCase):
+	"""The examples of a function: the call, then what the test main prints."""
+
+	def test_function_examples_show_the_call_and_the_output(self):
+		"""ft_count("hello", 'l') then 2$, computed by the oracle."""
+		exo = make_exercise(
+			name="count", kind="function", assignment_name="ft_count",
+			expected_files=("ft_count.c",), harness="int\tmain(void);\n",
+			subject="Count c in str.",
+			oracle=lambda params, test: f"{test.args[0].count(test.args[1])}\n",
+			call=lambda name, test: f"{name}({c_string(test.args[0])}, {c_char(test.args[1])})",
+			examples=(TestCase(("hello", "l")), TestCase(("", "x"))),
+		)
+		subject = render(Variant(exo, 0, {"mode": "common"}))
+		self.assertTrue(subject.endswith(
+			'Examples:\n\nft_count("hello", \'l\')\n2$\nft_count("", \'x\')\n0$\n'
+		), subject)

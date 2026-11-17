@@ -71,3 +71,9 @@ class TestVariants(unittest.TestCase):
 			self.assertIn(f"char\t**{variant.name}(char *str);", subject)
 			for line in subject.splitlines():
 				self.assertLessEqual(len(line), 80, f"{params} : {line}")
+
+	def test_the_subject_has_examples_written_as_calls(self):
+		"""ft_split_comma_keep("a,,b") shows its three fields, one per line."""
+		subject = render(Variant(EXERCISE, 0, {"separator": "comma", "empty": "keep"}))
+		self.assertIn('ft_split_comma_keep("a,,b")\n[a]$\n[]$\n[b]$\n', subject)
+		self.assertIn("between brackets", subject)

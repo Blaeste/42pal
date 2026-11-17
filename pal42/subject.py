@@ -52,11 +52,21 @@ def _examples(variant):
 	exo = variant.exercise
 	lines = []
 	for test in exo.examples:
-		lines.append(f"$>{example_command(variant.name, test)} | cat -e")
+		# A program shows its shell command; a function, its call.
+		if exo.call:
+			lines.append(exo.call(variant.name, test))
+		else:
+			lines.append(f"$>{example_command(variant.name, test)} | cat -e")
 		# render() joins the lines with \n, so the last one of the output
 		# is removed here; an output without \n ends without $, as in cat -e.
 		lines.append(cat_e(exo.oracle(variant.params, test)).removesuffix("\n"))
 	return lines
+
+def test_command(variant, test):
+	"""How a trace shows `test`: the call of a function, or ./name args | cat -e."""
+	if variant.exercise.call:
+		return variant.exercise.call(variant.name, test)
+	return f"{example_command(variant.name, test)} | cat -e"
 
 def example_command(name, test):
 	"""Return the command that runs the program `name` on `test`: ./name args."""
@@ -109,3 +119,16 @@ def _show_ascii(byte):
 	if byte == 127:
 		return "^?"
 	return chr(byte)
+
+# How C writes the characters that cannot appear as they are in a literal.
+C_ESCAPES = {"\\": "\\\\", "\n": "\\n", "\t": "\\t", "\r": "\\r"}
+
+def c_string(text):
+	"""Return `text` written as a C string literal: "say \\"hi\\"\\n"."""
+	escaped = "".join(C_ESCAPES.get(char, char) for char in text).replace('"', '\\"')
+	return f'"{escaped}"'
+
+def c_char(char):
+	"""Return one character written as a C character literal: 'a', '\\''."""
+	escaped = C_ESCAPES.get(char, char).replace("'", "\\'")
+	return f"'{escaped}'"

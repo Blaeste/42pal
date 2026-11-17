@@ -103,3 +103,8 @@ class TestVariants(unittest.TestCase):
 			result = grade(variant, rendu, CRunner())
 		self.assertTrue(result.passed, result.trace)
 		self.assertEqual(result.tests_passed, result.tests_total)
+
+	def test_the_subject_has_examples_written_as_calls(self):
+		"""ft_char_count("hello world", 'o') gives 2, written by the oracle."""
+		subject = render(Variant(EXERCISE, 0, {"mode": "count", "case": "exact"}))
+		self.assertIn("Examples:\n\nft_char_count(\"hello world\", 'o')\n2$\n", subject)

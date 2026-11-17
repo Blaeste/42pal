@@ -81,6 +81,8 @@ class Exercise:
 	the result. Its holes take the drawn values, like the name.
 	check_leaks asks the grader to run the tests under valgrind too, once
 	every output is right: a leak or a memory error then fails the rendu.
+	call(name, test), for a function, writes a test as a C call, like
+	ft_count("hello", 'l'): the examples and the traces show it.
 	"""
 	name: str
 	language: str
@@ -97,6 +99,7 @@ class Exercise:
 	examples: tuple[TestCase, ...] = ()
 	harness: str = ""
 	check_leaks: bool = False
+	call: Callable | None = None
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
@@ -122,11 +125,8 @@ class Exercise:
 			self._fail("a function exercise needs a test main (harness)")
 		if self.kind == "program" and self.harness:
 			self._fail("a program exercise has its own main: no test main (harness)")
-		if self.kind == "function" and self.examples:
-			self._fail(
-				"the automatic examples run ./program: no examples for a function,"
-				" write them in the subject"
-			)
+		if self.kind == "function" and self.examples and self.call is None:
+			self._fail("the examples of a function need call, to write each test as a call")
 
 	def _check_template(self, text, where, extra=()):
 		"""Each `$name` or `${name}` hole of `text` must be a param (or in `extra`).

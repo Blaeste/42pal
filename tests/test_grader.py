@@ -177,6 +177,7 @@ COUNT = Variant(
 		name="count", kind="function", assignment_name="ft_count",
 		expected_files=("ft_count.c",), allowed_functions=(), harness=COUNT_HARNESS,
 		oracle=lambda params, test: f"{test.args[0].count(test.args[1])}\n",
+		call=lambda name, test: f'{name}("{test.args[0]}", \'{test.args[1]}\')',
 		generate_tests=lambda params, rng: [
 			TestCase(("hello", "l")), TestCase(("", "x")), TestCase(("aaa", "a")),
 		],
@@ -221,6 +222,8 @@ class TestGradeFunction(unittest.TestCase):
 		result = self.grade(COUNT_OK.replace("n = 0;", "n = 1;"))
 		self.assertFalse(result.passed)
 		self.assertIn("-3$\n+2$", result.trace)
+		# A function's trace shows the call, not a command line.
+		self.assertIn("$> ft_count(\"hello\", 'l')\n", result.trace)
 
 	def test_rendu_with_a_main_gives_a_clear_error(self):
 		"""A main in the rendu: say so, instead of a cryptic link error."""
