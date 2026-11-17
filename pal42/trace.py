@@ -100,3 +100,15 @@ def main_trace():
 		"",
 		"Rendu KO",
 	]) + "\n"
+
+def leak_trace(number, name, test, report):
+	"""Return the trace of test `number`, where valgrind found a leak or a memory error."""
+	return "\n".join([
+		header(f"Test {number}"),
+		f"$> {example_command(name, test)} | cat -e",
+		"",
+		"Memory leaks or errors (valgrind):",
+		report.rstrip("\n"),
+		"",
+		"Leaks KO",
+	]) + "\n"

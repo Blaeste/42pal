@@ -26,8 +26,10 @@ class Grade:
 	trace: str
 	tests_passed: int
 	tests_total: int
+	# What could not be checked (valgrind missing...): the front-ends show it.
+	warnings: tuple[str, ...] = ()
 
-def grade(variant, rendu, runner, progress=None):
+def grade(variant, rendu, runner, progress=None, valgrind="valgrind"):
 	"""Grade the files of `rendu` (the student's folder) for `variant`.
 
 	In order: the expected files must be there, they must compile, they must
@@ -35,7 +37,9 @@ def grade(variant, rendu, runner, progress=None):
 	out, and print what the oracle says.
 	The first failure stops the grading and gives the trace.
 	progress(number, total), if given, is called before each test: the
-	front-ends use it to show how far the grading is.
+	front-ends use it to show how far the grading is. When the exercise
+	checks leaks, the tests are then run again under valgrind, and progress
+	gets a third argument, "memory".
 	"""
 	exo = variant.exercise
 	# The tests depend on the variant's seed: grading twice runs the same ones.
@@ -76,4 +80,23 @@ def grade(variant, rendu, runner, progress=None):
 			if result.stdout != expected.encode():
 				text = trace.diff_trace(number, variant.name, test, result.stdout, expected)
 				return Grade(False, text, number - 1, len(tests))
+		if exo.check_leaks:
+			return _check_leaks(variant, program, tests, progress, valgrind)
+	return Grade(True, "", len(tests), len(tests))
+
+def _check_leaks(variant, program, tests, progress, valgrind):
+	"""Run every test under valgrind; the first leak or memory error fails.
+
+	Only called once every output is right: valgrind is slow.
+	"""
+	for number, test in enumerate(tests, start=1):
+		if progress:
+			progress(number, len(tests), "memory")
+		report = checks.memory_report(program, test, valgrind=valgrind)
+		if report is None:
+			warning = "valgrind not found: memory leaks were not checked"
+			return Grade(True, "", len(tests), len(tests), (warning,))
+		if report:
+			text = trace.leak_trace(number, variant.name, test, report)
+			return Grade(False, text, number - 1, len(tests))
 	return Grade(True, "", len(tests), len(tests))

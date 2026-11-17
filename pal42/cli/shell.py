@@ -152,9 +152,11 @@ class Shell:
 		runner = CRunner(self.exam.compile_command)
 		# A spinner while grading, with the number of the test being run;
 		# rich shows it only in a real terminal.
-		with self.console.status("Correction en cours…", spinner="dots") as status:
-			def progress(number, total):
-				status.update(f"Correction en cours… test {number}/{total}")
+		with self.console.status("Grading…", spinner="dots") as status:
+			# step is "memory" when the tests run again under valgrind.
+			def progress(number, total, step="output"):
+				doing = "Checking memory" if step == "memory" else "Grading"
+				status.update(f"{doing}… test {number}/{total}")
 			started = self.clock()
 			result = grade(self.variant, rendu, runner, progress)
 			# A grading often takes a tenth of a second: the spinner stays a

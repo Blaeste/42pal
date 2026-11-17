@@ -3,6 +3,7 @@
 Run all the tests from the project root with: python3 -m unittest -v
 """
 
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,7 +13,7 @@ from pal42.grader import grade
 from pal42.model import TestCase
 from pal42.runners.c import CRunner
 from pal42.variant import Variant
-from tests.helpers import ECHO, ECHO_OK, make_exercise
+from tests.helpers import ECHO, ECHO_OK, echo_oracle, echo_tests, make_exercise
 
 class TestGrade(unittest.TestCase):
 	"""grade(variant, rendu, runner) on a made-up exercise."""
@@ -236,3 +237,75 @@ class TestGradeFunction(unittest.TestCase):
 		)
 		self.assertIn("Fonction interdite : strlen", result.trace)
 		self.assertNotIn("printf", result.trace)
+
+LEAKY_ECHO = r"""#include <stdlib.h>
+#include <unistd.h>
+
+int	main(int ac, char **av)
+{
+	char	*copy;
+	int		n;
+
+	copy = malloc(64);
+	if (ac == 2)
+	{
+		n = 0;
+		while (av[1][n])
+			n++;
+		write(1, av[1], n);
+	}
+	write(1, "\n", 1);
+	(void)copy;
+	return (0);
+}
+"""
+CLEAN_ECHO = LEAKY_ECHO.replace("\t(void)copy;", "\tfree(copy);")
+
+def echo_with(check_leaks):
+	"""echo_first where malloc and free are allowed, leaks checked or not."""
+	exo = make_exercise(
+		name="echo_first", expected_files=("echo_first.c",),
+		allowed_functions=("write", "malloc", "free"), check_leaks=check_leaks,
+		oracle=echo_oracle, generate_tests=echo_tests,
+	)
+	return Variant(exo, 0, {"mode": "common"})
+
+class TestLeaks(unittest.TestCase):
+	"""The leak check, for the exercises that ask for it."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.rendu = Path(self.tmp.name)
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def grade(self, code, check_leaks=True, **options):
+		(self.rendu / "echo_first.c").write_text(code, encoding="utf-8")
+		return grade(echo_with(check_leaks), self.rendu, CRunner(), **options)
+
+	@unittest.skipUnless(shutil.which("valgrind"), "valgrind n'est pas installé")
+	def test_leak_fails_with_valgrind_report(self):
+		"""Right output but a malloc without free: Leaks KO, with the report."""
+		result = self.grade(LEAKY_ECHO)
+		self.assertFalse(result.passed)
+		self.assertTrue(result.trace.startswith("= Test 1 ="), result.trace)
+		self.assertIn("definitely lost", result.trace)
+		self.assertTrue(result.trace.endswith("\nLeaks KO\n"), result.trace)
+
+	@unittest.skipUnless(shutil.which("valgrind"), "valgrind n'est pas installé")
+	def test_clean_solution_passes(self):
+		"""Every malloc freed: passed, without warning."""
+		result = self.grade(CLEAN_ECHO)
+		self.assertTrue(result.passed, result.trace)
+		self.assertEqual(result.warnings, ())
+
+	def test_leaks_are_not_checked_unless_the_exercise_asks(self):
+		"""check_leaks off: the leak is not looked for."""
+		self.assertTrue(self.grade(LEAKY_ECHO, check_leaks=False).passed)
+
+	def test_without_valgrind_it_passes_with_a_warning(self):
+		"""valgrind missing: nothing crashes, a warning says it was not checked."""
+		result = self.grade(LEAKY_ECHO, valgrind="no_such_valgrind")
+		self.assertTrue(result.passed, result.trace)
+		self.assertIn("valgrind", result.warnings[0])

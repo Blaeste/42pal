@@ -32,7 +32,9 @@ class CRunner:
 		extra_names = _copy_into(extra, workdir)
 		objects = tuple(workdir / (Path(source).stem + ".o") for source in names)
 		steps = [
-			[*self.command, "-c", *names],
+			# -g: debug information, so that valgrind can give the line of a
+			# leak (prog.c:7); it changes neither the warnings nor the program.
+			[*self.command, "-g", "-c", *names],
 			[*self.command, *(obj.name for obj in objects), *extra_names, "-o", name],
 		]
 		output = ""

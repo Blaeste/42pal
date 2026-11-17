@@ -81,7 +81,8 @@ def grade_result(grade, log):
 		verdict = f"[bold red]✗ KO[/]  {grade.tests_passed}/{grade.tests_total} tests réussis"
 	# [link=...]: the terminal opens the file when the path is clicked.
 	link = f"[link={log.resolve().as_uri()}]{escape(short_path(log))}[/link]"
-	return f"{verdict}\nTrace : {link}"
+	warnings = "".join(f"\n[yellow]! {escape(warning)}[/]" for warning in grade.warnings)
+	return f"{verdict}\nTrace : {link}{warnings}"
 
 def trace_panel(trace):
 	"""The trace in a red frame, cut after TRACE_LINES_SHOWN lines."""

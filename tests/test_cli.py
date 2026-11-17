@@ -8,6 +8,7 @@ import os
 import pty
 import re
 import select
+import shutil
 import subprocess
 import time
 import io
@@ -21,11 +22,12 @@ from pal42.catalog import Catalog, load_catalog
 from pal42.cli import display
 from pal42.cli.workspace import Workspace
 from pal42.exam import list_exams, load_exam
+from pal42.grader import Grade
 from pal42.subject import render
 from pal42.themes import Theme
 from pal42.variant import Variant
 from rich.console import Console
-from tests.helpers import ECHO, ECHO_OK, make_exercise
+from tests.helpers import ECHO, ECHO_OK, echo_oracle, echo_tests, make_exercise
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -397,3 +399,29 @@ class TestGrademe(unittest.TestCase):
 		self.hand_in(ECHO_OK)
 		shell.command_loop()
 		self.assertGreater(sum(pauses), 0.5)
+
+class TestGrademeWithLeaks(unittest.TestCase):
+	"""grademe on an exercise that checks leaks."""
+
+	def test_grade_result_shows_the_warnings(self):
+		"""What could not be checked is said, under the verdict."""
+		result = Grade(True, "", 3, 3, ("valgrind not found: memory leaks were not checked",))
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		console.print(display.grade_result(result, Path("/tmp/01_x.trace")))
+		self.assertIn("valgrind not found", console.file.getvalue())
+
+	@unittest.skipUnless(shutil.which("valgrind"), "valgrind n'est pas installé")
+	def test_grademe_checks_the_leaks_without_crashing(self):
+		"""The spinner gets a third argument for the leak step: no crash, OK."""
+		exo = make_exercise(
+			name="echo_first", expected_files=("echo_first.c",),
+			oracle=echo_oracle, generate_tests=echo_tests, check_leaks=True,
+		)
+		exam = load_exam("rank02", catalog=Catalog({"echo_first": exo}, []), themes=ECHO_THEMES)
+		with tempfile.TemporaryDirectory() as tmp:
+			root = Path(tmp) / "42pal_exam"
+			shell = make_shell(Script("grademe"), root)
+			shell.start(exam, 2)
+			(root / "rendu/echo_first/echo_first.c").write_text(ECHO_OK, encoding="utf-8")
+			shell.command_loop()
+			self.assertIn("✓ OK", output(shell))

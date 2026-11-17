@@ -79,6 +79,8 @@ class Exercise:
 	harness is the C source of the test main of a "function" exercise: it
 	reads a test's arguments in argv, calls the student's function and prints
 	the result. Its holes take the drawn values, like the name.
+	check_leaks asks the grader to run the tests under valgrind too, once
+	every output is right: a leak or a memory error then fails the rendu.
 	"""
 	name: str
 	language: str
@@ -94,6 +96,7 @@ class Exercise:
 	assignment_name: str = ""
 	examples: tuple[TestCase, ...] = ()
 	harness: str = ""
+	check_leaks: bool = False
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
