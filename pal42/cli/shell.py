@@ -58,6 +58,10 @@ def make_completer(commands):
 # The completer of the examshell commands.
 complete_command = make_completer(COMMANDS)
 
+# What a menu returns when its last choice is picked: back to the menu before,
+# or quit when it is the first menu shown.
+BACK = object()
+
 class Shell:
 	"""One exam session in the terminal.
 
@@ -80,6 +84,8 @@ class Shell:
 		# For the typewriter animation; the tests give one that does not wait.
 		self.sleep = sleep
 		self.user = None
+		# How many menus have been shown: tells choose_start which ones were.
+		self.menus_shown = 0
 		# "exam" or "revision", chosen in a menu by run().
 		self.mode = mode
 		self._reset()
@@ -112,9 +118,11 @@ class Shell:
 		try:
 			self.login()
 			if not self.resume():
-				exam = self.choose_exam(self.choose_audience())
-				self.mode = self.choose_mode(exam)
-				level = self.choose_level(exam)
+				start = self.choose_start()
+				if start is None:
+					self.console.print("Goodbye!")
+					return
+				exam, self.mode, level = start
 				self.retry = exam.retry[RETRY_OF_MODE[self.mode]]
 				self.start(exam, level)
 		# Ctrl-D before the exam has started: just leave.
@@ -185,8 +193,41 @@ class Shell:
 		self.store.clear()
 		self._reset()
 
-	def choose_audience(self):
-		"""Ask who the student is: "piscine" or "student"; return the answer.
+	def choose_start(self):
+		"""The menus before an exam: who, which exam, which mode, which level.
+
+		The last choice of each menu goes back to the menu before it; in the
+		first menu shown, it quits. A step that needs no menu (a single exam,
+		the level in exam mode) is skipped again on the way back. Return
+		(exam, mode, level), or None to quit.
+		"""
+		steps = [
+			lambda chosen, first: self.choose_audience(first),
+			lambda chosen, first: self.choose_exam(chosen[0], first),
+			lambda chosen, first: self.choose_mode(chosen[1], first),
+			lambda chosen, first: self.choose_level(chosen[1], chosen[2], first),
+		]
+		chosen = []
+		# For each answer in chosen: True if a menu was shown to get it.
+		shown = []
+		while len(chosen) < len(steps):
+			menus_before = self.menus_shown
+			answer = steps[len(chosen)](chosen, not any(shown))
+			if answer is BACK:
+				if not any(shown):
+					return None
+				# Undo the answers up to the last menu shown, that one included.
+				while not shown.pop():
+					chosen.pop()
+				chosen.pop()
+				continue
+			chosen.append(answer)
+			shown.append(self.menus_shown > menus_before)
+		_, exam, mode, level = chosen
+		return exam, mode, level
+
+	def choose_audience(self, first=True):
+		"""Ask who the student is: "piscine" or "student"; return it, or BACK.
 
 		Asked only when both have exams that can be played.
 		"""
@@ -197,13 +238,14 @@ class Shell:
 			if audience in by_audience}
 		if len(by_audience) == 1:
 			return next(iter(by_audience))
-		self._print_lines(display.audience_menu(by_audience))
-		number = self._ask_choice("Your choice:", range(1, len(by_audience) + 1))
+		self._print_lines(display.audience_menu(by_audience, first))
+		last = len(by_audience) + 1
+		number = self._ask_choice("Your choice:", range(1, last + 1))
 		self.console.print()
-		return list(by_audience)[number - 1]
+		return BACK if number == last else list(by_audience)[number - 1]
 
-	def choose_exam(self, audience):
-		"""Show the exams of `audience` as a numbered menu; return the one picked.
+	def choose_exam(self, audience, first=False):
+		"""Show the exams of `audience` as a numbered menu; return the one picked, or BACK.
 
 		A single exam is taken without asking, and said.
 		"""
@@ -213,25 +255,37 @@ class Shell:
 			self.console.print(f"Your exam: {exam.title} ({display.exam_summary(exam)})")
 			self.console.print()
 			return exam
-		self._print_lines(display.exam_menu(exams))
-		number = self._ask_choice("Exam:", range(1, len(exams) + 1))
+		self._print_lines(display.exam_menu(exams, first))
+		last = len(exams) + 1
+		number = self._ask_choice("Exam:", range(1, last + 1))
 		self.console.print()
-		return exams[number - 1]
+		return BACK if number == last else exams[number - 1]
 
-	def choose_mode(self, exam):
-		"""Ask the mode: exam (hard waits, the real duration) or revision (soft, no limit)."""
-		self._print_lines(display.mode_menu(exam))
+	def choose_mode(self, exam, first=False):
+		"""Ask the mode: "exam" (hard waits, the real duration) or "revision", or BACK."""
+		self._print_lines(display.mode_menu(exam, first))
 		# Enter alone takes revision.
-		mode = ["exam", "revision"][self._ask_choice("Mode:", [1, 2], "2") - 1]
+		number = self._ask_choice("Mode:", [1, 2, 3], "2")
 		self.console.print()
-		return mode
+		return {1: "exam", 2: "revision", 3: BACK}[number]
 
-	def choose_level(self, exam):
-		"""Ask the starting level, among the levels that have exercises."""
+	def choose_level(self, exam, mode="revision", first=False):
+		"""Ask the starting level in revision mode; return it, or BACK.
+
+		Exam mode starts at the first level, like the real exam: no question.
+		"""
 		playable = exam.playable_levels
-		self._print_lines(display.level_menu(exam))
+		if mode == "exam":
+			self.console.print(f"Exam mode starts at level {playable[0]}, like the real exam.")
+			return playable[0]
+		self._print_lines(display.level_menu(exam, first))
+		last = exam.level_count + 1
 		# Enter alone takes the first playable level.
-		return self._ask_choice("Starting level:", playable, str(playable[0]))
+		level = self._ask_choice("Starting level:", [*playable, last], str(playable[0]))
+		if level == last:
+			self.console.print()
+			return BACK
+		return level
 
 	def _exams(self):
 		"""The exams that can be played: those with exercises at one level at least."""
@@ -459,6 +513,7 @@ class Shell:
 
 	def _ask_choice(self, prompt, allowed, default=None):
 		"""Ask until the answer is one of the numbers of `allowed`; return it."""
+		self.menus_shown += 1
 		allowed = list(allowed)
 		while True:
 			answer = self.ask(prompt, default)

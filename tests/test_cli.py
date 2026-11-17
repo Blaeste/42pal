@@ -156,12 +156,13 @@ class TestShell(unittest.TestCase):
 		self.assertNotIn("my-secret-password", repr(vars(shell)))
 
 	def test_the_first_menu_asks_piscine_or_student(self):
-		"""3 and x are refused; 1 is the piscine, 2 the students of the cursus."""
-		shell = make_shell(Script("3", "x", "1"), self.root)
+		"""4 and x are refused; 1 is the piscine, 2 the students; 3 quits (first menu)."""
+		shell = make_shell(Script("4", "x", "1"), self.root)
 		self.assertEqual(shell.choose_audience(), "piscine")
 		text = output(shell)
 		self.assertIn("1. Piscine (piscineux)", text)
 		self.assertIn("2. Student (cursus)", text)
+		self.assertIn("3. Quit", text)
 		self.assertEqual(text.count("Invalid choice"), 2)
 		self.assertEqual(make_shell(Script("2"), self.root).choose_audience(), "student")
 
@@ -173,6 +174,7 @@ class TestShell(unittest.TestCase):
 		text = output(shell)
 		self.assertRegex(text, r"1\. Piscine Exam 01 +8 levels, 4 h")
 		self.assertRegex(text, r"4\. Piscine Final Exam +4 levels, 8 h")
+		self.assertIn("5. Back (previous menu)", text)
 		self.assertNotIn("Rank 02", text)
 		self.assertEqual(text.count("Invalid choice"), 1)
 
@@ -183,6 +185,50 @@ class TestShell(unittest.TestCase):
 		shell.run()
 		self.assertEqual(shell.exam.id, "rank02")
 		self.assertEqual(script.prompts[2:5], ["Your choice:", "Mode:", "Starting level:"])
+
+	def test_exam_mode_starts_at_level_1_without_asking(self):
+		"""Like the real exam: no starting level to choose in exam mode."""
+		script = Script("", "pw", "2", "1", "finish")
+		shell = make_shell(script, self.root)
+		shell.run()
+		self.assertEqual((shell.mode, shell.level), ("exam", 1))
+		self.assertNotIn("Starting level:", script.prompts)
+		self.assertIn("Exam mode starts at level 1, like the real exam.", output(shell))
+
+	def test_back_goes_to_the_menu_before_and_skips_the_menus_not_shown(self):
+		"""Back from the exams, then from the mode of the rank 02 (taken without a menu)."""
+		answers = ("", "pw", "1", "5", "2", "3", "1", "2", "", "", "finish")
+		shell = make_shell(Script(*answers), self.root)
+		shell.run()
+		self.assertEqual((shell.exam.id, shell.mode, shell.level), ("piscine_02", "revision", 1))
+		self.assertEqual(output(shell).count("Who are you?"), 3)
+
+	def test_back_from_the_level_menu_goes_to_the_mode_menu(self):
+		"""Revision, back from the levels, then exam mode: level 1, no level menu."""
+		shell = make_shell(Script("", "pw", "2", "2", "5", "1", "finish"), self.root)
+		shell.run()
+		self.assertEqual((shell.mode, shell.level), ("exam", 1))
+		self.assertEqual(output(shell).count("Choose the mode:"), 2)
+
+	def test_quit_in_the_first_menu_starts_no_exam(self):
+		"""3 in the first menu: goodbye, no subject, no examshell."""
+		script = Script("", "pw", "3")
+		shell = make_shell(script, self.root)
+		shell.run()
+		self.assertIsNone(shell.exam)
+		self.assertIn("Goodbye!", output(shell))
+		self.assertNotIn("examshell>", script.prompts)
+
+	def test_the_first_menu_shown_quits_even_when_it_is_the_mode(self):
+		"""One exam only: the mode menu comes first, and its last choice is Quit."""
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		script = Script("", "pw", "3")
+		shell = Shell(console, script.ask, script.ask_password, Workspace(self.root),
+			rng=Random(1), clock=FakeClock(), sleep=lambda seconds: None,
+			catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		shell.run()
+		self.assertIn("3. Quit", output(shell))
+		self.assertIsNone(shell.exam)
 
 	def test_a_single_exam_is_taken_without_asking(self):
 		"""The students have the rank 02 only: no question, it is said."""
@@ -199,6 +245,7 @@ class TestShell(unittest.TestCase):
 		self.assertIn("4 levels, worth 25 points each: pass them all for 100/100.", text)
 		self.assertIn("If you start higher, the levels before it give no points.", text)
 		self.assertIn("Levels you can play: 2, 3", text)
+		self.assertIn("5. Back (previous menu)", text)
 		self.assertEqual(text.count("Invalid choice"), 1)
 
 	def test_mode_menu_explains_exam_and_revision(self):
@@ -211,6 +258,7 @@ class TestShell(unittest.TestCase):
 			"failed grademe grow fast (minutes): 0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59", text)
 		self.assertIn("2. Revision No time limit. Waits after a failed grademe stay short "
 			"(minutes): 0, 1, 2, 3, 5", text)
+		self.assertIn("3. Back (previous menu)", text)
 		self.assertIn("Enter alone takes revision.", text)
 		self.assertEqual(text.count("Invalid choice"), 1)
 		self.assertEqual(make_shell(Script("1"), self.root).choose_mode(exam), "exam")
@@ -222,7 +270,7 @@ class TestShell(unittest.TestCase):
 		self.assertEqual((shell.mode, shell.retry), ("revision", shell.exam.retry["soft"]))
 		self.assertIn("revision mode", output(shell))
 		self.assertRegex(output(shell), r"Time left\s+no limit")
-		exam_shell = make_shell(Script("", "pw", "2", "1", "", "finish"), self.root)
+		exam_shell = make_shell(Script("", "pw", "2", "1", "finish"), self.root)
 		exam_shell.run()
 		self.assertEqual(exam_shell.retry, exam_shell.exam.retry["hard"])
 		self.assertIn("exam mode", output(exam_shell))
@@ -923,6 +971,14 @@ class TestPractice(unittest.TestCase):
 		text = output(shell)
 		self.assertIn("1. char_sets · Compare characters", text)
 		self.assertIn("Practice · char_sets", text)
+
+	def test_the_last_choice_of_the_theme_menu_quits(self):
+		"""2 after the only theme: goodbye, no subject."""
+		shell = self.practise("2", theme=None)
+		text = output(shell)
+		self.assertIn("2. Quit", text)
+		self.assertIn("Goodbye!", text)
+		self.assertNotIn("Practice ·", text)
 
 	def test_an_unknown_theme_lists_the_themes_that_can_be_practised(self):
 		"""A theme with no exercise (or a typo): said, with the ones that work."""

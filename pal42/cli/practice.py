@@ -45,6 +45,9 @@ class PracticeShell(Shell):
 		try:
 			if theme is None:
 				theme = self.choose_theme(choices)
+				if theme is None:
+					self.console.print("Goodbye!")
+					return 0
 			elif theme not in choices:
 				self.console.print(
 					f"No exercise to practise '{escape(theme)}' yet. Themes: {', '.join(choices)}"
@@ -63,12 +66,18 @@ class PracticeShell(Shell):
 		return sorted(theme for theme in themes if catalog.find(self.language, theme))
 
 	def choose_theme(self, choices):
-		"""Show the themes as a numbered menu, with their skill; return the one picked."""
+		"""Show the themes as a numbered menu, with their skill; return the one picked.
+
+		The last choice quits: None is returned.
+		"""
 		_, themes = self._catalog()
 		self.console.print("Choose a theme to practise:")
 		for number, theme in enumerate(choices, start=1):
 			self.console.print(f"  {number}. {theme} · {escape(themes[theme].skill)}")
-		return choices[self._ask_choice("Your choice:", range(1, len(choices) + 1)) - 1]
+		last = len(choices) + 1
+		self.console.print(display.last_choice(last, first=True), markup=False)
+		number = self._ask_choice("Your choice:", range(1, last + 1))
+		return None if number == last else choices[number - 1]
 
 	def next_subject(self):
 		"""Give a new subject of the theme, one not given before."""

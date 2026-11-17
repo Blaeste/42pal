@@ -202,23 +202,27 @@ def exam_summary(exam):
 	"""The size of an exam, for a menu: 8 levels, 4 h."""
 	return f"{exam.level_count} levels, {exam_length(exam.duration_minutes)}"
 
-def audience_menu(exams_by_audience):
+def last_choice(number, first):
+	"""The last choice of a menu: back to the menu before, or quit in the first one."""
+	return f"  {number}. {'Quit' if first else 'Back (previous menu)'}"
+
+def audience_menu(exams_by_audience, first=True):
 	"""The first menu: who the student is, and the exams it leads to."""
 	lines = ["Who are you?"]
 	for number, (audience, exams) in enumerate(exams_by_audience.items(), start=1):
 		leads_to = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
 		lines.append(f"  {number}. {AUDIENCE_TEXTS[audience]:22}{leads_to}")
-	return lines
+	return lines + [last_choice(len(exams_by_audience) + 1, first)]
 
-def exam_menu(exams):
+def exam_menu(exams, first=False):
 	"""The menu of the exams: each title with its levels and duration."""
 	width = max(len(exam.title) for exam in exams) + 3
 	lines = ["Choose your exam:"]
 	for number, exam in enumerate(exams, start=1):
 		lines.append(f"  {number}. {exam.title:{width}}{exam_summary(exam)}")
-	return lines
+	return lines + [last_choice(len(exams) + 1, first)]
 
-def mode_menu(exam):
+def mode_menu(exam, first=False):
 	"""The menu of the modes: what each one means for the time and the waits."""
 	hard = ", ".join(map(points, exam.retry["hard"].minutes))
 	soft = ", ".join(map(points, exam.retry["soft"].minutes))
@@ -232,11 +236,15 @@ def mode_menu(exam):
 		"  2. Revision  No time limit.",
 		f"{indent}Waits after a failed grademe stay short (minutes):",
 		f"{indent}{soft}",
+		last_choice(3, first),
 		"Enter alone takes revision.",
 	]
 
-def level_menu(exam):
-	"""What the starting level means: the points of a level, the levels skipped."""
+def level_menu(exam, first=False):
+	"""What the starting level means: the points of a level, the levels skipped.
+
+	Its last choice comes after the last level: 5 for an exam of 4 levels.
+	"""
 	playable = ", ".join(map(str, exam.playable_levels))
 	return [
 		"Choose the starting level:",
@@ -244,6 +252,7 @@ def level_menu(exam):
 			"pass them all for 100/100.",
 		"  If you start higher, the levels before it give no points.",
 		f"  Levels you can play: {playable}.",
+		last_choice(exam.level_count + 1, first),
 	]
 
 def points_won(won, grade):
