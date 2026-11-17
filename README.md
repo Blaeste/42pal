@@ -144,6 +144,7 @@ Five exams, like in 42_EXAM:
 | `number_facts` | program | arithmetic | 9 |
 | `base_string` | function, leaks checked | number_print | 6 |
 | `byte_rotate` | function | bits | 12 |
+| `sequence_array` | function, leaks checked | allocation | 10 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
