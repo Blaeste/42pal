@@ -36,7 +36,7 @@ def _no_twice(pairs):
 	keys = [key for key, value in pairs]
 	for key in keys:
 		if keys.count(key) > 1:
-			raise ThemesError(f"themes.json : « {key} » est écrit deux fois")
+			raise ThemesError(f"themes.json: '{key}' is written twice")
 	return dict(pairs)
 
 def _make_theme(theme_id, entry):
@@ -44,20 +44,20 @@ def _make_theme(theme_id, entry):
 	# A function defined inside another one sees its variables: fail()
 	# knows theme_id without being given it.
 	def fail(reason):
-		raise ThemesError(f"themes.json : thème « {theme_id} » : {reason}")
+		raise ThemesError(f"themes.json: theme '{theme_id}': {reason}")
 
 	if not entry.get("skill"):
-		fail("il manque la compétence (skill)")
+		fail("the skill is missing")
 	if not entry.get("exams"):
-		fail("il n'apparaît dans aucun exam (exams)")
+		fail("it appears in no exam (exams)")
 	for exam, levels in entry["exams"].items():
 		if not levels:
-			fail(f"aucun niveau pour l'exam « {exam} »")
+			fail(f"no level for the exam '{exam}'")
 		for level in levels:
 			# bool is a kind of int in Python (True == 1): refuse it too.
 			if isinstance(level, bool) or not isinstance(level, int):
-				fail(f"le niveau {level!r} de « {exam} » n'est pas un nombre entier")
+				fail(f"the level {level!r} of '{exam}' is not an integer")
 			if level < 1:
-				fail(f"le niveau {level} de « {exam} » est invalide : les niveaux commencent à 1")
+				fail(f"the level {level} of '{exam}' is not valid: levels start at 1")
 	exams = {exam: tuple(levels) for exam, levels in entry["exams"].items()}
 	return Theme(theme_id, entry["skill"], exams)

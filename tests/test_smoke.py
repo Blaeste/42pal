@@ -23,7 +23,7 @@ def run_script(*args, cwd=ROOT, script=SCRIPT):
 	FileNotFoundError.
 	"""
 	if not os.access(script, os.X_OK):
-		raise AssertionError(f"{script} doit exister et être exécutable (chmod +x)")
+		raise AssertionError(f"{script} must exist and be executable (chmod +x)")
 	# capture_output + text: stdout and stderr come back as str.
 	# timeout: a launcher that hangs fails the test instead of blocking the run.
 	return subprocess.run(

@@ -55,14 +55,14 @@ def load_catalog(root=EXERCISES_DIR, themes=None):
 			exo = _load_exercise(folder)
 			unknown = [theme for theme in exo.themes if theme not in themes]
 			if unknown:
-				raise SkippedFolder(f"thème inconnu « {', '.join(unknown)} »")
+				raise SkippedFolder(f"unknown theme '{', '.join(unknown)}'")
 			# The name identifies the exercise (exo#seed): it must be unique.
 			if exo.name in found_in:
 				raise SkippedFolder(
-					f"le nom « {exo.name} » est déjà pris par {found_in[exo.name]}"
+					f"the name '{exo.name}' is already taken by {found_in[exo.name]}"
 				)
 		except SkippedFolder as reason:
-			warnings.append(f"{where} : {reason}, dossier ignoré")
+			warnings.append(f"{where}: {reason}, folder skipped")
 			continue
 		exercises[exo.name] = exo
 		found_in[exo.name] = where
@@ -72,14 +72,14 @@ def _load_exercise(folder):
 	"""Return the EXERCISE defined by folder/exercise.py, or raise SkippedFolder."""
 	file = folder / "exercise.py"
 	if not file.exists():
-		raise SkippedFolder("pas de exercise.py")
+		raise SkippedFolder("no exercise.py")
 	try:
 		# run_path runs exercise.py and returns its global names.
 		names = run_path(str(file))
 	# Any error: an ExerciseError from the model, but also a typo
 	# (SyntaxError, NameError...) in a file written by a contributor.
 	except Exception as error:
-		raise SkippedFolder(f"exercise.py refusé ({error})") from error
+		raise SkippedFolder(f"exercise.py refused ({error})") from error
 	if "EXERCISE" not in names:
-		raise SkippedFolder("pas de EXERCISE dans exercise.py")
+		raise SkippedFolder("no EXERCISE in exercise.py")
 	return names["EXERCISE"]

@@ -90,7 +90,7 @@ class TestCompile(unittest.TestCase):
 		runner = CRunner(("no_such_cc_42pal", "-Wall"))
 		result = runner.compile([self.write("hello.c", HELLO)], self.work, "hello")
 		self.assertFalse(result.ok)
-		self.assertIn("introuvable", result.output)
+		self.assertIn("not found", result.output)
 		self.assertIn("no_such_cc_42pal", result.output)
 
 	def test_source_already_in_the_work_folder_compiles(self):
@@ -231,7 +231,7 @@ class TestRun(unittest.TestCase):
 		# If the test fails, the child must still not be left running.
 		self.addCleanup(stop_if_alive, child)
 		self.assertTrue(result.timed_out)
-		self.assertTrue(gone_within(child, seconds=2), f"l'enfant {child} tourne encore")
+		self.assertTrue(gone_within(child, seconds=2), f"the child {child} is still running")
 
 	def test_child_left_behind_by_a_finished_program_is_stopped(self):
 		"""The program ends normally but its child loops: the child is stopped."""
@@ -240,7 +240,7 @@ class TestRun(unittest.TestCase):
 		self.addCleanup(stop_if_alive, child)
 		self.assertEqual(result.exit_code, 0)
 		self.assertFalse(result.timed_out)
-		self.assertTrue(gone_within(child, seconds=2), f"l'enfant {child} tourne encore")
+		self.assertTrue(gone_within(child, seconds=2), f"the child {child} is still running")
 
 	def test_endless_output_is_cut(self):
 		"""Printing forever fills no memory: stopped past the size limit."""

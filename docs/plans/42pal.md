@@ -102,7 +102,7 @@ Diff KO
 - Test : un rendu qui contient un `main` donne une erreur claire.
 
 **12. Fonctions interdites.** On liste les fonctions utilisées avec `nm -u` et on les compare aux fonctions autorisées. Fichier : `checks.py`.
-- Test : `printf`, alors que seul `write` est autorisé, échoue avec « fonction interdite : printf ».
+- Test : `printf`, alors que seul `write` est autorisé, échoue avec « Forbidden function: printf ».
 
 **13. Fuites mémoire (activable exo par exo).** Avec valgrind s'il est présent.
 - Test : un malloc sans free échoue.

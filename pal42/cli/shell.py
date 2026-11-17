@@ -23,10 +23,10 @@ from pal42.themes import load_themes
 
 # The examshell commands and what they do, shown by help.
 COMMANDS = {
-	"status": "où tu en es : exam, niveau, sujet, temps",
-	"grademe": "fait corriger ton rendu",
-	"finish": "termine l'exam",
-	"help": "affiche cette aide",
+	"status": "where you are: exam, level, subject, time",
+	"grademe": "grade your work",
+	"finish": "end the exam",
+	"help": "show this help",
 }
 
 # The grademe spinner stays at least this long, even if the grading is quicker.
@@ -66,7 +66,7 @@ class Shell:
 			self.start(exam, self.choose_level(exam))
 		# Ctrl-D before the exam has started: just leave.
 		except EOFError:
-			self.console.print("\nAu revoir !")
+			self.console.print("\nGoodbye!")
 			return
 		self.command_loop()
 
@@ -76,7 +76,7 @@ class Shell:
 		self.user = self.ask("login:", getpass.getuser())
 		# The password is read, then dropped at once: not checked, not stored.
 		self.ask_password("password: ")
-		display.typewriter(self.console, f"Bienvenue {self.user} !", sleep=self.sleep)
+		display.typewriter(self.console, f"Welcome {self.user}!", sleep=self.sleep)
 		self.console.print()
 
 	def choose_exam(self):
@@ -85,18 +85,18 @@ class Shell:
 		themes = load_themes()
 		catalog = load_catalog(themes=themes)
 		exams = [load_exam(exam_id, catalog=catalog, themes=themes) for exam_id in list_exams()]
-		self.console.print("Choisis ton exam :")
+		self.console.print("Choose your exam:")
 		for number, exam in enumerate(exams, start=1):
 			self.console.print(f"  {number}. {exam.title}")
-		number = self._ask_choice("Ton choix :", range(1, len(exams) + 1))
+		number = self._ask_choice("Your choice:", range(1, len(exams) + 1))
 		return exams[number - 1]
 
 	def choose_level(self, exam):
 		"""Ask the starting level, among the levels that have exercises."""
 		playable = exam.playable_levels
-		self.console.print(f"Niveaux jouables : {', '.join(map(str, playable))}")
+		self.console.print(f"Playable levels: {', '.join(map(str, playable))}")
 		# Enter alone takes the first playable level.
-		return self._ask_choice("Niveau de départ :", playable, str(playable[0]))
+		return self._ask_choice("Starting level:", playable, str(playable[0]))
 
 	def start(self, exam, level):
 		"""Draw a subject at `level`, write it in the workspace and show it."""
@@ -124,7 +124,7 @@ class Shell:
 			except EOFError:
 				command = "finish"
 			if command == "finish":
-				self.console.print("Fin de l'exam. À bientôt !")
+				self.console.print("End of the exam. See you soon!")
 				return
 			if command == "help":
 				self.console.print(display.help_table(COMMANDS))
@@ -135,7 +135,7 @@ class Shell:
 					return
 			elif command:
 				# escape: what the student typed must not be read as rich markup.
-				self.console.print(f"Commande inconnue : {escape(command)}. Tape help pour la liste.")
+				self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
 			# A blank line after each answer sets it apart from the next prompt;
 			# Enter alone gave no answer, so it adds nothing.
 			if command:
@@ -164,7 +164,7 @@ class Shell:
 			left = ANIMATION_SECONDS - (self.clock() - started)
 			if self.console.is_terminal and left > 0:
 				self.sleep(left)
-		log_text = result.trace or f"OK : {result.tests_passed}/{result.tests_total} tests réussis\n"
+		log_text = result.trace or f"OK: {result.tests_passed}/{result.tests_total} tests passed\n"
 		log = self.workspace.write_trace(self.attempts, self.variant.name, log_text)
 		self.console.print(display.grade_result(result, log))
 		if not result.passed:
@@ -191,7 +191,7 @@ class Shell:
 			if answer.isdigit() and int(answer) in allowed:
 				return int(answer)
 			choices = ", ".join(map(str, allowed))
-			self.console.print(f"Choix invalide : tape un de ces nombres : {choices}.")
+			self.console.print(f"Invalid choice: type one of these numbers: {choices}.")
 
 def main():
 	"""Start the examshell on the real keyboard and terminal; return the exit code."""
@@ -220,6 +220,6 @@ def main():
 	try:
 		Shell(console, ask, ask_password).run()
 	except KeyboardInterrupt:
-		console.print("\nExam interrompu (Ctrl-C).")
+		console.print("\nExam stopped (Ctrl-C).")
 		return 130
 	return 0

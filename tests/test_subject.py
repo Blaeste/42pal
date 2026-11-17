@@ -137,5 +137,5 @@ class TestGolden(unittest.TestCase):
 			path.parent.mkdir(exist_ok=True)
 			# encoding: the campus locale may not be UTF-8 by default.
 			path.write_text(subject, encoding="utf-8")
-			self.fail(f"instantané créé : relis {path}, puis relance les tests")
+			self.fail(f"snapshot written: read {path}, then run the tests again")
 		self.assertEqual(subject, path.read_text(encoding="utf-8"))

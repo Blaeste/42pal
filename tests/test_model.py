@@ -49,17 +49,17 @@ class TestExercise(unittest.TestCase):
 
 	def test_assignment_name_with_unknown_param_raises(self):
 		"""assignment_name is checked like the subject: its holes must be params."""
-		with self.assertRaisesRegex(ExerciseError, "nom.*order"):
+		with self.assertRaisesRegex(ExerciseError, "name.*order"):
 			make_exercise(assignment_name="${order}_chars")
 
 	def test_expected_files_with_unknown_param_raises(self):
 		"""expected_files are checked like the subject: their holes must be params."""
-		with self.assertRaisesRegex(ExerciseError, "fichier attendu.*order"):
+		with self.assertRaisesRegex(ExerciseError, "expected file.*order"):
 			make_exercise(expected_files=("${order}_chars.c",))
 
 	def test_lone_dollar_in_subject_raises(self):
 		"""A `$` that starts no hole is an error that gives its line; `$$` is the fix."""
-		with self.assertRaisesRegex(ExerciseError, r"ligne 2.*\$\$"):
+		with self.assertRaisesRegex(ExerciseError, r"line 2.*\$\$"):
 			make_exercise(subject="Display the characters $mode.\nEach costs 5$.")
 
 	def test_forbidden_combination_with_unknown_param_raises(self):
@@ -74,7 +74,7 @@ class TestExercise(unittest.TestCase):
 
 	def test_every_combination_forbidden_raises(self):
 		"""An exercise must leave at least one combination to draw."""
-		with self.assertRaisesRegex(ExerciseError, "aucune combinaison"):
+		with self.assertRaisesRegex(ExerciseError, "no combination"):
 			make_exercise(forbidden=({"mode": "common"}, {"mode": "only_first"}))
 
 	def test_unknown_kind_raises(self):
@@ -84,22 +84,22 @@ class TestExercise(unittest.TestCase):
 
 	def test_function_exercise_needs_a_test_main(self):
 		"""kind "function" needs a harness: the main that calls the function."""
-		with self.assertRaisesRegex(ExerciseError, "main de test"):
+		with self.assertRaisesRegex(ExerciseError, "test main"):
 			make_exercise(kind="function")
 
 	def test_program_exercise_has_no_test_main(self):
 		"""A program has its own main: a harness would make two of them."""
-		with self.assertRaisesRegex(ExerciseError, "main de test"):
+		with self.assertRaisesRegex(ExerciseError, "test main"):
 			make_exercise(harness="int\tmain(void)\n{\n\treturn (0);\n}\n")
 
 	def test_function_exercise_has_no_automatic_examples(self):
 		"""The examples run ./program args: they only make sense for programs."""
-		with self.assertRaisesRegex(ExerciseError, "exemples"):
+		with self.assertRaisesRegex(ExerciseError, "examples"):
 			make_exercise(kind="function", harness="int\tmain(void);\n", examples=(TestCase(),))
 
 	def test_test_main_with_unknown_param_raises(self):
 		"""The holes of the harness are checked like those of the subject."""
-		with self.assertRaisesRegex(ExerciseError, "main de test.*order"):
+		with self.assertRaisesRegex(ExerciseError, "test main.*order"):
 			make_exercise(kind="function", harness="int\tft_${order}(void);\n")
 
 	def test_subject_may_name_the_assignment(self):

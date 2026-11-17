@@ -55,8 +55,8 @@ class TestLevels(unittest.TestCase):
 		exam = load_exam("rank02", catalog=self.catalog, themes=self.themes)
 		self.assertEqual(exam.playable_levels, [2, 3])
 		self.assertEqual(len(exam.warnings), 2)
-		self.assertRegex(exam.warnings[0], "niveau 1.*aucun exo")
-		self.assertRegex(exam.warnings[1], "niveau 4.*aucun exo")
+		self.assertRegex(exam.warnings[0], "level 1.*no exercise")
+		self.assertRegex(exam.warnings[1], "level 4.*no exercise")
 
 	def test_draw_gives_a_variant_of_an_exercise_of_the_level(self):
 		"""A theme of the level, then a model of it, then a seed: reproducible."""

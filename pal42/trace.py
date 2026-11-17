@@ -44,8 +44,8 @@ SIGNAL_MESSAGES = {
 	"SIGSEGV": "Segmentation fault",
 	"SIGBUS": "Bus error",
 	"SIGABRT": "Abort (double free, assert...)",
-	"SIGFPE": "Floating point exception (division par zéro ?)",
-	"SIGXFSZ": "Sortie trop longue : plus de 1 Mo",
+	"SIGFPE": "Floating point exception (division by zero?)",
+	"SIGXFSZ": "Output too long: over 1 MB",
 	"SIGKILL": "Killed",
 }
 
@@ -75,30 +75,30 @@ def compile_trace(command, files, name, output):
 def missing_trace(files):
 	"""Return the trace of a rendu that lacks some expected `files`."""
 	return "\n".join([
-		header("Rendu"),
-		*(f"Fichier manquant : {file}" for file in files),
+		header("Files"),
+		*(f"Missing file: {file}" for file in files),
 		"",
-		"Rendu KO",
+		"Files KO",
 	]) + "\n"
 
 def forbidden_trace(forbidden, allowed):
 	"""Return the trace of a program that calls `forbidden` functions."""
 	return "\n".join([
-		header("Fonctions interdites"),
-		*(f"Fonction interdite : {name}" for name in forbidden),
-		f"Fonctions autorisées : {', '.join(allowed) or 'aucune'}",
+		header("Forbidden functions"),
+		*(f"Forbidden function: {name}" for name in forbidden),
+		f"Allowed functions: {', '.join(allowed) or 'none'}",
 		"",
-		"Fonctions KO",
+		"Functions KO",
 	]) + "\n"
 
 def main_trace():
 	"""Return the trace of a function rendu that has its own main."""
 	return "\n".join([
-		header("Rendu"),
-		"Ton rendu contient un main : pour une fonction, rends seulement la fonction.",
-		"Le main de test est fourni par la moulinette.",
+		header("Files"),
+		"Your files contain a main: for a function, hand in the function only.",
+		"The test main is given by the moulinette.",
 		"",
-		"Rendu KO",
+		"Files KO",
 	]) + "\n"
 
 def leak_trace(number, name, test, report):

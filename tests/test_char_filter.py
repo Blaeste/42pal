@@ -92,7 +92,7 @@ class TestVariants(unittest.TestCase):
 		params = EXERCISE.combinations()[0]
 		tests = EXERCISE.generate_tests(params, Random(7))
 		self.assertEqual(tests, EXERCISE.generate_tests(params, Random(7)))
-		self.assertTrue(any(len(test.args) != 2 for test in tests), "mauvais nombre d'arguments")
+		self.assertTrue(any(len(test.args) != 2 for test in tests), "no test with a wrong number of arguments")
 		self.assertIn(TestCase(("", "")), tests)
 		self.assertGreaterEqual(len(tests), 10)
 

@@ -134,7 +134,7 @@ class TestShell(unittest.TestCase):
 		shell = make_shell(script, self.root)
 		shell.login()
 		self.assertEqual(shell.user, getpass.getuser())
-		self.assertIn(f"Bienvenue {getpass.getuser()} !\n\n", output(shell))
+		self.assertIn(f"Welcome {getpass.getuser()}!\n\n", output(shell))
 		self.assertNotIn("my-secret-password", output(shell))
 		self.assertNotIn("my-secret-password", repr(vars(shell)))
 
@@ -145,15 +145,15 @@ class TestShell(unittest.TestCase):
 		self.assertEqual(exam.id, list_exams()[1])
 		self.assertIn("1. Exam Piscine", output(shell))
 		self.assertIn("2. Exam Rank 02", output(shell))
-		self.assertEqual(output(shell).count("Choix invalide"), 2)
+		self.assertEqual(output(shell).count("Invalid choice"), 2)
 
 	def test_level_choice_only_accepts_playable_levels(self):
 		"""Level 1 has no exercise yet: refused; Enter takes the first playable."""
 		shell = make_shell(Script("1", ""), self.root)
 		level = shell.choose_level(load_exam("rank02", catalog=CATALOG, themes=THEMES))
 		self.assertEqual(level, 2)
-		self.assertIn("Niveaux jouables : 2, 3", output(shell))
-		self.assertEqual(output(shell).count("Choix invalide"), 1)
+		self.assertIn("Playable levels: 2, 3", output(shell))
+		self.assertEqual(output(shell).count("Invalid choice"), 1)
 
 	def test_start_gives_the_subject_and_says_where_it_is(self):
 		"""A subject is drawn at the level, written, and its paths are shown."""
@@ -171,7 +171,7 @@ class TestShell(unittest.TestCase):
 		shell = make_shell(Script(), self.root)
 		shell.start(load_exam("rank02", catalog=CATALOG, themes=THEMES), 2)
 		text = output(shell)
-		self.assertLess(text.index("Lis-le"), text.index("Assignment name"))
+		self.assertLess(text.index("Read it"), text.index("Assignment name"))
 		top_border = next(line for line in text.splitlines() if line.startswith("╭"))
 		self.assertEqual(len(top_border), 80)
 
@@ -193,9 +193,9 @@ class TestShell(unittest.TestCase):
 			self.assertIn(command, text)
 		self.assertIn("0:10:00", text)
 		self.assertIn("2:50:00", text)
-		self.assertIn("Fichier manquant", text)
-		self.assertIn("Commande inconnue : foo", text)
-		self.assertIn("Fin de l'exam", text)
+		self.assertIn("Missing file", text)
+		self.assertIn("Unknown command: foo", text)
+		self.assertIn("End of the exam", text)
 
 	def test_a_blank_line_separates_each_answer_from_the_next_prompt(self):
 		"""After each command's answer, a blank line; Enter alone adds nothing."""
@@ -203,25 +203,25 @@ class TestShell(unittest.TestCase):
 		shell.start(load_exam("rank02", catalog=CATALOG, themes=THEMES), 2)
 		shell.command_loop()
 		text = output(shell)
-		self.assertIn("Tape help pour la liste.\n\nCommande inconnue : bar", text)
-		self.assertIn("Tape help pour la liste.\n\nFin de l'exam", text)
+		self.assertIn("Type help for the list.\n\nUnknown command: bar", text)
+		self.assertIn("Type help for the list.\n\nEnd of the exam", text)
 
 	def test_ctrl_d_ends_the_exam_cleanly(self):
 		"""No answer left (Ctrl-D): the exam ends, nothing crashes."""
 		shell = make_shell(Script(), self.root)
 		shell.start(load_exam("rank02", catalog=CATALOG, themes=THEMES), 2)
 		shell.command_loop()
-		self.assertIn("Fin de l'exam", output(shell))
+		self.assertIn("End of the exam", output(shell))
 
 	def test_run_goes_from_login_to_finish(self):
 		"""Login, exam 2, the first playable level, status, then finish."""
 		shell = make_shell(Script("", "pw", "2", "", "status", "finish"), self.root)
 		shell.run()
 		text = output(shell)
-		self.assertIn("Bienvenue", text)
+		self.assertIn("Welcome", text)
 		self.assertIn("Exam Rank 02", text)
-		self.assertIn("Temps restant", text)
-		self.assertIn("Fin de l'exam", text)
+		self.assertIn("Time left", text)
+		self.assertIn("End of the exam", text)
 		self.assertEqual(len(list(self.root.glob("subjects/*/subject.en.txt"))), 1)
 
 class TestLauncher(unittest.TestCase):
@@ -238,8 +238,8 @@ class TestLauncher(unittest.TestCase):
 				start_new_session=True,
 			)
 			self.assertEqual(result.returncode, 0, result.stderr)
-			self.assertIn("Bienvenue", result.stdout)
-			self.assertIn("Fin de l'exam", result.stdout)
+			self.assertIn("Welcome", result.stdout)
+			self.assertIn("End of the exam", result.stdout)
 			self.assertEqual(len(list(Path(home).glob("42pal_exam/subjects/*/subject.en.txt"))), 1)
 
 class TestShellQuit(unittest.TestCase):
@@ -250,7 +250,7 @@ class TestShellQuit(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as tmp:
 			shell = make_shell(Script(), Path(tmp))
 			shell.run()
-			self.assertIn("Au revoir", output(shell))
+			self.assertIn("Goodbye", output(shell))
 
 class TestTypewriter(unittest.TestCase):
 	"""The text that writes itself, one letter at a time."""
@@ -279,12 +279,12 @@ class TestRealTerminal(unittest.TestCase):
 		"""Enter with nothing typed: the next prompt starts on a new line."""
 		with tempfile.TemporaryDirectory() as home:
 			screen = run_in_terminal(home, [
-				("login:", ""), ("password:", "x"), ("choix :", "2"),
-				("départ :", ""), ("examshell>", ""), ("examshell>", "finish"),
+				("login:", ""), ("password:", "x"), ("choice:", "2"),
+				("level:", ""), ("examshell>", ""), ("examshell>", "finish"),
 			])
 		self.assertNotIn("examshell> examshell>", screen)
 		self.assertNotRegex(screen, "login:.*password:")
-		self.assertIn("Fin de l'exam", screen)
+		self.assertIn("End of the exam", screen)
 
 def run_in_terminal(home, steps, timeout=15):
 	"""Run ./42pal in a pseudo-terminal; for each (prompt, answer), wait, then type.
@@ -313,7 +313,7 @@ def run_in_terminal(home, steps, timeout=15):
 	for prompt, answer in steps:
 		read_until(prompt)
 		os.write(fd, answer.encode() + b"\r")
-	read_until("Fin de l'exam")
+	read_until("End of the exam")
 	os.waitpid(pid, 0)
 	os.close(fd)
 	return re.sub(r"\x1b\[[0-9;?]*[a-zA-Z]", "", screen.decode(errors="replace")).replace("\r", "")
@@ -358,7 +358,7 @@ class TestGrademe(unittest.TestCase):
 		shell = self.start(2, "grademe")
 		self.hand_in(ECHO_OK)
 		shell.command_loop()
-		self.assertIn("Exam réussi", output(shell))
+		self.assertIn("Exam passed", output(shell))
 		self.assertEqual(len(self.script.prompts), 1)
 
 	def test_wrong_solution_shows_the_trace_and_keeps_the_subject(self):
@@ -385,7 +385,7 @@ class TestGrademe(unittest.TestCase):
 			"\t\twrite(1, \"x\\n\", 2);\n\treturn (0);\n}\n"
 		)
 		shell.command_loop()
-		self.assertIn("lignes de plus", output(shell))
+		self.assertIn("more lines", output(shell))
 		log = self.root / "traces/01_echo_first.trace"
 		self.assertEqual(log.read_text(encoding="utf-8").count("-x$"), 60)
 
@@ -410,7 +410,7 @@ class TestGrademeWithLeaks(unittest.TestCase):
 		console.print(display.grade_result(result, Path("/tmp/01_x.trace")))
 		self.assertIn("valgrind not found", console.file.getvalue())
 
-	@unittest.skipUnless(shutil.which("valgrind"), "valgrind n'est pas installé")
+	@unittest.skipUnless(shutil.which("valgrind"), "valgrind is not installed")
 	def test_grademe_checks_the_leaks_without_crashing(self):
 		"""The spinner gets a third argument for the leak step: no crash, OK."""
 		exo = make_exercise(

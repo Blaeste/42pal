@@ -43,7 +43,7 @@ class CRunner:
 				process = subprocess.run(step, cwd=workdir, capture_output=True, text=True)
 			# The command of an exam may name a compiler this machine lacks.
 			except FileNotFoundError:
-				return CompileResult(False, f"compilateur introuvable : {self.command[0]}", None)
+				return CompileResult(False, f"compiler not found: {self.command[0]}", None)
 			output += process.stdout + process.stderr
 			if process.returncode != 0:
 				# If only the link failed, the objects exist: keep them, so that

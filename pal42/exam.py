@@ -65,7 +65,7 @@ def load_exam(exam_id, exams_dir=EXAMS_DIR, catalog=None, themes=None):
 		catalog = load_catalog(themes=themes)
 	path = exams_dir / f"{exam_id}.json"
 	if not path.exists():
-		raise ExamError(f"exam inconnu « {exam_id} », choix : {', '.join(list_exams(exams_dir))}")
+		raise ExamError(f"unknown exam '{exam_id}', choose among: {', '.join(list_exams(exams_dir))}")
 	data = _read_exam_file(path)
 	levels = {}
 	for level in range(1, data["levels"] + 1):
@@ -76,7 +76,7 @@ def load_exam(exam_id, exams_dir=EXAMS_DIR, catalog=None, themes=None):
 				if exercises:
 					levels[level][theme.id] = exercises
 	warnings = [
-		f"{data['title']}, niveau {level} : aucun exo pour l'instant, niveau pas jouable"
+		f"{data['title']}, level {level}: no exercise yet, the level cannot be played"
 		for level, found in levels.items() if not found
 	]
 	return Exam(
@@ -91,17 +91,17 @@ def list_exams(exams_dir=EXAMS_DIR):
 def _read_exam_file(path):
 	"""Read an exam file and check its fields; raise ExamError if one is wrong."""
 	def fail(reason):
-		raise ExamError(f"{path.name} : {reason}")
+		raise ExamError(f"{path.name}: {reason}")
 
 	data = json.loads(path.read_text(encoding="utf-8"))
 	for field in ("title", "language", "levels", "duration_minutes", "compile"):
 		if field not in data:
-			fail(f"il manque le champ « {field} »")
+			fail(f"the field '{field}' is missing")
 	for field in ("levels", "duration_minutes"):
 		value = data[field]
 		# bool is a kind of int in Python (True == 1): refuse it too.
 		if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-			fail(f"« {field} » doit être un nombre entier positif, pas {value!r}")
+			fail(f"'{field}' must be a positive integer, not {value!r}")
 	if not data["compile"]:
-		fail("« compile » est vide : il faut au moins le nom du compilateur")
+		fail("'compile' is empty: it needs at least the name of the compiler")
 	return data

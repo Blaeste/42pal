@@ -95,7 +95,7 @@ class TestStudentObjects(unittest.TestCase):
 LEAK = "#include <stdlib.h>\n\nint\tmain(void)\n{\n\tchar\t*s;\n\n\ts = malloc(10);\n\ts[0] = 0;\n\treturn (0);\n}\n"
 NO_LEAK = LEAK.replace("\treturn (0);", "\tfree(s);\n\treturn (0);")
 
-@unittest.skipUnless(shutil.which("valgrind"), "valgrind n'est pas installé")
+@unittest.skipUnless(shutil.which("valgrind"), "valgrind is not installed")
 class TestMemoryReport(unittest.TestCase):
 	"""memory_report(program, test): what valgrind says about memory."""
 

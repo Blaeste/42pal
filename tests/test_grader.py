@@ -98,10 +98,10 @@ class TestGrade(unittest.TestCase):
 		result = grade(ECHO, self.rendu, CRunner())
 		self.assertFalse(result.passed)
 		self.assertEqual(result.trace, (
-			"= Rendu " + "=" * 72 + "\n"
-			"Fichier manquant : echo_first.c\n"
+			"= Files " + "=" * 72 + "\n"
+			"Missing file: echo_first.c\n"
 			"\n"
-			"Rendu KO\n"
+			"Files KO\n"
 		))
 
 	def test_forbidden_function_fails_even_with_the_right_output(self):
@@ -113,11 +113,11 @@ class TestGrade(unittest.TestCase):
 		result = grade(ECHO, self.rendu, CRunner())
 		self.assertFalse(result.passed)
 		self.assertEqual(result.trace, (
-			"= Fonctions interdites " + "=" * 57 + "\n"
-			"Fonction interdite : printf\n"
-			"Fonctions autorisées : write\n"
+			"= Forbidden functions " + "=" * 58 + "\n"
+			"Forbidden function: printf\n"
+			"Allowed functions: write\n"
 			"\n"
-			"Fonctions KO\n"
+			"Functions KO\n"
 		))
 
 SHIFT_FORWARD_2 = r"""#include <unistd.h>
@@ -226,8 +226,8 @@ class TestGradeFunction(unittest.TestCase):
 		"""A main in the rendu: say so, instead of a cryptic link error."""
 		result = self.grade(COUNT_OK + "\nint\tmain(void)\n{\n\treturn (0);\n}\n")
 		self.assertFalse(result.passed)
-		self.assertIn("contient un main", result.trace)
-		self.assertTrue(result.trace.endswith("\nRendu KO\n"), result.trace)
+		self.assertIn("contain a main", result.trace)
+		self.assertTrue(result.trace.endswith("\nFiles KO\n"), result.trace)
 
 	def test_forbidden_function_in_the_student_code_is_refused(self):
 		"""strlen in the student's function is refused, even with the test main."""
@@ -235,7 +235,7 @@ class TestGradeFunction(unittest.TestCase):
 			"#include <string.h>\n\nint\tft_count(char *str, char c)\n{\n"
 			"\t(void)c;\n\treturn (strlen(str));\n}\n"
 		)
-		self.assertIn("Fonction interdite : strlen", result.trace)
+		self.assertIn("Forbidden function: strlen", result.trace)
 		self.assertNotIn("printf", result.trace)
 
 LEAKY_ECHO = r"""#include <stdlib.h>
@@ -284,7 +284,7 @@ class TestLeaks(unittest.TestCase):
 		(self.rendu / "echo_first.c").write_text(code, encoding="utf-8")
 		return grade(echo_with(check_leaks), self.rendu, CRunner(), **options)
 
-	@unittest.skipUnless(shutil.which("valgrind"), "valgrind n'est pas installé")
+	@unittest.skipUnless(shutil.which("valgrind"), "valgrind is not installed")
 	def test_leak_fails_with_valgrind_report(self):
 		"""Right output but a malloc without free: Leaks KO, with the report."""
 		result = self.grade(LEAKY_ECHO)
@@ -293,7 +293,7 @@ class TestLeaks(unittest.TestCase):
 		self.assertIn("definitely lost", result.trace)
 		self.assertTrue(result.trace.endswith("\nLeaks KO\n"), result.trace)
 
-	@unittest.skipUnless(shutil.which("valgrind"), "valgrind n'est pas installé")
+	@unittest.skipUnless(shutil.which("valgrind"), "valgrind is not installed")
 	def test_clean_solution_passes(self):
 		"""Every malloc freed: passed, without warning."""
 		result = self.grade(CLEAN_ECHO)

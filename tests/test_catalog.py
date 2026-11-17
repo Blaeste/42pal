@@ -55,7 +55,7 @@ class TestLoading(unittest.TestCase):
 		catalog = load_catalog(self.root)
 		self.assertEqual(list(catalog.exercises), ["demo"])
 		self.assertEqual(len(catalog.warnings), 2)
-		self.assertRegex(catalog.warnings[0], "c/bad.*paramètre inconnu")
+		self.assertRegex(catalog.warnings[0], "c/bad.*unknown param")
 		self.assertRegex(catalog.warnings[1], "c/nothing.*EXERCISE")
 
 	def test_exercise_with_an_unknown_theme_is_ignored_with_a_warning(self):
@@ -65,7 +65,7 @@ class TestLoading(unittest.TestCase):
 		catalog = load_catalog(self.root)
 		self.assertEqual(catalog.exercises, {})
 		self.assertEqual(len(catalog.warnings), 1)
-		self.assertRegex(catalog.warnings[0], "c/lost.*thème inconnu.*nope")
+		self.assertRegex(catalog.warnings[0], "c/lost.*unknown theme.*nope")
 
 	def test_two_exercises_with_the_same_name_keep_the_first(self):
 		"""exo#seed must name one exercise: a second "same" is skipped."""

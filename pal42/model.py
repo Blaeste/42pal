@@ -35,19 +35,19 @@ class Param:
 	def __post_init__(self):
 		"""Check the param as soon as it is created (dataclass hook)."""
 		if not self.values:
-			raise ExerciseError(f"paramètre « {self.name} » sans aucune valeur")
+			raise ExerciseError(f"param '{self.name}' has no value")
 		# texts is all or nothing: a text for each value, and nothing else,
 		# so no raw id shows up in the middle of a sentence of the subject.
 		if self.texts:
 			for value in self.texts:
 				if value not in self.values:
 					raise ExerciseError(
-						f"paramètre « {self.name} » : texte pour la valeur inconnue « {value} »"
+						f"param '{self.name}': text for the unknown value '{value}'"
 					)
 			for value in self.values:
 				if value not in self.texts:
 					raise ExerciseError(
-						f"paramètre « {self.name} » : pas de texte pour la valeur « {value} »"
+						f"param '{self.name}': no text for the value '{value}'"
 					)
 
 	def text(self, value):
@@ -102,36 +102,36 @@ class Exercise:
 		"""Check the exercise as soon as it is created (dataclass hook)."""
 		if self.language not in LANGUAGES:
 			self._fail(
-				f"langage inconnu « {self.language} », choix : {', '.join(LANGUAGES)}"
+				f"unknown language '{self.language}', choose among: {', '.join(LANGUAGES)}"
 			)
 		if self.kind not in KINDS:
 			self._fail(
-				f"type d'exo inconnu « {self.kind} », choix : {', '.join(KINDS)}"
+				f"unknown kind '{self.kind}', choose among: {', '.join(KINDS)}"
 			)
 		self._check_kind()
-		self._check_template(self.subject, "le sujet", extra=("assignment",))
-		self._check_template(self.assignment_name, "le nom")
-		self._check_template(self.harness, "le main de test")
+		self._check_template(self.subject, "the subject", extra=("assignment",))
+		self._check_template(self.assignment_name, "the name")
+		self._check_template(self.harness, "the test main")
 		for file in self.expected_files:
-			self._check_template(file, "un fichier attendu")
+			self._check_template(file, "an expected file")
 		self._check_forbidden()
 
 	def _check_kind(self):
 		"""A function needs a test main and has no automatic examples; a program has neither."""
 		if self.kind == "function" and not self.harness:
-			self._fail("un exo « fonction » a besoin d'un main de test (harness)")
+			self._fail("a function exercise needs a test main (harness)")
 		if self.kind == "program" and self.harness:
-			self._fail("un exo « programme » a déjà son main : pas de main de test (harness)")
+			self._fail("a program exercise has its own main: no test main (harness)")
 		if self.kind == "function" and self.examples:
 			self._fail(
-				"les exemples automatiques lancent ./programme : pas d'exemples pour une"
-				" fonction, écris-les dans le sujet"
+				"the automatic examples run ./program: no examples for a function,"
+				" write them in the subject"
 			)
 
 	def _check_template(self, text, where, extra=()):
 		"""Each `$name` or `${name}` hole of `text` must be a param (or in `extra`).
 
-		where names the text in the error messages, like "le sujet".
+		where names the text in the error messages, like "the subject".
 		"""
 		param_names = {param.name for param in self.params} | set(extra)
 		# Template.pattern is the regex that string.Template itself uses, so we
@@ -139,12 +139,12 @@ class Exercise:
 		for match in Template.pattern.finditer(text):
 			hole = match.group("named") or match.group("braced")
 			if hole is not None and hole not in param_names:
-				self._fail(f"{where} utilise le paramètre inconnu « ${hole} »")
+				self._fail(f"{where} uses the unknown param '${hole}'")
 			# "invalid" matches a $ that starts no hole and is not $$.
 			if match.group("invalid") is not None:
 				line = text.count("\n", 0, match.start()) + 1
 				self._fail(
-					f"« $ » seul dans {where} (ligne {line}) : écris « $$ » pour un $"
+					f"lone '$' in {where} (line {line}): write '$$' for a $"
 				)
 
 	def _check_forbidden(self):
@@ -158,16 +158,16 @@ class Exercise:
 			for name, value in combination.items():
 				if name not in values_of:
 					self._fail(
-						f"combinaison interdite avec le paramètre inconnu « {name} »"
+						f"forbidden combination with the unknown param '{name}'"
 					)
 				if value not in values_of[name]:
 					self._fail(
-						f"combinaison interdite avec la valeur inconnue « {value} »"
-						f" pour « {name} »"
+						f"forbidden combination with the unknown value '{value}'"
+						f" for '{name}'"
 					)
 		# Only once names and values are known: combinations() relies on it.
 		if not self.combinations():
-			self._fail("aucune combinaison possible, elles sont toutes interdites")
+			self._fail("no combination left: they are all forbidden")
 
 	def combinations(self):
 		"""Return every allowed combination of param values, as dicts.
@@ -193,4 +193,4 @@ class Exercise:
 
 	def _fail(self, reason):
 		"""Raise an ExerciseError that names this exercise."""
-		raise ExerciseError(f"{self.name} : {reason}")
+		raise ExerciseError(f"{self.name}: {reason}")

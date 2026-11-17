@@ -53,5 +53,5 @@ class TestBadThemesFile(unittest.TestCase):
 			' "words": {"skill": "B", "exams": {"rank02": [2]}}}',
 			encoding="utf-8",
 		)
-		with self.assertRaisesRegex(ThemesError, "words.*deux fois"):
+		with self.assertRaisesRegex(ThemesError, "words.*twice"):
 			load_themes(self.path)
