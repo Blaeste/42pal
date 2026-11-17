@@ -74,7 +74,9 @@ class Exercise:
 	identifies the exercise (in `exo#seed`, for example).
 	expected_files can have the same holes ("${mode}_chars.c").
 	examples are the inputs shown in the subject; their outputs are never
-	written by hand: the oracle computes them for the drawn variant.
+	written by hand: the oracle computes them for the drawn variant. When
+	the inputs depend on the variant (a name written in the style of the
+	variant...), examples is a function: examples(params) returns them.
 	The subject may also use $assignment: the name the student sees.
 	harness is the C source of the test main of a "function" exercise: it
 	reads a test's arguments in argv, calls the student's function and prints
@@ -100,7 +102,7 @@ class Exercise:
 	generate_tests: Callable
 	forbidden: tuple[dict[str, str], ...] = ()
 	assignment_name: str = ""
-	examples: tuple[TestCase, ...] = ()
+	examples: tuple[TestCase, ...] | Callable = ()
 	harness: str = ""
 	check_leaks: bool = False
 	call: Callable | None = None

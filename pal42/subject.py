@@ -28,7 +28,7 @@ def render(variant):
 		"",
 		statement(variant),
 	]
-	if exo.examples:
+	if variant.examples:
 		lines += ["", "Examples:", ""] + _examples(variant)
 	return "\n".join(lines) + "\n"
 
@@ -53,7 +53,7 @@ def _examples(variant):
 	"""
 	exo = variant.exercise
 	lines = []
-	for test in exo.examples:
+	for test in variant.examples:
 		# A program shows its shell command; a function, its call.
 		if exo.call:
 			lines.append(exo.call(variant.name, test))

@@ -120,6 +120,16 @@ class TestRender(unittest.TestCase):
 			"$\n"
 		), subject)
 
+	def test_examples_can_depend_on_the_variant(self):
+		"""examples(params) gives the inputs of this variant: here, a word per times."""
+		def examples(params):
+			return (TestCase((params["times"],)),)
+		subject = render(repeat_twice(examples=examples))
+		self.assertTrue(subject.endswith(
+			"$>./repeat_twice twice | cat -e\n"
+			"twice twice$\n"
+		), subject)
+
 class TestGolden(unittest.TestCase):
 	"""The subject stays the same as a snapshot reviewed once by hand."""
 

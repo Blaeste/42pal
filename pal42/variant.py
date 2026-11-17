@@ -55,6 +55,13 @@ class Variant:
 		}
 
 	@property
+	def examples(self):
+		"""The tests shown in the subject: fixed, or given by examples(params)."""
+		if callable(self.exercise.examples):
+			return tuple(self.exercise.examples(self.params))
+		return self.exercise.examples
+
+	@property
 	def harness(self):
 		"""C source of the test main of a function exercise, holes filled like the name."""
 		return Template(self.exercise.harness).substitute(self.params)
