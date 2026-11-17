@@ -50,12 +50,15 @@ def _examples(variant):
 	exo = variant.exercise
 	lines = []
 	for test in exo.examples:
-		command = " ".join([f"./{variant.name}", *map(shell_quote, test.args)])
-		lines.append(f"$>{command} | cat -e")
+		lines.append(f"$>{example_command(variant.name, test)} | cat -e")
 		# render() joins the lines with \n, so the last one of the output
 		# is removed here; an output without \n ends without $, as in cat -e.
 		lines.append(cat_e(exo.oracle(variant.params, test)).removesuffix("\n"))
 	return lines
+
+def example_command(name, test):
+	"""Return the command that runs the program `name` on `test`: ./name args."""
+	return " ".join([f"./{name}", *map(shell_quote, test.args)])
 
 def shell_quote(arg):
 	"""Return `arg` written the way an example shows it in a shell command.
