@@ -108,6 +108,13 @@ class TestExercise(unittest.TestCase):
 		"""$assignment is the name the student sees, for a prototype for example."""
 		make_exercise(subject="int\t$assignment(char *str);")
 
+	def test_a_given_file_is_not_an_expected_one_and_its_holes_are_checked(self):
+		"""Given by the exercise or handed in by the student, not both."""
+		with self.assertRaisesRegex(ExerciseError, "char_filter.c.*given"):
+			make_exercise(provided_files={"char_filter.c": "int\tx;\n"})
+		with self.assertRaisesRegex(ExerciseError, "given file.*order"):
+			make_exercise(provided_files={"point.h": "/* ${order} */\n"})
+
 	def test_unknown_language_raises(self):
 		"""language must be one the project has a runner for: c, cpp or python."""
 		with self.assertRaisesRegex(ExerciseError, "rust"):

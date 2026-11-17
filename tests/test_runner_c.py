@@ -78,6 +78,18 @@ class TestCompile(unittest.TestCase):
 		self.assertEqual(CRunner().run(result.binary, TestCase()).stdout, b"5\n")
 		self.assertEqual(result.objects, (self.work / "add.o",))
 
+	def test_a_header_among_the_sources_is_used_not_compiled(self):
+		"""ft_list.h + ft_list.c: only the .c gives an object; the header is included."""
+		header = self.write("ft_list.h", "#ifndef FT_LIST_H\n# define FT_LIST_H\nint\tsize(void);\n#endif\n")
+		code = self.write("ft_list.c", '#include "ft_list.h"\n\nint\tsize(void)\n{\n\treturn (42);\n}\n')
+		main = self.work / "test_main.c"
+		main.write_text('#include <stdio.h>\n#include "ft_list.h"\n\nint\tmain(void)\n'
+			'{\n\tprintf("%d\\n", size());\n\treturn (0);\n}\n', encoding="utf-8")
+		result = CRunner().compile([header, code], self.work, "prog", extra=[main])
+		self.assertTrue(result.ok, result.output)
+		self.assertEqual(result.objects, (self.work / "ft_list.o",))
+		self.assertEqual(CRunner().run(result.binary, TestCase()).stdout, b"42\n")
+
 	def test_compile_command_can_be_changed(self):
 		"""An exam can give its own command: without -Werror, a warning passes."""
 		runner = CRunner(("cc", "-Wall"))

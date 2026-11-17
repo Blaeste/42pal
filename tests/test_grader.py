@@ -327,3 +327,55 @@ class TestLeaks(unittest.TestCase):
 		result = self.grade(LEAKY_ECHO, valgrind="no_such_valgrind")
 		self.assertTrue(result.passed, result.trace)
 		self.assertIn("valgrind", result.warnings[0])
+
+LIST_HEADER = "#ifndef FT_LIST_H\n# define FT_LIST_H\n\ntypedef struct s_list\n{\n\tstruct s_list\t*next;\n\tint\t\t\t\tvalue;\n}\tt_list;\n\nint\tft_list_size(t_list *begin);\n\n#endif\n"
+
+LIST_SIZE = '#include "ft_list.h"\n\nint\tft_list_size(t_list *begin)\n{\n\tint\tn;\n\n\tn = 0;\n\twhile (begin)\n\t{\n\t\tn++;\n\t\tbegin = begin->next;\n\t}\n\treturn (n);\n}\n'
+
+# The test main builds a list of av[1] nodes with the student's header.
+LIST_HARNESS = '#include <stdio.h>\n#include <stdlib.h>\n#include "ft_list.h"\n\nint\tmain(int ac, char **av)\n{\n\tt_list\tnodes[10];\n\tint\t\tn;\n\tint\t\ti;\n\n\t(void)ac;\n\tn = atoi(av[1]);\n\ti = 0;\n\twhile (i < n)\n\t{\n\t\tnodes[i].next = (i + 1 < n) ? &nodes[i + 1] : NULL;\n\t\ti++;\n\t}\n\tprintf("%d\\n", ft_list_size(n ? nodes : NULL));\n\treturn (0);\n}\n'
+
+def list_size_variant(**changes):
+	"""A made-up function exercise whose rendu has a header and a .c."""
+	fields = dict(
+		name="list_size", kind="function", assignment_name="ft_list_size",
+		expected_files=("ft_list.h", "ft_list_size.c"), allowed_functions=(),
+		harness=LIST_HARNESS, oracle=lambda params, test: f"{test.args[0]}\n",
+		generate_tests=lambda params, rng: [TestCase(("0",)), TestCase(("1",)), TestCase(("5",))],
+	)
+	fields.update(changes)
+	return Variant(make_exercise(**fields), 0, {"mode": "common"})
+
+class TestSeveralFiles(unittest.TestCase):
+	"""Rendus with a header, handed in by the student or given by the exercise."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.rendu = Path(self.tmp.name)
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def hand_in(self, files):
+		for name, code in files.items():
+			(self.rendu / name).write_text(code, encoding="utf-8")
+
+	def test_a_header_and_a_c_file_handed_in_pass(self):
+		"""ft_list.h and ft_list_size.c: the test main uses the student's header."""
+		self.hand_in({"ft_list.h": LIST_HEADER, "ft_list_size.c": LIST_SIZE})
+		result = grade(list_size_variant(), self.rendu, CRunner())
+		self.assertTrue(result.passed, result.trace)
+
+	def test_a_missing_header_is_named(self):
+		"""Only the .c handed in: the header is missing, and named."""
+		self.hand_in({"ft_list_size.c": LIST_SIZE})
+		result = grade(list_size_variant(), self.rendu, CRunner())
+		self.assertIn("Missing file: ft_list.h", result.trace)
+
+	def test_a_header_given_by_the_exercise_needs_not_be_handed_in(self):
+		"""ft_list.h is given: the student hands in ft_list_size.c only."""
+		self.hand_in({"ft_list_size.c": LIST_SIZE})
+		variant = list_size_variant(expected_files=("ft_list_size.c",),
+			provided_files={"ft_list.h": LIST_HEADER})
+		result = grade(variant, self.rendu, CRunner())
+		self.assertTrue(result.passed, result.trace)

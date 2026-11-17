@@ -83,6 +83,10 @@ class Exercise:
 	every output is right: a leak or a memory error then fails the rendu.
 	call(name, test), for a function, writes a test as a C call, like
 	ft_count("hello", 'l'): the examples and the traces show it.
+	provided_files maps a file name to its content (with holes like the
+	name): files given by the exercise, like a header with a struct, put
+	next to the subject and in the compilation; the student does not hand
+	them in.
 	"""
 	name: str
 	language: str
@@ -100,6 +104,7 @@ class Exercise:
 	harness: str = ""
 	check_leaks: bool = False
 	call: Callable | None = None
+	provided_files: dict[str, str] = field(default_factory=dict)
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
@@ -115,6 +120,10 @@ class Exercise:
 		self._check_template(self.subject, "the subject", extra=("assignment",))
 		self._check_template(self.assignment_name, "the name")
 		self._check_template(self.harness, "the test main")
+		for name, content in self.provided_files.items():
+			if name in self.expected_files:
+				self._fail(f"'{name}' is both given by the exercise and expected from the student")
+			self._check_template(content, f"the given file {name}")
 		for file in self.expected_files:
 			self._check_template(file, "an expected file")
 		self._check_forbidden()

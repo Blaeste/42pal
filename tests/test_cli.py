@@ -72,6 +72,14 @@ class TestWorkspace(unittest.TestCase):
 		self.assertTrue((self.root / "rendu/common_chars").is_dir())
 		self.assertTrue((self.root / "traces").is_dir())
 
+	def test_given_files_are_written_next_to_the_subject(self):
+		"""A header given by the exercise lands in subjects/<name>/."""
+		variant = Variant(make_exercise(provided_files={"point.h": "typedef int\tt_x;\n"}),
+			0, {"mode": "common"})
+		Workspace(self.root).give_subject(variant)
+		given = self.root / "subjects/char_filter/point.h"
+		self.assertEqual(given.read_text(encoding="utf-8"), "typedef int\tt_x;\n")
+
 	def test_student_work_already_in_rendu_is_kept(self):
 		"""Giving a subject again never deletes what the student wrote."""
 		work = self.root / "rendu/common_chars/common_chars.c"

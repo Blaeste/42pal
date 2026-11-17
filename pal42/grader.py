@@ -54,14 +54,18 @@ def grade(variant, rendu, runner, progress=None, valgrind="valgrind"):
 	if missing:
 		return Grade(False, trace.missing_trace(missing), 0, len(tests))
 	with tempfile.TemporaryDirectory() as work:
-		# A function exercise: the test main is compiled with the student's files.
+		# Compiled with the student's files: the files given by the exercise,
+		# and the test main of a function exercise.
 		extra = []
+		for name, content in variant.provided_files.items():
+			extra.append(Path(work) / name)
+			extra[-1].write_text(content, encoding="utf-8")
 		if exo.kind == "function":
 			extra.append(Path(work) / HARNESS_FILE)
-			extra[0].write_text(variant.harness, encoding="utf-8")
+			extra[-1].write_text(variant.harness, encoding="utf-8")
 		compiled = runner.compile(sources, work, variant.name, extra=extra)
 		if not compiled.ok:
-			if extra and compiled.objects and checks.defines_main(*compiled.objects):
+			if exo.kind == "function" and compiled.objects and checks.defines_main(*compiled.objects):
 				return Grade(False, trace.main_trace(), 0, len(tests))
 			text = trace.compile_trace(
 				runner.command, variant.expected_files, variant.name, compiled.output

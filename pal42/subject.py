@@ -22,6 +22,8 @@ def render(variant):
 		f"Assignment name  : {variant.name}",
 		f"Expected files   : {', '.join(variant.expected_files)}",
 		f"Allowed functions: {', '.join(exo.allowed_functions)}",
+		# Files given by the exercise, next to the subject (a header...).
+		*([f"Given files      : {', '.join(exo.provided_files)}"] if exo.provided_files else []),
 		"-" * 80,
 		"",
 		statement(variant),

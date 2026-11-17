@@ -41,6 +41,9 @@ class Workspace:
 		subject = self.subjects / variant.name / "subject.en.txt"
 		subject.parent.mkdir(exist_ok=True)
 		subject.write_text(render(variant), encoding="utf-8")
+		# Files given by the exercise (a header with a struct...), for the student.
+		for name, content in variant.provided_files.items():
+			(subject.parent / name).write_text(content, encoding="utf-8")
 		(self.rendu / variant.name).mkdir(exist_ok=True)
 		if self.remote:
 			self._ensure_git()

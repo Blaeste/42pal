@@ -25,11 +25,14 @@ class CRunner:
 		only; then the objects are linked, with the `extra` sources (a test
 		main) if any. The files are copied into workdir and compiled there, by
 		their own names: the errors read "bad.c:3:6", without the folder, and
-		the student's folder is left untouched.
+		the student's folder is left untouched. Headers among the files are
+		copied, not compiled.
 		"""
 		workdir = Path(workdir)
-		names = _copy_into(sources, workdir)
-		extra_names = _copy_into(extra, workdir)
+		# Every file is copied, headers too (for #include "..."), but only the
+		# .c files are compiled.
+		names = [name for name in _copy_into(sources, workdir) if name.endswith(".c")]
+		extra_names = [name for name in _copy_into(extra, workdir) if name.endswith(".c")]
 		objects = tuple(workdir / (Path(source).stem + ".o") for source in names)
 		steps = [
 			# -g: debug information, so that valgrind can give the line of a

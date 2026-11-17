@@ -172,3 +172,11 @@ class TestFunctionExamples(unittest.TestCase):
 		self.assertTrue(subject.endswith(
 			'Examples:\n\nft_count("hello", \'l\')\n2$\nft_count("", \'x\')\n0$\n'
 		), subject)
+
+class TestGivenFiles(unittest.TestCase):
+	"""Files given by the exercise are named in the header of the subject."""
+
+	def test_the_header_names_the_given_files(self):
+		"""Given files      : point.h, under Allowed functions."""
+		variant = repeat_twice(provided_files={"point.h": "typedef int\tt_x;\n"})
+		self.assertIn("Allowed functions: write\nGiven files      : point.h\n", render(variant))

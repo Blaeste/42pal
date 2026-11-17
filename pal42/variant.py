@@ -47,6 +47,14 @@ class Variant:
 		)
 
 	@property
+	def provided_files(self):
+		"""The files given by the exercise, {name: content}, holes filled like the name."""
+		return {
+			name: Template(content).substitute(self.params)
+			for name, content in self.exercise.provided_files.items()
+		}
+
+	@property
 	def harness(self):
 		"""C source of the test main of a function exercise, holes filled like the name."""
 		return Template(self.exercise.harness).substitute(self.params)
