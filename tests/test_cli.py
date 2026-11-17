@@ -13,7 +13,9 @@ import subprocess
 import time
 import io
 import tempfile
+import threading
 import unittest
+from unittest import mock
 from pathlib import Path
 from random import Random
 
@@ -496,6 +498,20 @@ class TestCheckCatalog(unittest.TestCase):
 		self.assertRegex(text, r"broken#\d+")
 		self.assertIn("= Test 1", text)
 		self.assertIn("Catalog KO", text)
+
+	def test_the_variants_of_an_exercise_are_graded_at_the_same_time(self):
+		"""Two variants that wait for each other: graded one after the other, they block."""
+		meeting = threading.Barrier(2, timeout=5)
+		def graded_together(variant, ref):
+			meeting.wait()
+			return Grade(True, "", 1, 1)
+		with tempfile.TemporaryDirectory() as folder:
+			(Path(folder) / "ref.c").write_text(ECHO_OK, encoding="utf-8")
+			catalog = Catalog({"pair": make_exercise(name="pair")}, [], {"pair": Path(folder)})
+			with mock.patch.object(check, "check_variant", graded_together):
+				code, text = self.run_check(catalog)
+		self.assertEqual(code, 0, text)
+		self.assertIn("2/2 variants OK", text)
 
 	def test_missing_ref_c_and_catalog_warnings_fail(self):
 		"""No ref.c, or a folder skipped by the catalog: both are errors here."""

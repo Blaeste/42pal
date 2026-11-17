@@ -5,6 +5,9 @@ variant (see pal42.reference). A variant where ref.c fails means that the
 oracle or ref.c is wrong: the command names it (exo#seed) with its trace.
 """
 
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from rich.console import Console
 from rich.markup import escape
 from rich.text import Text
@@ -49,14 +52,21 @@ def check_catalog(console=None, catalog=None):
 	return 0 if ok else 1
 
 def _check_exercise(console, exo, name, ref):
-	"""Grade ref.c on each variant to check; return the failures and the count."""
+	"""Grade ref.c on each variant to check; return the failures and the count.
+
+	The variants are graded at the same time, one thread each, up to one per
+	processor: the work is done by cc, the programs and valgrind, in their own
+	processes. The failures come back in the order of the variants.
+	"""
 	variants = variants_to_check(exo)
-	failures = []
 	# A spinner while checking; rich shows it only in a real terminal.
 	with console.status(f"Checking {name}…") as status:
-		for number, variant in enumerate(variants, start=1):
-			status.update(f"Checking {name}… variant {number}/{len(variants)}")
-			result = check_variant(variant, ref)
-			if not result.passed:
-				failures.append((variant, result))
+		with ThreadPoolExecutor(max_workers=os.cpu_count() or 1) as pool:
+			futures = [pool.submit(check_variant, variant, ref) for variant in variants]
+			for done, _ in enumerate(as_completed(futures), start=1):
+				status.update(f"Checking {name}… variant {done}/{len(variants)}")
+	failures = [
+		(variant, future.result()) for variant, future in zip(variants, futures)
+		if not future.result().passed
+	]
 	return failures, len(variants)
