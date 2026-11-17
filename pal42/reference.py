@@ -34,14 +34,30 @@ def variants_to_check(exo, max_variants=MAX_VARIANTS):
 		seed += 1
 	return list(found.values())
 
+def reference_files(variant, ref):
+	"""Return where each expected file of `variant` comes from: {name: path}.
+
+	ref.c stands for the first expected file. The other ones, like a header
+	the student hands in too, are the files of the same name next to ref.c.
+	"""
+	ref = Path(ref)
+	sources = {variant.expected_files[0]: ref}
+	for name in variant.expected_files[1:]:
+		sources[name] = ref.parent / name
+	return sources
+
 def check_variant(variant, ref):
 	"""Grade the reference solution `ref` (a ref.c) for `variant`; return the Grade.
 
-	ref.c is put in a temporary rendu under the expected file's name, then
-	graded like a student's work, compiled with the -D flags of the variant:
-	it must call no forbidden function and pass every test of the oracle.
+	ref.c, and the other expected files next to it, are put in a temporary
+	rendu under the expected names, then graded like a student's work,
+	compiled with the -D flags of the variant: it must call no forbidden
+	function and pass every test of the oracle. A file missing next to ref.c
+	is missing from the rendu: the grade says so.
 	"""
 	with tempfile.TemporaryDirectory() as rendu:
-		shutil.copy(ref, Path(rendu) / variant.expected_files[0])
+		for name, source in reference_files(variant, ref).items():
+			if source.is_file():
+				shutil.copy(source, Path(rendu) / name)
 		runner = CRunner(DEFAULT_COMMAND + variant.defines)
 		return grade(variant, rendu, runner)

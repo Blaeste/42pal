@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from pal42.catalog import load_catalog
-from pal42.reference import check_variant, variants_to_check
+from pal42.reference import check_variant, reference_files, variants_to_check
 from pal42.runners.c import DEFAULT_COMMAND, CRunner
 from pal42.variant import Variant, draw
 from tests.helpers import ECHO_OK, echo_oracle, echo_tests, make_exercise
@@ -18,8 +18,10 @@ CATALOG = load_catalog()
 def compile_reference(name, params, work, flags=None):
 	"""Compile the ref.c of exercise `name` for `params`; return the CompileResult.
 
-	flags are the -D flags of the variant unless given. A function exercise
-	is compiled with its test main, like a student's rendu.
+	The other expected files (a header) are taken next to ref.c, like
+	check-catalog does. flags are the -D flags of the variant unless given.
+	A function exercise is compiled with its test main, like a student's
+	rendu.
 	"""
 	variant = Variant(CATALOG.exercises[name], 0, params)
 	extra = []
@@ -27,8 +29,9 @@ def compile_reference(name, params, work, flags=None):
 		extra.append(Path(work) / "main_42pal.c")
 		extra[0].write_text(variant.harness, encoding="utf-8")
 	command = DEFAULT_COMMAND + (variant.defines if flags is None else flags)
-	ref = CATALOG.folders[name] / "ref.c"
-	return CRunner(command).compile([ref], work, variant.name, extra=extra)
+	# ref.c, with the header the student hands in too, if any, next to it.
+	sources = list(reference_files(variant, CATALOG.folders[name] / "ref.c").values())
+	return CRunner(command).compile(sources, work, variant.name, extra=extra)
 
 class TestReferences(unittest.TestCase):
 	"""Every exercise of the catalog has a ref.c that builds each of its variants."""
@@ -89,3 +92,20 @@ class TestCheckVariant(unittest.TestCase):
 			result = check_variant(Variant(exo, 3, {"mode": "common"}), ref)
 		self.assertFalse(result.passed)
 		self.assertIn("-hello$\n+HELLO$", result.trace)
+
+	def test_a_header_the_student_hands_in_is_taken_next_to_ref_c(self):
+		"""Expected files echo_first.c and echo.h: echo.h comes from the folder of ref.c."""
+		exo = make_exercise(
+			name="echo_first", expected_files=("echo_first.c", "echo.h"),
+			oracle=echo_oracle, generate_tests=echo_tests,
+		)
+		variant = Variant(exo, 3, {"mode": "common"})
+		with tempfile.TemporaryDirectory() as tmp:
+			ref = Path(tmp) / "ref.c"
+			ref.write_text(f'#include "echo.h"\n{ECHO_OK}', encoding="utf-8")
+			missing = check_variant(variant, ref)
+			(Path(tmp) / "echo.h").write_text("typedef int\tt_echo;\n", encoding="utf-8")
+			result = check_variant(variant, ref)
+		self.assertFalse(missing.passed)
+		self.assertIn("echo.h", missing.trace)
+		self.assertTrue(result.passed, result.trace)
