@@ -140,12 +140,13 @@ Five exams, like in 42_EXAM:
 | `split_fields` | function, leaks checked | split | 7 |
 | `print_range` | function (void, prints) | print_basics | 10 |
 | `arg_pick` | program | program_args | 6 |
-| `word_order` | program | words | 13 |
+| `word_order` | program | reorder_words | 13 |
 | `number_facts` | program | arithmetic | 9 |
-| `base_string` | function, leaks checked | number_print | 6 |
+| `base_string` | function, leaks checked | number_string | 6 |
 | `byte_rotate` | function | bits | 12 |
 | `sequence_array` | function, leaks checked | allocation | 10 |
-| `list_drop` | function + header handed in, leaks checked | linked_lists | 12 |
+| `list_drop` | function + header handed in, leaks checked | list_changes | 12 |
+| `name_style` | program | case_style | 18 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
