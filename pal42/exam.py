@@ -43,6 +43,11 @@ class Exam:
 	retry: dict = field(default_factory=dict)
 
 	@property
+	def points_per_level(self):
+		"""Points a passed level is worth, like 42_EXAM: 100 shared by the levels."""
+		return 100 / self.level_count
+
+	@property
 	def playable_levels(self):
 		"""The levels that have at least one exercise, in order."""
 		return [level for level, themes in sorted(self.levels.items()) if themes]

@@ -123,6 +123,7 @@ Diff KO
 - Test : le rank 02 a 4 niveaux, et `char_filter` est jouable au niveau 2.
 - Test : un niveau sans aucun modèle donne un avertissement.
 - Test : un fichier d'exam mal écrit donne une erreur dès le chargement.
+- Fait : la note suit 42_EXAM : chaque niveau réussi vaut 100 / nombre de niveaux (25 au rank 02), la note est sur 100, et l'exam est réussi à 100. Si les niveaux jouables s'arrêtent avant, l'exam s'arrête sous 100 et le dit. La note est affichée après chaque OK, dans `status`, dans le panneau du sujet (ce que vaut le niveau), dans le résumé et dans l'historique.
 
 **17. Session.** On garde l'exam, le niveau, le sujet en cours (`exo#seed`), le début de l'exam, les tentatives et l'heure de la prochaine correction possible dans `~/.42pal/session.json`, pour pouvoir reprendre. On garde aussi, à part, l'historique des exams terminés (exam, niveau atteint, note, tentatives, durée) : c'est la base du futur score (voir « Plus tard : gamification »). Fichier : `session.py`.
 - Test : sauvegarder puis recharger donne le même état (l'horloge est injectée pour les tests).
@@ -160,7 +161,7 @@ Diff KO
 
 Chaque exo est une étape : un thème, un modèle original, sa `ref.c`, et `check-catalog` qui passe.
 
-**22. Guide de contribution.** `CONTRIBUTING.md` et un dossier modèle `exercises/_template/`. La règle n°1 : décris le thème, écris ton propre nom, ton propre énoncé et tes propres exemples, et ne copie jamais un sujet réel.
+**22. ~~Guide de contribution.~~ Abandonné** : les exos sont écrits par nous seulement, pas de guide ni de dossier modèle pour d'autres. Ancien texte : `CONTRIBUTING.md` et un dossier modèle `exercises/_template/`. La règle n°1 : décris le thème, écris ton propre nom, ton propre énoncé et tes propres exemples, et ne copie jamais un sujet réel.
 - Vérifier : ajouter un deuxième modèle du thème `char_sets` en suivant uniquement le guide.
 
 **23. Rank 02 jouable de bout en bout.** Un modèle par niveau d'abord, puis compléter les thèmes.

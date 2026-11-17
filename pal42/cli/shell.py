@@ -291,10 +291,16 @@ class Shell:
 		self.next_grademe_at = None
 		self.oks += 1
 		self.passed_levels.append(self.level)
-		next_levels = [level for level in self.exam.playable_levels if level > self.level]
-		if not next_levels:
+		self.console.print(display.points_won(self.exam.points_per_level, self.grade))
+		if self.grade >= 100:
 			self.console.print(display.exam_passed_panel(self.exam))
 			self.end_exam("passed")
+			return True
+		next_levels = [level for level in self.exam.playable_levels if level > self.level]
+		if not next_levels:
+			# The next levels have no exercise yet: the exam stops below 100.
+			self.console.print(display.no_more_levels(self.grade))
+			self.end_exam("no more levels")
 			return True
 		self.start(self.exam, next_levels[0])
 		return False
@@ -329,6 +335,11 @@ class Shell:
 			self.console.print(display.trace_panel(result.trace))
 		return result
 
+	@property
+	def grade(self):
+		"""The grade out of 100: the points of each level passed, like 42_EXAM."""
+		return self.exam.points_per_level * len(self.passed_levels)
+
 	def end_exam(self, end="finish"):
 		"""Show the summary of the exam, keep it in the history, say goodbye.
 
@@ -336,7 +347,7 @@ class Shell:
 		"""
 		elapsed = self.clock() - self.started_at
 		self.console.print(display.summary_table(
-			self.exam, self.passed_levels, self.attempts, self.oks, elapsed,
+			self.exam, self.passed_levels, self.attempts, self.oks, elapsed, self.grade,
 		))
 		if self.store:
 			self.store.add_history(self._history_entry(end, elapsed))
@@ -350,6 +361,7 @@ class Shell:
 			"title": self.exam.title,
 			"ended_at": datetime.fromtimestamp(self.clock()).isoformat(timespec="seconds"),
 			"levels_passed": self.passed_levels,
+			"grade": self.grade,
 			"attempts": self.attempts,
 			"oks": self.oks,
 			"seconds": round(elapsed),
@@ -384,7 +396,7 @@ class Shell:
 		if_ko = self.retry.wait_after(self.failures + 1)
 		self.console.print(display.status_table(
 			self.exam, self.level, self.variant, elapsed, left, self._wait_left(), if_ko,
-			f"{self.retry_mode} ({', '.join(map(str, self.retry.minutes))} min)",
+			f"{self.retry_mode} ({', '.join(map(str, self.retry.minutes))} min)", self.grade,
 		))
 
 	def _wait_left(self):

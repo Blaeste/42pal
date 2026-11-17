@@ -394,13 +394,40 @@ class TestGrademe(unittest.TestCase):
 		self.assertIn("traces/01_echo_first.trace", text)
 		self.assertEqual(shell.level, 2)
 
-	def test_last_level_passed_ends_the_exam(self):
-		"""grademe OK at the last playable level: the exam is passed and over."""
+	def test_last_playable_level_passed_ends_the_exam_below_100(self):
+		"""Level 2 is the last playable one out of 4: 25/100, said honestly."""
 		shell = self.start(2, "grademe")
 		self.hand_in(ECHO_OK)
 		shell.command_loop()
-		self.assertIn("Exam passed", output(shell))
+		text = output(shell)
+		self.assertIn("No more playable level", text)
+		self.assertNotIn("Exam passed", text)
 		self.assertEqual(len(self.script.prompts), 1)
+
+	def test_all_four_levels_passed_is_100_and_the_exam_is_passed(self):
+		"""An exercise at every level: 4 OK in a row give 100/100."""
+		themes = {"char_sets": Theme("char_sets", "Compare characters", {"rank02": (1, 2, 3, 4)})}
+		self.exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=themes)
+		shell = self.start(1, "grademe", "grademe", "grademe", "grademe")
+		self.hand_in(ECHO_OK)
+		shell.command_loop()
+		text = output(shell)
+		self.assertIn("grade 100/100", text)
+		self.assertIn("Exam passed", text)
+
+	def test_the_subject_panel_says_what_the_level_is_worth(self):
+		"""Like 42_EXAM's "for 25 potential points": shown with the subject."""
+		shell = self.start(1, "finish")
+		self.assertIn("is worth 25 points", output(shell))
+
+	def test_each_ok_gives_its_points_and_the_grade(self):
+		"""OK at level 1 of 4: +25 points, grade 25/100, shown in status too."""
+		shell = self.start(1, "grademe", "status", "finish")
+		self.hand_in(ECHO_OK)
+		shell.command_loop()
+		text = output(shell)
+		self.assertIn("+25 points · grade 25/100", text)
+		self.assertRegex(text, r"Grade\s+25/100")
 
 	def test_wrong_solution_shows_the_trace_and_keeps_the_subject(self):
 		"""KO: the trace in the terminal and in traces/; same subject, same level."""
@@ -635,6 +662,7 @@ class TestExamTime(unittest.TestCase):
 		text = output(shell)
 		self.assertIn("Summary", text)
 		self.assertRegex(text, r"Levels passed\s+1")
+		self.assertRegex(text, r"Grade\s+25/100")
 		self.assertRegex(text, r"Grademe\s+1 \(1 OK, 0 KO\)")
 		self.assertRegex(text, r"Time spent\s+0:30:00")
 
@@ -679,6 +707,7 @@ class TestSessionInShell(unittest.TestCase):
 		self.assertIsNone(self.store.load())
 		[entry] = self.store.history()
 		self.assertEqual(entry["exam"], "rank02")
+		self.assertEqual(entry["grade"], 25)
 		self.assertEqual((entry["levels_passed"], entry["attempts"], entry["oks"]), ([1], 1, 1))
 		self.assertEqual(entry["end"], "finish")
 

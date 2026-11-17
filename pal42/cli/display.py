@@ -26,6 +26,7 @@ def subject_panel(exam, level, variant, subject, rendu, retry_mode="soft"):
 	lines = [
 		f"[bold]{escape(exam.title)}[/] · level {level} · {exam.duration_minutes} min"
 		f" · retry: {retry_mode}",
+		f"This level is worth {points(exam.points_per_level)} points.",
 		"",
 		f"Subject: [bold cyan]{escape(variant.name)}[/]",
 		f"Read it: {escape(short_path(subject))}",
@@ -45,7 +46,7 @@ def help_table(commands):
 		table.add_row(f"[bold]{command}[/]", meaning)
 	return table
 
-def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry=""):
+def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry="", grade=0):
 	"""Where the student is: exam, level, subject, times, and the next grademe.
 
 	wait is the time left before grademe is allowed again; if_ko the wait
@@ -55,6 +56,7 @@ def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry="")
 	table.add_row("Exam", escape(exam.title))
 	table.add_row("Level", f"{level} of {exam.level_count}")
 	table.add_row("Subject", f"[bold cyan]{escape(variant.name)}[/]")
+	table.add_row("Grade", f"{points(grade)}/100")
 	table.add_row("Time spent", duration(elapsed))
 	table.add_row("Time left", duration(left))
 	table.add_row("Next grademe", f"in {duration(wait)}" if wait else "now")
@@ -127,8 +129,7 @@ def trace_panel(trace):
 def exam_passed_panel(exam):
 	"""The panel shown when the last playable level is passed."""
 	return Panel(
-		f"[bold green]Well done! Exam passed[/]: every playable level of "
-		f"{escape(exam.title)} is done.",
+		f"[bold green]Well done! Exam passed[/]: {escape(exam.title)}, grade 100/100.",
 		border_style="green", width=80,
 	)
 
@@ -140,10 +141,11 @@ def almost_over(left):
 	"""Said once, when less than 10 minutes are left."""
 	return f"[bold yellow]Less than 10 minutes left[/] ({duration(left)})."
 
-def summary_table(exam, passed_levels, attempts, oks, elapsed):
-	"""The summary at the end of the exam: levels passed, grademe, time spent."""
+def summary_table(exam, passed_levels, attempts, oks, elapsed, grade=0):
+	"""The summary at the end of the exam: grade, levels passed, grademe, time spent."""
 	table = Table(title=f"Summary · {escape(exam.title)}", show_header=False, box=None)
 	levels = ", ".join(map(str, passed_levels)) or "none"
+	table.add_row("Grade", f"{points(grade)}/100")
 	table.add_row("Levels passed", f"{len(passed_levels)} ({levels})")
 	table.add_row("Grademe", f"{attempts} ({oks} OK, {attempts - oks} KO)")
 	table.add_row("Time spent", duration(elapsed))
@@ -174,3 +176,16 @@ def practice_panel(theme, variant, subject, rendu):
 		f"Hand in: {escape(short_path(rendu))}/",
 	]
 	return Panel("\n".join(lines), title="42pal", width=80)
+
+def points(value):
+	"""Write points without a useless .0: 25, but 12.5."""
+	return f"{value:g}"
+
+def points_won(won, grade):
+	"""Said after an OK: the points of the level, and the grade now."""
+	return f"[bold green]+{points(won)} points[/] · grade {points(grade)}/100"
+
+def no_more_levels(grade):
+	"""Said when the last playable level is passed but the grade is below 100."""
+	return (f"[yellow]No more playable level for now: your grade is {points(grade)}/100.[/]"
+		" The next levels have no exercise yet.")
