@@ -142,6 +142,7 @@ Five exams, like in 42_EXAM:
 | `arg_pick` | program | program_args | 6 |
 | `word_order` | program | words | 13 |
 | `number_facts` | program | arithmetic | 9 |
+| `base_string` | function, leaks checked | number_print | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
