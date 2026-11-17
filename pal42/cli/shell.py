@@ -21,7 +21,7 @@ from pal42.exam import ExamError, list_exams, load_exam
 from pal42.grader import grade
 from pal42.retry import RetryPolicy
 from pal42.runners.c import CRunner
-from pal42.session import Session, SessionStore
+from pal42.session import STATE_DIR, Session, SessionStore
 from pal42.themes import load_themes
 
 # The examshell commands and what they do, shown by help.
@@ -37,6 +37,15 @@ WARNING_SECONDS = 10 * 60
 
 # The grademe spinner stays at least this long, even if the grading is quicker.
 ANIMATION_SECONDS = 0.8
+
+def complete_command(text, state):
+	"""readline's completer: the state-th command that starts with `text`.
+
+	readline calls it with state 0, 1, 2... until it returns None, then
+	completes (one match) or lists the matches (several).
+	"""
+	matches = [command for command in COMMANDS if command.startswith(text)]
+	return matches[state] if state < len(matches) else None
 
 class Shell:
 	"""One exam session in the terminal.
@@ -384,9 +393,16 @@ def main(retry_mode="soft"):
 
 	retry_mode is "soft", or "hard" with ./42pal --hard.
 	"""
-	# Once imported, readline gives input() the arrow keys: history and editing.
+	# Once imported, readline gives input() the arrow keys (history, editing)
+	# and, with a completer, Tab to complete the commands.
 	try:
-		import readline  # noqa: F401
+		import readline
+		readline.set_completer(complete_command)
+		# macOS ships libedit instead of GNU readline: another syntax.
+		if "libedit" in (readline.__doc__ or ""):
+			readline.parse_and_bind("bind ^I rl_complete")
+		else:
+			readline.parse_and_bind("tab: complete")
 	except ImportError:
 		pass
 	console = Console()
@@ -407,7 +423,10 @@ def main(retry_mode="soft"):
 		return input(prompt)
 
 	try:
-		Shell(console, ask, ask_password, retry_mode=retry_mode, store=SessionStore()).run()
+		# rendu/ is a git repository that pushes to a bare one in ~/.42pal.
+		workspace = Workspace(remote=STATE_DIR / "rendu.git")
+		Shell(console, ask, ask_password, workspace=workspace,
+			retry_mode=retry_mode, store=SessionStore()).run()
 	except KeyboardInterrupt:
 		console.print("\nExam stopped (Ctrl-C): run ./42pal again to resume it.")
 		return 130

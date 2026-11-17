@@ -17,7 +17,7 @@ import unittest
 from pathlib import Path
 from random import Random
 
-from pal42.cli.shell import Shell
+from pal42.cli.shell import Shell, complete_command
 from pal42.catalog import Catalog, load_catalog
 from pal42.cli import check, display
 from pal42.cli.workspace import Workspace
@@ -266,6 +266,10 @@ class TestLauncher(unittest.TestCase):
 			self.assertIn("Welcome", result.stdout)
 			self.assertIn("End of the exam", result.stdout)
 			self.assertEqual(len(list(Path(home).glob("42pal_exam/subjects/*/subject.en.txt"))), 1)
+			if shutil.which("git"):
+				# rendu/ is a git repository pushing to ~/.42pal/rendu.git.
+				self.assertTrue((Path(home) / "42pal_exam/rendu/.git").is_dir())
+				self.assertTrue((Path(home) / ".42pal/rendu.git").is_dir())
 
 	def test_42pal_hard_starts_with_the_hard_retry_timer(self):
 		"""./42pal --hard: the hard waits, chosen before anything starts."""
@@ -745,3 +749,69 @@ class TestResume(unittest.TestCase):
 		shell = self.run_shell("", "pw", "1", "", "finish")
 		self.assertIn("cannot be resumed", output(shell))
 		self.assertEqual(shell.level, 1)
+
+def git(*args, cwd):
+	"""Run git in `cwd`; return the finished process (output as text)."""
+	return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
+
+@unittest.skipUnless(shutil.which("git"), "git is not installed")
+class TestRenduGit(unittest.TestCase):
+	"""rendu/ is a git repository: add, commit and push work, like at the exam."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.remote = Path(self.tmp.name) / ".42pal" / "rendu.git"
+		self.variant = Variant(load_catalog().exercises["char_filter"], 0,
+			{"mode": "common", "order": "ascii", "separator": "space"})
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def test_add_commit_and_push_work_in_rendu(self):
+		"""git add . && git commit && git push: the commit reaches the remote."""
+		Workspace(self.root, remote=self.remote).give_subject(self.variant)
+		rendu = self.root / "rendu"
+		(rendu / "common_chars/common_chars.c").write_text("int\\tmain(void);\\n", encoding="utf-8")
+		for args in [("add", "."), ("commit", "-m", "my work"), ("push",)]:
+			result = git(*args, cwd=rendu)
+			self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+		log = git("log", "--oneline", cwd=self.remote)
+		self.assertIn("my work", log.stdout)
+
+	def test_the_next_subject_keeps_the_repository_and_its_history(self):
+		"""A second subject: no new git init, the first commit is still there."""
+		workspace = Workspace(self.root, remote=self.remote)
+		workspace.give_subject(self.variant)
+		rendu = self.root / "rendu"
+		(rendu / "common_chars/common_chars.c").write_text("int\tmain(void);\n", encoding="utf-8")
+		git("add", ".", cwd=rendu)
+		git("commit", "-m", "level 1", cwd=rendu)
+		workspace.give_subject(Variant(self.variant.exercise, 1,
+			{"mode": "only_first", "order": "ascii", "separator": "space"}))
+		self.assertIn("level 1", git("log", "--oneline", cwd=rendu).stdout)
+		self.assertEqual(git("remote", "get-url", "origin", cwd=rendu).stdout.strip(), str(self.remote))
+
+	def test_without_git_rendu_is_a_plain_folder(self):
+		"""git missing: no error, rendu/ is a plain folder (grademe still works)."""
+		Workspace(self.root, remote=self.remote, git="no_such_git").give_subject(self.variant)
+		self.assertTrue((self.root / "rendu/common_chars").is_dir())
+		self.assertFalse((self.root / "rendu/.git").exists())
+
+class TestCompletion(unittest.TestCase):
+	"""Tab completes the examshell commands (readline calls complete_command)."""
+
+	def test_tab_completes_a_command_from_its_start(self):
+		"""gr gives grademe, then nothing more; x gives nothing."""
+		self.assertEqual(complete_command("gr", 0), "grademe")
+		self.assertIsNone(complete_command("gr", 1))
+		self.assertIsNone(complete_command("x", 0))
+
+	def test_tab_on_nothing_lists_every_command(self):
+		"""readline asks again and again (state 0, 1, 2...) until None."""
+		found = []
+		state = 0
+		while (command := complete_command("", state)) is not None:
+			found.append(command)
+			state += 1
+		self.assertCountEqual(found, ["status", "grademe", "finish", "help"])
