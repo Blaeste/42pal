@@ -36,6 +36,11 @@ class Variant:
 			for file in self.exercise.expected_files
 		)
 
+	@property
+	def harness(self):
+		"""C source of the test main of a function exercise, holes filled like the name."""
+		return Template(self.exercise.harness).substitute(self.params)
+
 def draw(exo, seed):
 	"""Draw the variant of `exo` given by `seed`.
 

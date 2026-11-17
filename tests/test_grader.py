@@ -9,9 +9,10 @@ from pathlib import Path
 
 from pal42.catalog import load_catalog
 from pal42.grader import grade
+from pal42.model import TestCase
 from pal42.runners.c import CRunner
 from pal42.variant import Variant
-from tests.helpers import ECHO, ECHO_OK
+from tests.helpers import ECHO, ECHO_OK, make_exercise
 
 class TestGrade(unittest.TestCase):
 	"""grade(variant, rendu, runner) on a made-up exercise."""
@@ -156,3 +157,82 @@ class TestRealExercise(unittest.TestCase):
 			result = grade(variant, rendu, CRunner())
 		self.assertTrue(result.passed, result.trace)
 		self.assertEqual(result.tests_passed, result.tests_total)
+
+COUNT_HARNESS = r"""#include <stdio.h>
+
+int	ft_count(char *str, char c);
+
+int	main(int ac, char **av)
+{
+	(void)ac;
+	printf("%d\n", ft_count(av[1], av[2][0]));
+	return (0);
+}
+"""
+
+# A made-up function exercise: count the c in str. Nothing is allowed.
+COUNT = Variant(
+	make_exercise(
+		name="count", kind="function", assignment_name="ft_count",
+		expected_files=("ft_count.c",), allowed_functions=(), harness=COUNT_HARNESS,
+		oracle=lambda params, test: f"{test.args[0].count(test.args[1])}\n",
+		generate_tests=lambda params, rng: [
+			TestCase(("hello", "l")), TestCase(("", "x")), TestCase(("aaa", "a")),
+		],
+	),
+	0, {"mode": "common"},
+)
+
+COUNT_OK = r"""int	ft_count(char *str, char c)
+{
+	int	n;
+
+	n = 0;
+	while (*str)
+		if (*str++ == c)
+			n++;
+	return (n);
+}
+"""
+
+class TestGradeFunction(unittest.TestCase):
+	"""grade() on a function exercise: the test main calls the student's function."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.rendu = Path(self.tmp.name)
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def grade(self, code):
+		(self.rendu / "ft_count.c").write_text(code, encoding="utf-8")
+		return grade(COUNT, self.rendu, CRunner())
+
+	def test_right_function_passes_though_the_test_main_uses_printf(self):
+		"""printf is in the test main, not in the rendu: nothing is refused."""
+		result = self.grade(COUNT_OK)
+		self.assertTrue(result.passed, result.trace)
+		self.assertEqual(result.tests_passed, 3)
+
+	def test_function_off_by_one_fails(self):
+		"""Counting from 1 instead of 0: Diff KO at the first test."""
+		result = self.grade(COUNT_OK.replace("n = 0;", "n = 1;"))
+		self.assertFalse(result.passed)
+		self.assertIn("-3$\n+2$", result.trace)
+
+	def test_rendu_with_a_main_gives_a_clear_error(self):
+		"""A main in the rendu: say so, instead of a cryptic link error."""
+		result = self.grade(COUNT_OK + "\nint\tmain(void)\n{\n\treturn (0);\n}\n")
+		self.assertFalse(result.passed)
+		self.assertIn("contient un main", result.trace)
+		self.assertTrue(result.trace.endswith("\nRendu KO\n"), result.trace)
+
+	def test_forbidden_function_in_the_student_code_is_refused(self):
+		"""strlen in the student's function is refused, even with the test main."""
+		result = self.grade(
+			"#include <string.h>\n\nint\tft_count(char *str, char c)\n{\n"
+			"\t(void)c;\n\treturn (strlen(str));\n}\n"
+		)
+		self.assertIn("Fonction interdite : strlen", result.trace)
+		self.assertNotIn("printf", result.trace)

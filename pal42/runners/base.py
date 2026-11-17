@@ -14,10 +14,12 @@ class CompileResult:
 
 	ok tells whether it worked, output is what the compiler printed (errors
 	and warnings), and binary is the program built, or None if it failed.
+	objects are the compiled student files (.o), without any test main.
 	"""
 	ok: bool
 	output: str
 	binary: Path | None
+	objects: tuple[Path, ...] = ()
 
 @dataclass(frozen=True)
 class RunResult:

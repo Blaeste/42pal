@@ -40,6 +40,8 @@ def statement(variant):
 		param.name: param.text(variant.params[param.name])
 		for param in variant.exercise.params
 	}
+	# $assignment: the name of the program or function, for a prototype.
+	texts["assignment"] = variant.name
 	return Template(variant.exercise.subject).substitute(texts)
 
 def _examples(variant):

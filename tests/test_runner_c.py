@@ -58,6 +58,26 @@ class TestCompile(unittest.TestCase):
 		# The student's folder stays as it was: no program, no copy.
 		self.assertEqual([path.name for path in self.rendu.iterdir()], ["bad.c"])
 
+	def test_compile_keeps_an_object_per_student_file(self):
+		"""Each student file gives an object (.o) in the work folder, for nm."""
+		result = CRunner().compile([self.write("hello.c", HELLO)], self.work, "hello")
+		self.assertEqual(result.objects, (self.work / "hello.o",))
+		self.assertTrue(result.objects[0].exists())
+
+	def test_extra_sources_are_linked_with_the_student_files(self):
+		"""A test main given as extra calls the student's function."""
+		function = self.write("add.c", "int\tadd(int a, int b)\n{\n\treturn (a + b);\n}\n")
+		main = self.work / "test_main.c"
+		main.write_text(
+			'#include <stdio.h>\n\nint\tadd(int a, int b);\n\n'
+			'int\tmain(void)\n{\n\tprintf("%d\\n", add(2, 3));\n\treturn (0);\n}\n',
+			encoding="utf-8",
+		)
+		result = CRunner().compile([function], self.work, "add", extra=[main])
+		self.assertTrue(result.ok, result.output)
+		self.assertEqual(CRunner().run(result.binary, TestCase()).stdout, b"5\n")
+		self.assertEqual(result.objects, (self.work / "add.o",))
+
 	def test_compile_command_can_be_changed(self):
 		"""An exam can give its own command: without -Werror, a warning passes."""
 		runner = CRunner(("cc", "-Wall"))

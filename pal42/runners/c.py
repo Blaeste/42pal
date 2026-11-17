@@ -17,32 +17,47 @@ class CRunner:
 		# Seconds the student's program may run on one test.
 		self.timeout = timeout
 
-	def compile(self, sources, workdir, name):
-		"""Compile `sources` into the program workdir/name.
+	def compile(self, sources, workdir, name, extra=()):
+		"""Compile `sources` (the student's files) into the program workdir/name.
 
-		The sources are first copied into workdir and compiled there, by their
-		own names: the errors read "bad.c:3:6", without the folder, and the
-		student's folder is left untouched.
+		Two steps: the sources are compiled into objects (cc -c), one per file,
+		kept in result.objects so that the checks look at the student's code
+		only; then the objects are linked, with the `extra` sources (a test
+		main) if any. The files are copied into workdir and compiled there, by
+		their own names: the errors read "bad.c:3:6", without the folder, and
+		the student's folder is left untouched.
 		"""
 		workdir = Path(workdir)
-		for source in sources:
-			# resolve() gives the full path, so the same folder is recognized
-			# however it is written; a file already there needs no copy.
-			if Path(source).resolve().parent != workdir.resolve():
-				shutil.copy(source, workdir)
-		names = [Path(source).name for source in sources]
-		try:
-			process = subprocess.run(
-				[*self.command, *names, "-o", name],
-				cwd=workdir, capture_output=True, text=True,
-			)
-		# The command of an exam may name a compiler this machine lacks.
-		except FileNotFoundError:
-			return CompileResult(False, f"compilateur introuvable : {self.command[0]}", None)
-		ok = process.returncode == 0
-		binary = workdir / name if ok else None
-		return CompileResult(ok, process.stdout + process.stderr, binary)
+		names = _copy_into(sources, workdir)
+		extra_names = _copy_into(extra, workdir)
+		objects = tuple(workdir / (Path(source).stem + ".o") for source in names)
+		steps = [
+			[*self.command, "-c", *names],
+			[*self.command, *(obj.name for obj in objects), *extra_names, "-o", name],
+		]
+		output = ""
+		for number, step in enumerate(steps):
+			try:
+				process = subprocess.run(step, cwd=workdir, capture_output=True, text=True)
+			# The command of an exam may name a compiler this machine lacks.
+			except FileNotFoundError:
+				return CompileResult(False, f"compilateur introuvable : {self.command[0]}", None)
+			output += process.stdout + process.stderr
+			if process.returncode != 0:
+				# If only the link failed, the objects exist: keep them, so that
+				# the grader can tell why (a main in a function rendu...).
+				return CompileResult(False, output, None, objects if number == 1 else ())
+		return CompileResult(True, output, workdir / name, objects)
 
 	def run(self, program, test, max_output=MAX_OUTPUT):
 		"""Run the compiled `program` on `test`: its arguments and standard input."""
 		return run_command([str(program), *test.args], test.stdin, self.timeout, max_output)
+
+def _copy_into(files, workdir):
+	"""Copy `files` into workdir (unless already there) and return their names."""
+	for file in files:
+		# resolve() gives the full path, so the same folder is recognized
+		# however it is written; a file already there needs no copy.
+		if Path(file).resolve().parent != workdir.resolve():
+			shutil.copy(file, workdir)
+	return [Path(file).name for file in files]

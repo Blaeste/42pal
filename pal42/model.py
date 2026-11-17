@@ -75,6 +75,10 @@ class Exercise:
 	expected_files can have the same holes ("${mode}_chars.c").
 	examples are the inputs shown in the subject; their outputs are never
 	written by hand: the oracle computes them for the drawn variant.
+	The subject may also use $assignment: the name the student sees.
+	harness is the C source of the test main of a "function" exercise: it
+	reads a test's arguments in argv, calls the student's function and prints
+	the result. Its holes take the drawn values, like the name.
 	"""
 	name: str
 	language: str
@@ -89,6 +93,7 @@ class Exercise:
 	forbidden: tuple[dict[str, str], ...] = ()
 	assignment_name: str = ""
 	examples: tuple[TestCase, ...] = ()
+	harness: str = ""
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
@@ -100,18 +105,32 @@ class Exercise:
 			self._fail(
 				f"type d'exo inconnu « {self.kind} », choix : {', '.join(KINDS)}"
 			)
-		self._check_template(self.subject, "le sujet")
+		self._check_kind()
+		self._check_template(self.subject, "le sujet", extra=("assignment",))
 		self._check_template(self.assignment_name, "le nom")
+		self._check_template(self.harness, "le main de test")
 		for file in self.expected_files:
 			self._check_template(file, "un fichier attendu")
 		self._check_forbidden()
 
-	def _check_template(self, text, where):
-		"""Each `$name` or `${name}` hole of `text` must be a param.
+	def _check_kind(self):
+		"""A function needs a test main and has no automatic examples; a program has neither."""
+		if self.kind == "function" and not self.harness:
+			self._fail("un exo « fonction » a besoin d'un main de test (harness)")
+		if self.kind == "program" and self.harness:
+			self._fail("un exo « programme » a déjà son main : pas de main de test (harness)")
+		if self.kind == "function" and self.examples:
+			self._fail(
+				"les exemples automatiques lancent ./programme : pas d'exemples pour une"
+				" fonction, écris-les dans le sujet"
+			)
+
+	def _check_template(self, text, where, extra=()):
+		"""Each `$name` or `${name}` hole of `text` must be a param (or in `extra`).
 
 		where names the text in the error messages, like "le sujet".
 		"""
-		param_names = {param.name for param in self.params}
+		param_names = {param.name for param in self.params} | set(extra)
 		# Template.pattern is the regex that string.Template itself uses, so we
 		# check exactly the holes it will fill. Not get_identifiers(): 3.11+.
 		for match in Template.pattern.finditer(text):

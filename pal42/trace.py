@@ -90,3 +90,13 @@ def forbidden_trace(forbidden, allowed):
 		"",
 		"Fonctions KO",
 	]) + "\n"
+
+def main_trace():
+	"""Return the trace of a function rendu that has its own main."""
+	return "\n".join([
+		header("Rendu"),
+		"Ton rendu contient un main : pour une fonction, rends seulement la fonction.",
+		"Le main de test est fourni par la moulinette.",
+		"",
+		"Rendu KO",
+	]) + "\n"

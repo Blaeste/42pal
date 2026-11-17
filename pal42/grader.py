@@ -12,6 +12,9 @@ from pathlib import Path
 
 from pal42 import checks, trace
 
+# The test main of a function exercise, written next to the student's files.
+HARNESS_FILE = "main_42pal.c"
+
 @dataclass(frozen=True)
 class Grade:
 	"""The result of a grademe.
@@ -42,14 +45,23 @@ def grade(variant, rendu, runner, progress=None):
 	if missing:
 		return Grade(False, trace.missing_trace(missing), 0, len(tests))
 	with tempfile.TemporaryDirectory() as work:
-		compiled = runner.compile(sources, work, variant.name)
+		# A function exercise: the test main is compiled with the student's files.
+		extra = []
+		if exo.kind == "function":
+			extra.append(Path(work) / HARNESS_FILE)
+			extra[0].write_text(variant.harness, encoding="utf-8")
+		compiled = runner.compile(sources, work, variant.name, extra=extra)
 		if not compiled.ok:
+			if extra and compiled.objects and checks.defines_main(*compiled.objects):
+				return Grade(False, trace.main_trace(), 0, len(tests))
 			text = trace.compile_trace(
 				runner.command, variant.expected_files, variant.name, compiled.output
 			)
 			return Grade(False, text, 0, len(tests))
 		program = compiled.binary
-		forbidden = sorted(checks.used_functions(program) - set(exo.allowed_functions))
+		# Only the student's objects: the test main may use printf.
+		used = checks.used_functions(*compiled.objects)
+		forbidden = sorted(used - set(exo.allowed_functions))
 		if forbidden:
 			text = trace.forbidden_trace(forbidden, exo.allowed_functions)
 			return Grade(False, text, 0, len(tests))

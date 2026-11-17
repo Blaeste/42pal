@@ -5,7 +5,7 @@ Run all the tests from the project root with: python3 -m unittest -v
 
 import unittest
 
-from pal42.model import ExerciseError, Param
+from pal42.model import ExerciseError, Param, TestCase
 from tests.helpers import make_exercise
 
 class TestParam(unittest.TestCase):
@@ -81,6 +81,30 @@ class TestExercise(unittest.TestCase):
 		"""kind must be "program" or "function", the two kinds the graders know."""
 		with self.assertRaisesRegex(ExerciseError, "fonction"):
 			make_exercise(kind="fonction")
+
+	def test_function_exercise_needs_a_test_main(self):
+		"""kind "function" needs a harness: the main that calls the function."""
+		with self.assertRaisesRegex(ExerciseError, "main de test"):
+			make_exercise(kind="function")
+
+	def test_program_exercise_has_no_test_main(self):
+		"""A program has its own main: a harness would make two of them."""
+		with self.assertRaisesRegex(ExerciseError, "main de test"):
+			make_exercise(harness="int\tmain(void)\n{\n\treturn (0);\n}\n")
+
+	def test_function_exercise_has_no_automatic_examples(self):
+		"""The examples run ./program args: they only make sense for programs."""
+		with self.assertRaisesRegex(ExerciseError, "exemples"):
+			make_exercise(kind="function", harness="int\tmain(void);\n", examples=(TestCase(),))
+
+	def test_test_main_with_unknown_param_raises(self):
+		"""The holes of the harness are checked like those of the subject."""
+		with self.assertRaisesRegex(ExerciseError, "main de test.*order"):
+			make_exercise(kind="function", harness="int\tft_${order}(void);\n")
+
+	def test_subject_may_name_the_assignment(self):
+		"""$assignment is the name the student sees, for a prototype for example."""
+		make_exercise(subject="int\t$assignment(char *str);")
 
 	def test_unknown_language_raises(self):
 		"""language must be one the project has a runner for: c, cpp or python."""
