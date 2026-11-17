@@ -80,3 +80,13 @@ def missing_trace(files):
 		"",
 		"Rendu KO",
 	]) + "\n"
+
+def forbidden_trace(forbidden, allowed):
+	"""Return the trace of a program that calls `forbidden` functions."""
+	return "\n".join([
+		header("Fonctions interdites"),
+		*(f"Fonction interdite : {name}" for name in forbidden),
+		f"Fonctions autorisées : {', '.join(allowed) or 'aucune'}",
+		"",
+		"Fonctions KO",
+	]) + "\n"

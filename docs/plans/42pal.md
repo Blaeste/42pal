@@ -97,7 +97,7 @@ Diff KO
 - Test : une solution juste écrite par nous passe.
 - Test : une solution sans `\n` échoue, et sa trace montre `-hello` contre `+hello$`, avec la commande du test.
 
-**11. Exos « fonction ».** Un `main` de test est généré pour chaque variante. Fichier : `harness.py`, avec un modèle « fonction » original sur le thème « parcours de chaîne ».
+**11. Exos « fonction ».** Un `main` de test est généré pour chaque variante. Le contrôle des fonctions interdites (étape 12, déjà faite) ne doit alors regarder que le code de l'étudiant, pas ce `main` de test (par exemple avec `nm -u` sur l'objet de l'étudiant seul). Fichier : `harness.py`, avec un modèle « fonction » original sur le thème « parcours de chaîne ».
 - Test : une fonction juste passe, une fonction décalée de 1 échoue.
 - Test : un rendu qui contient un `main` donne une erreur claire.
 

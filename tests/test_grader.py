@@ -102,6 +102,22 @@ class TestGrade(unittest.TestCase):
 			"Rendu KO\n"
 		))
 
+	def test_forbidden_function_fails_even_with_the_right_output(self):
+		"""printf when only write is allowed: refused before any test is run."""
+		self.hand_in(
+			'#include <stdio.h>\n\nint\tmain(int ac, char **av)\n{\n'
+			'\tif (ac == 2)\n\t\tprintf("%s", av[1]);\n\tprintf("%c", 10);\n\treturn (0);\n}\n'
+		)
+		result = grade(ECHO, self.rendu, CRunner())
+		self.assertFalse(result.passed)
+		self.assertEqual(result.trace, (
+			"= Fonctions interdites " + "=" * 57 + "\n"
+			"Fonction interdite : printf\n"
+			"Fonctions autorisées : write\n"
+			"\n"
+			"Fonctions KO\n"
+		))
+
 SHIFT_FORWARD_2 = r"""#include <unistd.h>
 
 int	main(int ac, char **av)

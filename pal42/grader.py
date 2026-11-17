@@ -10,7 +10,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from pal42 import trace
+from pal42 import checks, trace
 
 @dataclass(frozen=True)
 class Grade:
@@ -27,8 +27,9 @@ class Grade:
 def grade(variant, rendu, runner, progress=None):
 	"""Grade the files of `rendu` (the student's folder) for `variant`.
 
-	In order: the expected files must be there, they must compile, then each
-	test must neither crash nor time out, and print what the oracle says.
+	In order: the expected files must be there, they must compile, they must
+	call no forbidden function, then each test must neither crash nor time
+	out, and print what the oracle says.
 	The first failure stops the grading and gives the trace.
 	progress(number, total), if given, is called before each test: the
 	front-ends use it to show how far the grading is.
@@ -48,6 +49,10 @@ def grade(variant, rendu, runner, progress=None):
 			)
 			return Grade(False, text, 0, len(tests))
 		program = compiled.binary
+		forbidden = sorted(checks.used_functions(program) - set(exo.allowed_functions))
+		if forbidden:
+			text = trace.forbidden_trace(forbidden, exo.allowed_functions)
+			return Grade(False, text, 0, len(tests))
 		for number, test in enumerate(tests, start=1):
 			if progress:
 				progress(number, len(tests))
