@@ -97,7 +97,7 @@ Diff KO
 - Test : une solution juste écrite par nous passe.
 - Test : une solution sans `\n` échoue, et sa trace montre `-hello` contre `+hello$`, avec la commande du test.
 
-**11. Exos « fonction ».** Un `main` de test est généré pour chaque variante. Le contrôle des fonctions interdites (étape 12, déjà faite) ne doit alors regarder que le code de l'étudiant, pas ce `main` de test (par exemple avec `nm -u` sur l'objet de l'étudiant seul). Fichier : `harness.py`, avec un modèle « fonction » original sur le thème « parcours de chaîne ».
+**11. Exos « fonction ».** Un `main` de test est généré pour chaque variante. Le contrôle des fonctions interdites (étape 12, déjà faite) ne doit alors regarder que le code de l'étudiant, pas ce `main` de test (par exemple avec `nm -u` sur l'objet de l'étudiant seul). Fait : la compilation passe par des objets (`cc -c`), puis l'édition de liens avec le `main` de test. À améliorer : la trace d'une fonction affiche encore `$> ./ft_x args` au lieu de l'appel `ft_x("abc", 'a')`, et les exemples automatiques du sujet ne marchent que pour les programmes. Fichier : `harness.py`, avec un modèle « fonction » original sur le thème « parcours de chaîne ».
 - Test : une fonction juste passe, une fonction décalée de 1 échoue.
 - Test : un rendu qui contient un `main` donne une erreur claire.
 
