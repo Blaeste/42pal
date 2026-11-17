@@ -93,6 +93,10 @@ class Script:
 		if not self.answers:
 			raise EOFError
 		answer = self.answers.pop(0)
+		# A function stands for something done before typing (like letting
+		# time pass): it is called, and what it returns is the answer.
+		if callable(answer):
+			answer = answer()
 		return default if answer == "" and default is not None else answer
 
 	def ask_password(self, prompt):
@@ -155,6 +159,16 @@ class TestShell(unittest.TestCase):
 		self.assertIn("Playable levels: 2, 3", output(shell))
 		self.assertEqual(output(shell).count("Invalid choice"), 1)
 
+	def test_retry_mode_menu_shows_the_waits_and_defaults_to_soft(self):
+		"""soft and hard with their waits; x is refused, Enter takes soft, 2 hard."""
+		exam = load_exam("rank02", catalog=CATALOG, themes=THEMES)
+		shell = make_shell(Script("x", ""), self.root)
+		self.assertEqual(shell.choose_retry_mode(exam), "soft")
+		self.assertIn("1. soft: 0, 1, 2, 3, 5 min", output(shell))
+		self.assertIn("2. hard: 0, 5, 10, 20, 40 min", output(shell))
+		self.assertEqual(output(shell).count("Invalid choice"), 1)
+		self.assertEqual(make_shell(Script("2"), self.root).choose_retry_mode(exam), "hard")
+
 	def test_start_gives_the_subject_and_says_where_it_is(self):
 		"""A subject is drawn at the level, written, and its paths are shown."""
 		shell = make_shell(Script(), self.root)
@@ -215,7 +229,7 @@ class TestShell(unittest.TestCase):
 
 	def test_run_goes_from_login_to_finish(self):
 		"""Login, exam 2, the first playable level, status, then finish."""
-		shell = make_shell(Script("", "pw", "2", "", "status", "finish"), self.root)
+		shell = make_shell(Script("", "pw", "2", "", "", "status", "finish"), self.root)
 		shell.run()
 		text = output(shell)
 		self.assertIn("Welcome", text)
@@ -231,7 +245,7 @@ class TestLauncher(unittest.TestCase):
 		"""Answers sent through a pipe; HOME is a temporary folder."""
 		with tempfile.TemporaryDirectory() as home:
 			result = subprocess.run(
-				[str(ROOT / "42pal")], input="\npw\n2\n\nstatus\nfinish\n",
+				[str(ROOT / "42pal")], input="\npw\n2\n\n\nstatus\nfinish\n",
 				capture_output=True, text=True, timeout=30,
 				env=dict(os.environ, HOME=home),
 				# A new session has no terminal: nothing can wait on the keyboard.
@@ -280,7 +294,7 @@ class TestRealTerminal(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as home:
 			screen = run_in_terminal(home, [
 				("login:", ""), ("password:", "x"), ("choice:", "2"),
-				("level:", ""), ("examshell>", ""), ("examshell>", "finish"),
+				("level:", ""), ("mode:", ""), ("examshell>", ""), ("examshell>", "finish"),
 			])
 		self.assertNotIn("examshell> examshell>", screen)
 		self.assertNotRegex(screen, "login:.*password:")
@@ -466,3 +480,77 @@ class TestCheckCatalog(unittest.TestCase):
 		self.assertEqual(code, 1)
 		self.assertIn("lonely: no ref.c", text)
 		self.assertIn("c/empty: no exercise.py", text)
+
+class TestRetryTimer(unittest.TestCase):
+	"""The wait between two grademe, in hard mode: 0, 5, 10, 20, 40 minutes."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.clock = FakeClock()
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def run_commands(self, *answers, code=None):
+		"""Start at level 1 in hard mode, hand in `code` (wrong by default), run."""
+		shell = make_shell(Script(*answers), self.root, self.clock)
+		shell.retry = self.exam.retry["hard"]
+		shell.start(self.exam, 1)
+		(self.root / "rendu/echo_first/echo_first.c").write_text(
+			code or "int\tmain(void)\n{\n\treturn (0);\n}\n", encoding="utf-8")
+		shell.command_loop()
+		return shell
+
+	def logs(self):
+		return sorted(path.name for path in (self.root / "traces").glob("*.trace"))
+
+	def test_first_failure_is_free(self):
+		"""After the first KO, grademe can run again at once."""
+		shell = self.run_commands("grademe", "grademe", "finish")
+		self.assertEqual(output(shell).count("✗ KO"), 2)
+		self.assertEqual(self.logs(), ["01_echo_first.trace", "02_echo_first.trace"])
+
+	def test_after_the_second_failure_grademe_must_wait(self):
+		"""Second KO: 5 minutes to wait; a grademe before is refused, not counted."""
+		shell = self.run_commands("grademe", "grademe", "grademe", "finish")
+		text = output(shell)
+		self.assertIn("Next grademe in 0:05:00", text)
+		self.assertIn("if KO again: 0:10:00", text)
+		self.assertIn("Wait 0:05:00 before your next grademe", text)
+		self.assertEqual(len(self.logs()), 2)
+
+	def test_grademe_works_again_once_the_wait_is_over(self):
+		"""5 minutes later, the third grademe runs."""
+		def five_minutes_later():
+			self.clock.now += 300
+			return "grademe"
+		shell = self.run_commands("grademe", "grademe", five_minutes_later, "finish")
+		self.assertEqual(len(self.logs()), 3)
+		self.assertNotIn("Wait", output(shell))
+
+	def test_each_grademe_warns_of_the_wait_if_it_fails(self):
+		"""Before grading: what a KO would cost. First time: right away."""
+		shell = self.run_commands("grademe", "grademe", "finish")
+		text = output(shell)
+		self.assertIn("If KO: next grademe right away", text)
+		self.assertIn("If KO: next grademe in 0:05:00", text)
+
+	def test_status_shows_the_next_grademe_and_the_cost_of_a_ko(self):
+		"""After two KO: next grademe in 5 minutes, and 10 if the next one fails."""
+		shell = self.run_commands("grademe", "grademe", "status", "finish")
+		text = output(shell)
+		self.assertRegex(text, r"Next grademe\s+in 0:05:00")
+		self.assertRegex(text, r"If KO\s+0:10:00")
+
+	def test_ok_resets_the_count_of_failures(self):
+		"""KO, KO, then OK (5 minutes later): the next subject starts with no wait."""
+		def fix_it_and_wait():
+			self.clock.now += 300
+			(self.root / "rendu/echo_first/echo_first.c").write_text(ECHO_OK, encoding="utf-8")
+			return "grademe"
+		shell = self.run_commands("grademe", "grademe", fix_it_and_wait, "status", "finish")
+		self.assertEqual(shell.level, 2)
+		self.assertEqual(shell.failures, 0)
+		self.assertRegex(output(shell), r"Next grademe\s+now")

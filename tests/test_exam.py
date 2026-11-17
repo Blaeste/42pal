@@ -11,6 +11,7 @@ from random import Random
 
 from pal42.catalog import Catalog
 from pal42.exam import ExamError, list_exams, load_exam
+from pal42.retry import RetryPolicy
 from pal42.themes import Theme
 from tests.helpers import make_exercise
 
@@ -29,6 +30,12 @@ class TestRealExams(unittest.TestCase):
 		for exam_id in ["rank02", "piscine"]:
 			with self.subTest(exam_id):
 				self.assertEqual(load_exam(exam_id).playable_levels[0], 1)
+
+	def test_retry_waits_come_from_the_exam_file(self):
+		"""soft and hard: the waits after each failed grademe, in minutes."""
+		exam = load_exam("rank02")
+		self.assertEqual(exam.retry["soft"], RetryPolicy((0, 1, 2, 3, 5)))
+		self.assertEqual(exam.retry["hard"], RetryPolicy((0, 5, 10, 20, 40)))
 
 	def test_every_exam_file_loads(self):
 		"""Each file of exams/ is a valid exam with at least one playable level."""
@@ -96,6 +103,7 @@ class TestBadExamFile(unittest.TestCase):
 			"levels": dict(good, levels=0),
 			"duration_minutes": dict(good, duration_minutes="3h"),
 			"compile": dict(good, compile=[]),
+			"retry_minutes": dict(good, retry_minutes={"soft": [0, -1], "hard": [0]}),
 		}
 		for field, data in cases.items():
 			with self.subTest(field):

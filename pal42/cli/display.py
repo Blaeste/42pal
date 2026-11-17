@@ -4,7 +4,7 @@ Each function returns something rich can print; the shell prints it.
 """
 
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from rich.markup import escape
@@ -44,15 +44,40 @@ def help_table(commands):
 		table.add_row(f"[bold]{command}[/]", meaning)
 	return table
 
-def status_table(exam, level, variant, elapsed, left):
-	"""Where the student is: exam, level, subject, time spent and left."""
+def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0):
+	"""Where the student is: exam, level, subject, times, and the next grademe.
+
+	wait is the time left before grademe is allowed again; if_ko the wait
+	that a failed grademe would bring.
+	"""
 	table = Table(show_header=False, box=None)
 	table.add_row("Exam", escape(exam.title))
 	table.add_row("Level", f"{level} of {exam.level_count}")
 	table.add_row("Subject", f"[bold cyan]{escape(variant.name)}[/]")
 	table.add_row("Time spent", duration(elapsed))
 	table.add_row("Time left", duration(left))
+	table.add_row("Next grademe", f"in {duration(wait)}" if wait else "now")
+	table.add_row("If KO", duration(if_ko) if if_ko else "no wait")
 	return table
+
+def retry_preview(wait):
+	"""Said before grading: the wait a KO would bring."""
+	when = f"in {duration(wait)}" if wait else "right away"
+	return f"[dim]If KO: next grademe {when}[/]"
+
+def next_grademe(wait, next_wait):
+	"""Said after a KO: when grademe is allowed again, and what the next KO costs."""
+	if wait:
+		at = (datetime.now() + timedelta(seconds=wait)).strftime("%H:%M")
+		when = f"in {duration(wait)} (at {at})"
+	else:
+		when = "now (the first retry is free)"
+	again = duration(next_wait) if next_wait else "no wait"
+	return f"[yellow]Next grademe {when}[/] · if KO again: {again}"
+
+def wait_message(wait):
+	"""Said when grademe comes before the end of the wait."""
+	return f"[yellow]Wait {duration(wait)} before your next grademe.[/]"
 
 def typewriter(console, text, sleep=time.sleep, delay=0.02):
 	"""Print `text` one letter at a time, as if someone were typing it.

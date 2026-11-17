@@ -5,16 +5,20 @@ from the catalog. Like the rest of the core, this module never prints.
 """
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from pal42.catalog import load_catalog
+from pal42.retry import RetryPolicy
 from pal42.themes import load_themes
 # Renamed here: Exam has its own draw(), for a whole level.
 from pal42.variant import draw as draw_variant
 
 # exams/ is at the root of the project, next to exercises/.
 EXAMS_DIR = Path(__file__).resolve().parent.parent / "exams"
+
+# The waits after a failed grademe, in minutes, when the exam file gives none.
+DEFAULT_RETRY_MINUTES = {"soft": [0, 1, 2, 3, 5], "hard": [0, 5, 10, 20, 40]}
 
 class ExamError(ValueError):
 	"""An exam file is missing or badly written; the message says why."""
@@ -35,6 +39,8 @@ class Exam:
 	compile_command: tuple[str, ...]
 	levels: dict
 	warnings: list
+	# {"soft": RetryPolicy, "hard": RetryPolicy}: the waits after a failure.
+	retry: dict = field(default_factory=dict)
 
 	@property
 	def playable_levels(self):
@@ -79,9 +85,10 @@ def load_exam(exam_id, exams_dir=EXAMS_DIR, catalog=None, themes=None):
 		f"{data['title']}, level {level}: no exercise yet, the level cannot be played"
 		for level, found in levels.items() if not found
 	]
+	retry = {mode: RetryPolicy(tuple(minutes)) for mode, minutes in data["retry_minutes"].items()}
 	return Exam(
 		exam_id, data["title"], data["language"], data["levels"],
-		data["duration_minutes"], tuple(data["compile"]), levels, warnings,
+		data["duration_minutes"], tuple(data["compile"]), levels, warnings, retry,
 	)
 
 def list_exams(exams_dir=EXAMS_DIR):
@@ -104,4 +111,11 @@ def _read_exam_file(path):
 			fail(f"'{field}' must be a positive integer, not {value!r}")
 	if not data["compile"]:
 		fail("'compile' is empty: it needs at least the name of the compiler")
+	data.setdefault("retry_minutes", DEFAULT_RETRY_MINUTES)
+	for mode in ("soft", "hard"):
+		minutes = data["retry_minutes"].get(mode)
+		if not minutes or any(
+			isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in minutes
+		):
+			fail(f"'retry_minutes' needs a '{mode}' list of minutes (integers from 0), not {minutes!r}")
 	return data

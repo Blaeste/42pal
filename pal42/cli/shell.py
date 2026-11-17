@@ -18,6 +18,7 @@ from pal42.cli import display
 from pal42.cli.workspace import Workspace
 from pal42.exam import list_exams, load_exam
 from pal42.grader import grade
+from pal42.retry import RetryPolicy
 from pal42.runners.c import CRunner
 from pal42.themes import load_themes
 
@@ -57,13 +58,20 @@ class Shell:
 		self.started_at = None
 		# Number of grademe so far: it numbers the logs in traces/.
 		self.attempts = 0
+		# The waits after a failure (chosen by run(); none until then), the
+		# failures on the current subject, and when grademe is allowed again.
+		self.retry = RetryPolicy((0,))
+		self.failures = 0
+		self.next_grademe_at = None
 
 	def run(self):
 		"""The whole session: login, exam, level, subject, then the commands."""
 		try:
 			self.login()
 			exam = self.choose_exam()
-			self.start(exam, self.choose_level(exam))
+			level = self.choose_level(exam)
+			self.retry = exam.retry[self.choose_retry_mode(exam)]
+			self.start(exam, level)
 		# Ctrl-D before the exam has started: just leave.
 		except EOFError:
 			self.console.print("\nGoodbye!")
@@ -145,8 +153,16 @@ class Shell:
 		"""Grade the rendu and show the result; return True when the exam is over.
 
 		Passed: the next playable level, with a new subject, or the end of the
-		exam after the last one. Failed: the trace, and the same subject.
+		exam after the last one. Failed: the trace, the same subject, and a
+		wait before the next grademe that grows with each failure.
 		"""
+		wait = self._wait_left()
+		if wait > 0:
+			# Too early: refused, and not counted as an attempt.
+			self.console.print(display.wait_message(wait))
+			return False
+		# What a KO would cost, said before grading.
+		self.console.print(display.retry_preview(self.retry.wait_after(self.failures + 1)))
 		self.attempts += 1
 		rendu = self.workspace.rendu / self.variant.name
 		runner = CRunner(self.exam.compile_command)
@@ -169,7 +185,14 @@ class Shell:
 		self.console.print(display.grade_result(result, log))
 		if not result.passed:
 			self.console.print(display.trace_panel(result.trace))
+			self.failures += 1
+			wait = self.retry.wait_after(self.failures)
+			self.next_grademe_at = self.clock() + wait
+			self.console.print(display.next_grademe(wait, self.retry.wait_after(self.failures + 1)))
 			return False
+		# Passed: the next subject starts with no failure and no wait.
+		self.failures = 0
+		self.next_grademe_at = None
 		next_levels = [level for level in self.exam.playable_levels if level > self.level]
 		if not next_levels:
 			self.console.print(display.exam_passed_panel(self.exam))
@@ -178,10 +201,29 @@ class Shell:
 		return False
 
 	def show_status(self):
-		"""Show the exam, the level, the subject, the time spent and left."""
+		"""Show the exam, the level, the subject, the times and the next grademe."""
 		elapsed = self.clock() - self.started_at
 		left = max(0, self.exam.duration_minutes * 60 - elapsed)
-		self.console.print(display.status_table(self.exam, self.level, self.variant, elapsed, left))
+		if_ko = self.retry.wait_after(self.failures + 1)
+		self.console.print(display.status_table(
+			self.exam, self.level, self.variant, elapsed, left, self._wait_left(), if_ko,
+		))
+
+	def _wait_left(self):
+		"""Seconds left before the next grademe is allowed (0: now)."""
+		if self.next_grademe_at is None:
+			return 0
+		return max(0, self.next_grademe_at - self.clock())
+
+	def choose_retry_mode(self, exam):
+		"""Ask soft or hard: how long to wait after each failed grademe."""
+		modes = ["soft", "hard"]
+		self.console.print("Retry timer, after each failed grademe:")
+		for number, mode in enumerate(modes, start=1):
+			minutes = ", ".join(map(str, exam.retry[mode].minutes))
+			self.console.print(f"  {number}. {mode}: {minutes} min")
+		# Enter alone takes soft.
+		return modes[self._ask_choice("Retry mode:", [1, 2], "1") - 1]
 
 	def _ask_choice(self, prompt, allowed, default=None):
 		"""Ask until the answer is one of the numbers of `allowed`; return it."""

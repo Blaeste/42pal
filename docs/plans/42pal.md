@@ -143,7 +143,7 @@ Diff KO
 - Vérifier à la main : une bonne solution fait passer au niveau suivant, une mauvaise écrit une trace dans `traces/`.
 - Vérifier à la main : `git add . && git commit -m test && git push` marche dans `rendu/`.
 
-**19. Temps et nouvel essai.** L'exam s'arrête à la durée maximale. Après un échec, on retente le même sujet, et l'attente avant le prochain `grademe` augmente à chaque échec. L'option `--practice` supprime l'attente.
+**19. Temps et nouvel essai.** L'exam s'arrête à la durée maximale. Après un échec, on retente le même sujet, et l'attente avant le prochain `grademe` augmente à chaque échec. Fait : le premier nouvel essai est gratuit, puis l'attente suit le mode choisi au début de l'exam, `soft` (0, 1, 2, 3, 5 min) ou `hard` (0, 5, 10, 20, 40 min), réglable dans `retry_minutes` du fichier de l'exam ; l'attente repart de zéro après un sujet réussi. L'étudiant est prévenu : « If KO: next grademe in … » avant chaque correction, « Next grademe in … · if KO again: … » après un KO, et dans `status`. Reste à faire : l'arrêt de l'exam à la durée maximale.
 - Test avec une horloge simulée : l'attente grandit d'un échec à l'autre, le sujet ne change pas, et l'exam se termine avec la note.
 
 **20. Révision par thème.** `./42pal practice --theme <id>` enchaîne des variantes du même thème, sans timer. Fichier : `cli/practice.py`.
