@@ -1,4 +1,4 @@
-"""base_print: an original program model on the theme "print an integer with write".
+"""base_print: an original program model on the theme "print an integer in another base".
 
 The program takes a positive number written in base 10 and displays it in
 binary, octal or hexadecimal: as it is, after a prefix (0b, 0o, 0x), or in
@@ -45,7 +45,7 @@ EXERCISE = Exercise(
 	assignment_name="to_${base}_${form}",
 	expected_files=("to_${base}_${form}.c",),
 	allowed_functions=("write",),
-	themes=("number_print",),
+	themes=("print_in_base",),
 	params=(
 		Param("base", ("binary", "octal", "hex"), {
 			"binary": "in binary (base 2)",

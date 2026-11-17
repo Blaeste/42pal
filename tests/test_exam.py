@@ -161,11 +161,25 @@ class TestDifficulty(unittest.TestCase):
 			for name in ["base_string", "word_order", "list_drop"]:
 				self.assertIn(name, names, f"{exam_id} level {level}")
 
-	def test_the_easy_models_are_drawn_at_the_first_levels(self):
-		"""word_pick and base_print at level 1 of the rank 02, list_measure at level 3."""
+	def test_the_models_are_drawn_where_their_real_subjects_are(self):
+		"""word_pick like first_word, base_print like print_hex, list_measure like ft_list_size."""
 		for exam_id, level, name in [
-			("rank02", 1, "word_pick"), ("rank02", 1, "base_print"),
-			("rank02", 3, "list_measure"), ("piscine_final", 1, "list_measure"),
+			("rank02", 1, "word_pick"), ("rank02", 3, "base_print"),
+			("piscine_final", 1, "base_print"), ("rank02", 3, "list_measure"),
+			("piscine_final", 1, "list_measure"), ("piscine_03", 4, "number_read"),
 		]:
 			with self.subTest(exam=exam_id, level=level, exercise=name):
 				self.assertIn(name, self.names_at(exam_id, level))
+
+	def test_the_models_are_not_drawn_at_the_levels_of_easier_or_harder_subjects(self):
+		"""Found by comparing every level with 42_EXAM: each case is a level apart or more."""
+		for exam_id, level, name in [
+			("rank02", 1, "base_print"),  # print_hex is at level 3, fizzbuzz at 1
+			("piscine_03", 1, "number_read"),  # ft_atoi_base is at level 4, ft_atoi at 1
+			("piscine_final", 4, "arg_pick"),  # options is at level 4, paramsum at 2
+			("rank02", 2, "number_facts"),  # fprime and pgcd are at 3 and 4, do_op at 2
+			("piscine_02", 5, "sequence_array"),  # ft_range is not in this exam, ft_strdup is
+			("piscine_final", 1, "word_pick"),  # epur_str is at level 1, first_word is not
+		]:
+			with self.subTest(exam=exam_id, level=level, exercise=name):
+				self.assertNotIn(name, self.names_at(exam_id, level))

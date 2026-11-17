@@ -105,7 +105,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_read_${base}_${format}",
 	expected_files=("ft_read_${base}_${format}.c",),
 	allowed_functions=(),
-	themes=("number_parse",),
+	themes=("base_parse",),
 	params=(
 		Param("base", ("binary", "octal", "decimal", "hex"), {
 			"binary": "in binary (base 2: the digits 0 and 1)",

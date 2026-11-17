@@ -148,20 +148,22 @@ Five exams, like in 42_EXAM:
 | `print_range` | function (void, prints) | print_basics | 10 |
 | `arg_pick` | program | program_args | 6 |
 | `word_order` | program | reorder_words | 13 |
-| `number_facts` | program | arithmetic | 9 |
+| `number_facts` | program | primes | 9 |
 | `base_string` | function, leaks checked | number_string | 6 |
 | `byte_rotate` | function | bits | 12 |
-| `sequence_array` | function, leaks checked | allocation | 10 |
+| `sequence_array` | function, leaks checked | int_ranges | 10 |
 | `list_drop` | function + header handed in, leaks checked | list_changes | 12 |
 | `name_style` | program | case_style | 18 |
 | `word_pick` | program | words | 10 |
-| `base_print` | program | number_print | 8 |
+| `base_print` | program | print_in_base | 8 |
 | `list_measure` | function, header given | linked_lists | 10 |
-| `number_read` | function | number_parse | 11 |
+| `number_read` | function | base_parse | 11 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
-themes and the levels where they appear is in [themes.json](themes.json).
+themes and the levels where they appear is in [themes.json](themes.json):
+each theme is at the levels of the real exam subjects of its skill, as
+42_EXAM places them, and a test checks it.
 
 ## For contributors
 

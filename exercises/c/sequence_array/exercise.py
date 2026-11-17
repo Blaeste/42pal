@@ -1,4 +1,4 @@
-"""sequence_array: an original function model on the theme "allocation".
+"""sequence_array: an original function model on the theme "build an array of ints with malloc".
 
 The student writes a function that returns a new array of n ints, allocated
 with malloc, holding the first n terms of a sequence (squares, triangular
@@ -82,7 +82,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_${sequence}_${order}",
 	expected_files=("ft_${sequence}_${order}.c",),
 	allowed_functions=("malloc", "free"),
-	themes=("allocation",),
+	themes=("int_ranges",),
 	params=(
 		Param("sequence", ("squares", "triangles", "fibonacci", "odds", "powers_of_two"), {
 			"squares": "square numbers: 0, 1, 4, 9, 16... (k * k for k = 0, 1, 2...)",

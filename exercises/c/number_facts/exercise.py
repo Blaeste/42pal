@@ -1,4 +1,4 @@
-"""number_facts: an original program model on the theme "integer arithmetic".
+"""number_facts: an original program model on the theme "divisors and prime numbers".
 
 The program takes one positive number n and displays a list about it, in
 increasing order: its divisors, its prime divisors (each once), or the
@@ -58,7 +58,7 @@ EXERCISE = Exercise(
 	assignment_name="${what}_${separator}",
 	expected_files=("${what}_${separator}.c",),
 	allowed_functions=("write",),
-	themes=("arithmetic",),
+	themes=("primes",),
 	params=(
 		Param("what", ("divisors", "prime_divisors", "primes_up_to"), {
 			"divisors": "every divisor of n (1 and n included)",
