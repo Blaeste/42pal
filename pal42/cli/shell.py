@@ -30,6 +30,9 @@ COMMANDS = {
 	"help": "show this help",
 }
 
+# Under this many seconds left, the student is warned once.
+WARNING_SECONDS = 10 * 60
+
 # The grademe spinner stays at least this long, even if the grading is quicker.
 ANIMATION_SECONDS = 0.8
 
@@ -63,6 +66,11 @@ class Shell:
 		self.retry = RetryPolicy((0,))
 		self.failures = 0
 		self.next_grademe_at = None
+		# For the summary: the levels passed and the grademe that passed.
+		self.passed_levels = []
+		self.oks = 0
+		# True once the "less than 10 minutes" warning has been given.
+		self.warned = False
 
 	def run(self):
 		"""The whole session: login, exam, level, subject, then the commands."""
@@ -124,15 +132,28 @@ class Shell:
 		self.console.print()
 
 	def command_loop(self):
-		"""Read and run the examshell commands until finish or Ctrl-D."""
+		"""Read and run the examshell commands until the exam ends.
+
+		It ends with finish, Ctrl-D, the last level passed, or when the time
+		is up: the time is checked each time a command is typed, so a command
+		typed too late is not run.
+		"""
 		while True:
 			try:
 				command = self.ask("examshell>").strip()
 			# Ctrl-D: the same as finish.
 			except EOFError:
 				command = "finish"
+			left = self._time_left()
+			if left <= 0:
+				self.console.print(display.time_up())
+				self.end_exam()
+				return
+			if left < WARNING_SECONDS and not self.warned:
+				self.warned = True
+				self.console.print(display.almost_over(left))
 			if command == "finish":
-				self.console.print("End of the exam. See you soon!")
+				self.end_exam()
 				return
 			if command == "help":
 				self.console.print(display.help_table(COMMANDS))
@@ -193,17 +214,31 @@ class Shell:
 		# Passed: the next subject starts with no failure and no wait.
 		self.failures = 0
 		self.next_grademe_at = None
+		self.oks += 1
+		self.passed_levels.append(self.level)
 		next_levels = [level for level in self.exam.playable_levels if level > self.level]
 		if not next_levels:
 			self.console.print(display.exam_passed_panel(self.exam))
+			self.end_exam()
 			return True
 		self.start(self.exam, next_levels[0])
 		return False
 
+	def end_exam(self):
+		"""Show the summary of the exam, then say goodbye."""
+		self.console.print(display.summary_table(
+			self.exam, self.passed_levels, self.attempts, self.oks, self.clock() - self.started_at,
+		))
+		self.console.print("End of the exam. See you soon!")
+
+	def _time_left(self):
+		"""Seconds left before the end of the exam (0 or less: over)."""
+		return self.exam.duration_minutes * 60 - (self.clock() - self.started_at)
+
 	def show_status(self):
 		"""Show the exam, the level, the subject, the times and the next grademe."""
 		elapsed = self.clock() - self.started_at
-		left = max(0, self.exam.duration_minutes * 60 - elapsed)
+		left = max(0, self._time_left())
 		if_ko = self.retry.wait_after(self.failures + 1)
 		self.console.print(display.status_table(
 			self.exam, self.level, self.variant, elapsed, left, self._wait_left(), if_ko,

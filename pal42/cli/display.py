@@ -128,3 +128,20 @@ def exam_passed_panel(exam):
 		f"{escape(exam.title)} is done.",
 		border_style="green", width=80,
 	)
+
+def time_up():
+	"""Said when a command comes after the end of the exam."""
+	return "[bold red]Time is up![/] The exam is over: no more grademe."
+
+def almost_over(left):
+	"""Said once, when less than 10 minutes are left."""
+	return f"[bold yellow]Less than 10 minutes left[/] ({duration(left)})."
+
+def summary_table(exam, passed_levels, attempts, oks, elapsed):
+	"""The summary at the end of the exam: levels passed, grademe, time spent."""
+	table = Table(title=f"Summary · {escape(exam.title)}", show_header=False, box=None)
+	levels = ", ".join(map(str, passed_levels)) or "none"
+	table.add_row("Levels passed", f"{len(passed_levels)} ({levels})")
+	table.add_row("Grademe", f"{attempts} ({oks} OK, {attempts - oks} KO)")
+	table.add_row("Time spent", duration(elapsed))
+	return table

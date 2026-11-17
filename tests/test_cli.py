@@ -218,7 +218,9 @@ class TestShell(unittest.TestCase):
 		shell.command_loop()
 		text = output(shell)
 		self.assertIn("Type help for the list.\n\nUnknown command: bar", text)
-		self.assertIn("Type help for the list.\n\nEnd of the exam", text)
+		# Both answers are followed by a blank line; Enter alone added none.
+		self.assertEqual(text.count("Type help for the list.\n\n"), 2)
+		self.assertNotIn("\n\n\n", text.split("Display the characters")[1])
 
 	def test_ctrl_d_ends_the_exam_cleanly(self):
 		"""No answer left (Ctrl-D): the exam ends, nothing crashes."""
@@ -554,3 +556,60 @@ class TestRetryTimer(unittest.TestCase):
 		self.assertEqual(shell.level, 2)
 		self.assertEqual(shell.failures, 0)
 		self.assertRegex(output(shell), r"Next grademe\s+now")
+
+class TestExamTime(unittest.TestCase):
+	"""The exam ends when its time is up (rank02: 180 minutes)."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.clock = FakeClock()
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def later(self, minutes, command):
+		"""An answer typed `minutes` later: the clock moves, then `command`."""
+		def answer():
+			self.clock.now += minutes * 60
+			return command
+		return answer
+
+	def run_commands(self, *answers, code=ECHO_OK):
+		self.script = Script(*answers)
+		shell = make_shell(self.script, self.root, self.clock)
+		shell.start(self.exam, 1)
+		(self.root / "rendu/echo_first/echo_first.c").write_text(code, encoding="utf-8")
+		shell.command_loop()
+		return shell
+
+	def test_time_up_ends_the_exam_at_the_next_command(self):
+		"""181 minutes later, status is not run: time is up, the exam ends."""
+		shell = self.run_commands(self.later(181, "status"), "help")
+		text = output(shell)
+		self.assertIn("Time is up", text)
+		self.assertIn("End of the exam", text)
+		self.assertNotIn("Time spent  ", text.split("Time is up")[0])
+		self.assertEqual(len(self.script.prompts), 1)
+
+	def test_grademe_after_the_time_is_up_is_not_graded(self):
+		"""A right solution, but too late: not graded, no log."""
+		shell = self.run_commands(self.later(200, "grademe"))
+		self.assertIn("Time is up", output(shell))
+		self.assertEqual(list((self.root / "traces").glob("*.trace")), [])
+		self.assertEqual(shell.level, 1)
+
+	def test_a_warning_once_when_less_than_ten_minutes_are_left(self):
+		"""171 minutes in: one warning, not repeated at the next command."""
+		shell = self.run_commands(self.later(171, "help"), self.later(1, "help"), "finish")
+		self.assertEqual(output(shell).count("Less than 10 minutes left"), 1)
+
+	def test_the_end_of_the_exam_shows_a_summary(self):
+		"""One OK (level 1), then finish: levels passed, grademe, time spent."""
+		shell = self.run_commands("grademe", self.later(30, "finish"))
+		text = output(shell)
+		self.assertIn("Summary", text)
+		self.assertRegex(text, r"Levels passed\s+1")
+		self.assertRegex(text, r"Grademe\s+1 \(1 OK, 0 KO\)")
+		self.assertRegex(text, r"Time spent\s+0:30:00")
