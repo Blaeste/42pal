@@ -160,6 +160,7 @@ Five exams, like in 42_EXAM:
 | `number_read` | function | base_parse | 11 |
 | `tab_index` | function | int_arrays | 10 |
 | `tab_sort` | function | int_sort | 8 |
+| `nest_report` | program | stack_parsing | 9 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
