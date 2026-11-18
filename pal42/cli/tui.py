@@ -11,9 +11,15 @@ back; then the session screen, until the exam ends.
 
 import getpass
 import io
+import re
+import shutil
+import subprocess
+import sys
+from urllib.parse import unquote, urlparse
 
 from rich.console import Console, Group
 from rich.markup import escape
+from rich.style import Style
 from rich.text import Text
 from textual import work
 from textual.app import App, ComposeResult
@@ -65,6 +71,37 @@ def option_label(title, meta):
 	if meta:
 		label.append(f"\n{meta}", style="dim")
 	return label
+
+# A web address in a text: up to a space, a quote or a closing bracket.
+WEB_ADDRESS = re.compile(r"https?://[^\s'\")\]>]+")
+
+def open_on_click(target):
+	"""The style of a text that opens `target` (a path or a web address) when clicked."""
+	return Style(underline=True, meta={"@click": f"app.open_link({target!r})"})
+
+def link_target(link):
+	"""What to open for a rich link: the path of a file:// link, or the address."""
+	parts = urlparse(link)
+	return unquote(parts.path) if parts.scheme == "file" else link
+
+def clickable(text):
+	"""Make the links of `text` open with a click: rich links and web addresses.
+
+	Textual does not open the links of rich (the terminal would, but textual
+	keeps the mouse): each one gets a click action instead (see open_link).
+	"""
+	for span in list(text.spans):
+		style = Style.parse(span.style) if isinstance(span.style, str) else span.style
+		if style.link:
+			text.stylize(open_on_click(link_target(style.link)), span.start, span.end)
+	for match in WEB_ADDRESS.finditer(text.plain):
+		text.stylize(open_on_click(match.group()), match.start(), match.end())
+	return text
+
+def launch(command):
+	"""Start `command` apart from 42pal: it goes on if 42pal stops, and says nothing."""
+	subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+		stderr=subprocess.DEVNULL, start_new_session=True)
 
 def capture_console():
 	"""The console the shells print to: kept as text with colors, for the screens."""
@@ -366,11 +403,14 @@ class SessionScreen(Screen):
 		workspace = self.shell.workspace
 		subject = workspace.subjects / variant.name / "subject.en.txt"
 		rendu = workspace.rendu / variant.name
+		# The paths open with a click: the subject in an editor, the rendu in
+		# the file manager.
 		where = Text()
 		where.append("Read it  ", style="dim")
-		where.append(f"{display.short_path(subject)}\n")
-		where.append("Hand in  ", style="dim")
-		where.append(f"{display.short_path(rendu)}/\n")
+		where.append(display.short_path(subject), style=open_on_click(str(subject)))
+		where.append("\nHand in  ", style="dim")
+		where.append(f"{display.short_path(rendu)}/", style=open_on_click(str(rendu)))
+		where.append("\n")
 		self.query_one("#subject", Static).update(Group(where, Text(subject.read_text(encoding="utf-8"))))
 		pane = self.query_one("#subject-pane")
 		pane.border_title = f" {variant.name} "
@@ -469,7 +509,7 @@ class SessionScreen(Screen):
 		command.focus()
 		log = self.query_one("#log", RichLog)
 		if printed.strip():
-			log.write(Text.from_ansi(printed.rstrip("\n")))
+			log.write(clickable(Text.from_ansi(printed.rstrip("\n"))))
 		self.refresh_subject()
 		self.refresh_header()
 		if over:
@@ -491,6 +531,9 @@ class Pal42App(App):
 	TITLE = "42pal"
 	BINDINGS = [("ctrl+c", "quit", "Leave")]
 
+	# How a command is started apart (the tests put their own).
+	launch = staticmethod(launch)
+
 	def __init__(self, shell, practice=False, theme=None, user=None):
 		super().__init__()
 		self.shell = shell
@@ -503,6 +546,16 @@ class Pal42App(App):
 			self.practice_flow()
 		else:
 			self.exam_flow()
+
+	def action_open_link(self, target):
+		"""Open a file, a folder or a web page with the default application of the system."""
+		program = "open" if sys.platform == "darwin" else "xdg-open"
+		if self.launch is launch and shutil.which(program) is None:
+			self.notify(f"Cannot open it here: {program} is missing. {target}", severity="warning")
+			return
+		self.launch([program, target])
+		shown = target if WEB_ADDRESS.match(target) else display.short_path(target)
+		self.notify(f"Opening {shown}", timeout=3)
 
 	async def ask(self, title, items, first, highlight=0):
 		"""Show a menu; return the value of the item chosen, or BACK."""

@@ -20,6 +20,10 @@ def short_path(path):
 		return "~/" + path.relative_to(home).as_posix()
 	return path.as_posix()
 
+def path_link(path, end=""):
+	"""A path the terminal opens when it is clicked: [link=file://...]~/path[/link]."""
+	return f"[link={Path(path).resolve().as_uri()}]{escape(short_path(path))}{end}[/link]"
+
 def subject_panel(exam, level, variant, subject, rendu, mode="exam"):
 	"""The panel shown when a subject is given; mode is "exam" or "revision"."""
 	if mode == "revision":
@@ -32,8 +36,8 @@ def subject_panel(exam, level, variant, subject, rendu, mode="exam"):
 		f"This level is worth {points(exam.points_per_level)} points.",
 		"",
 		f"Subject: [bold cyan]{escape(variant.name)}[/]",
-		f"Read it: {escape(short_path(subject))}",
-		f"Hand in: {escape(short_path(rendu))}/",
+		f"Read it: {path_link(subject)}",
+		f"Hand in: {path_link(rendu, '/')}",
 	]
 	# 80 wide, like the subject printed under it (narrower if the terminal is).
 	return Panel("\n".join(lines), title="42pal", width=80)
@@ -115,7 +119,7 @@ def grade_result(grade, log):
 	else:
 		verdict = f"[bold red]✗ KO[/]  {grade.tests_passed}/{grade.tests_total} tests passed"
 	# [link=...]: the terminal opens the file when the path is clicked.
-	link = f"[link={log.resolve().as_uri()}]{escape(short_path(log))}[/link]"
+	link = path_link(log)
 	warnings = "".join(f"\n[yellow]! {escape(warning)}[/]" for warning in grade.warnings)
 	return f"{verdict}\nTrace: {link}{warnings}"
 
@@ -177,8 +181,8 @@ def practice_panel(theme, variant, subject, rendu):
 		"No timer, no wait: grademe, next, finish",
 		"",
 		f"Subject: [bold cyan]{escape(variant.name)}[/]",
-		f"Read it: {escape(short_path(subject))}",
-		f"Hand in: {escape(short_path(rendu))}/",
+		f"Read it: {path_link(subject)}",
+		f"Hand in: {path_link(rendu, '/')}",
 	]
 	return Panel("\n".join(lines), title="42pal", width=80)
 

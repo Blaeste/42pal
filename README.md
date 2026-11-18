@@ -36,9 +36,13 @@ In a terminal, 42pal opens **full screen**: move in the menus with the arrow
 keys (or `j` and `k`) and Enter, or with the mouse; `Esc` goes back to the
 menu before. During the exam, the screen shows the level, the grade and the
 time left (it runs live), the subject (`PgUp` and `PgDn` scroll it), a log of
-your commands, and the `examshell>` line where you type them. `./42pal
---plain` gives the text interface, line by line; it is also used when the
-input is not a terminal (answers sent through a pipe).
+your commands, and the `examshell>` line where you type them. The paths of
+the subject, of your rendu and of the traces, and the web addresses, open with
+a click: a file in its default application, a folder in the file manager, a
+page in the browser (`xdg-open`, or `open` on macOS). `./42pal --plain` gives
+the text interface, line by line; it is also used when the input is not a
+terminal (answers sent through a pipe). There, the terminal opens the paths
+with a Ctrl+click, if it knows links.
 
 1. **Log in** like at the exam. The login defaults to your user name; the
    password can be anything, it is never checked nor kept.

@@ -220,3 +220,67 @@ class TestPracticeScreens(FullScreenTest):
 			self.assertNotEqual(shell.variant.id, first)
 			await self.type(pilot, "f")
 			self.assertIn("Practice summary", log_text(app.screen))
+
+class TestLinks(FullScreenTest):
+	"""Paths and web addresses open with a click."""
+
+	def test_rich_links_and_web_addresses_become_clickable(self):
+		"""A file link of the shell, and an https address, get a click action."""
+		from rich.text import Text
+		from pal42.cli.tui import clickable
+		text = clickable(Text.from_markup(
+			"Trace: [link=file:///tmp/x/01_a.trace]~/x/01_a.trace[/link] see https://42.fr/en now"))
+		actions = {span.style.meta.get("@click") for span in text.spans
+			if not isinstance(span.style, str) and span.style.meta}
+		self.assertIn("app.open_link('/tmp/x/01_a.trace')", actions)
+		self.assertIn("app.open_link('https://42.fr/en')", actions)
+
+	@screen_test
+	async def test_open_link_runs_the_opener_of_the_system(self):
+		"""xdg-open (open on macOS) gets the path; a notification says it."""
+		app = self.exam_app()
+		launched = []
+		app.launch = launched.append
+		async with app.run_test(size=(100, 40)) as pilot:
+			app.action_open_link("/tmp/somewhere")
+			await pilot.pause()
+		self.assertEqual(launched[0][-1], "/tmp/somewhere")
+		self.assertIn(launched[0][0], ("xdg-open", "open"))
+
+	@screen_test
+	async def test_the_paths_of_the_subject_are_clickable(self):
+		"""Read it and Hand in open the subject file and the rendu folder."""
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			await pilot.press("enter", "enter")
+			await pilot.pause()
+			where = app.screen.query_one("#subject").content.renderables[0]
+			actions = [span.style.meta["@click"] for span in where.spans
+				if not isinstance(span.style, str) and "@click" in span.style.meta]
+			name = app.shell.variant.name
+			self.assertTrue(any(f"subjects/{name}/subject.en.txt" in action for action in actions))
+			self.assertTrue(any(f"rendu/{name}" in action for action in actions))
+			# A real click on the path, after "Read it  ", opens the subject.
+			launched = []
+			app.launch = launched.append
+			await pilot.click("#subject", offset=(12, 0))
+			await pilot.pause()
+			self.assertTrue(launched and launched[0][-1].endswith(f"{name}/subject.en.txt"), launched)
+
+class TestPlainLinks(unittest.TestCase):
+	"""The text interface: the paths of the subject panel are terminal links."""
+
+	def test_subject_panel_links_its_paths(self):
+		from rich.console import Console
+		from pal42.cli import display
+		from pal42.exam import load_exam
+		from pal42.variant import draw
+		exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		variant = draw(ECHO_CATALOG.exercises["echo_first"], 1)
+		panel = display.subject_panel(exam, 1, variant, Path("/tmp/s/subject.en.txt"), Path("/tmp/r"))
+		console = Console(file=__import__("io").StringIO(), force_terminal=True, width=100)
+		console.print(panel)
+		output = console.file.getvalue()
+		self.assertIn("file:///tmp/s/subject.en.txt", output)
+		self.assertIn("file:///tmp/r", output)
