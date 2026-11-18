@@ -227,6 +227,10 @@ Five exams, like in 42_EXAM:
 | `word_rotate` | program | word_rotate | 4 |
 | `list_sort_by` | function, header given, leaks checked | list_sort | 8 |
 | `zone_fill` | function | grid_fill | 5 |
+| `letter_find` | program | letter_search | 6 |
+| `set_first` | program | letter_or_fallback | 8 |
+| `char_only` | program | one_char | 8 |
+| `char_line` | program | one_char_end | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
