@@ -277,6 +277,36 @@ class TestPracticeScreens(FullScreenTest):
 			await self.type(pilot, "f")
 			self.assertIn("Practice summary", log_text(app.screen))
 
+	@screen_test
+	async def test_language_menu_then_back_from_the_themes(self):
+		"""C and Python themes: the language first; Back from the themes goes back to it."""
+		from pal42.catalog import Catalog
+		from pal42.themes import Theme
+		from tests.helpers import ECHO, make_exercise
+		python_exo = make_exercise(name="py_echo", language="python", allowed_functions=(),
+			themes=("py_sets",), expected_files=("py_echo.py",))
+		catalog = Catalog({"echo_first": ECHO.exercise, "py_echo": python_exo}, [])
+		themes = dict(ECHO_THEMES, py_sets=Theme("py_sets", "Compare in Python", {"rank03": (1,)}))
+		shell = ScreenPracticeShell(capture_console(), None, Workspace(self.root), rng=Random(1),
+			catalog=catalog, themes=themes, sleep=lambda seconds: None)
+		app = quiet(Pal42App(shell, practice=True))
+		async with app.run_test(size=(100, 40)) as pilot:
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "Choose a language")
+			await pilot.press("down", "enter")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "Choose a theme to practise")
+			# py_sets, then Back.
+			await pilot.press("down", "enter")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "Choose a language")
+			await pilot.press("enter")
+			await pilot.pause()
+			await pilot.press("enter")
+			await pilot.pause()
+			self.assertIsInstance(app.screen, SessionScreen)
+			self.assertEqual(shell.variant.exercise.name, "echo_first")
+
 class TestLinks(FullScreenTest):
 	"""Paths and web addresses open with a click."""
 

@@ -243,9 +243,13 @@ def exam_length(minutes):
 		return f"{rest} min"
 	return f"{hours} h {rest:02d}" if rest else f"{hours} h"
 
+# How a menu names the language of an exam.
+LANGUAGE_NAMES = {"c": "C", "cpp": "C++", "python": "Python"}
+
 def exam_summary(exam):
-	"""The size of an exam, for a menu: 8 levels, 4 h."""
-	return f"{exam.level_count} levels, {exam_length(exam.duration_minutes)}"
+	"""The size and language of an exam, for a menu: 8 levels, 4 h, C."""
+	return (f"{exam.level_count} levels, {exam_length(exam.duration_minutes)}, "
+		f"{LANGUAGE_NAMES.get(exam.language, exam.language)}")
 
 def exam_tools(exam):
 	"""How the rendus of an exam are built: compiled in C, run in Python."""

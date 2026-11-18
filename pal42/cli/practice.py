@@ -29,9 +29,10 @@ class PracticeShell(Shell):
 	"""Practising one theme: the grading and display of the examshell, no exam."""
 
 	def __init__(self, console, ask, workspace=None, rng=None, catalog=None, themes=None,
-			sleep=time.sleep, language="c"):
+			sleep=time.sleep, language=None):
 		super().__init__(console, ask, None, workspace, rng or random.Random(),
 			sleep=sleep, catalog=catalog, themes=themes)
+		# None: asked in a menu when the catalog has more than one language.
 		self.language = language
 		self.theme = None
 		# The subjects given so far (exo#seed), and how many were passed.
@@ -46,7 +47,7 @@ class PracticeShell(Shell):
 		choices = self.practisable_themes()
 		try:
 			if theme is None:
-				theme = self.choose_theme(choices)
+				theme = self.choose_language_and_theme()
 				if theme is None:
 					self.console.print("Goodbye!")
 					return 0
@@ -62,29 +63,75 @@ class PracticeShell(Shell):
 		self.command_loop()
 		return 0
 
-	def practisable_themes(self):
-		"""The ids of the themes that have at least one exercise, sorted."""
-		catalog, themes = self._catalog()
-		return sorted(theme for theme in themes if catalog.find(self.language, theme))
+	def exercises_of(self, theme):
+		"""The exercises of `theme`: a theme is the style of one real subject, in one language."""
+		catalog, _ = self._catalog()
+		return [exo for exo in catalog.exercises.values() if theme in exo.themes]
 
-	def choose_theme(self, choices):
+	def practisable_themes(self, language=None):
+		"""The ids of the themes that have an exercise (in `language` if given), sorted."""
+		_, themes = self._catalog()
+		return sorted(theme for theme in themes if any(
+			language in (None, exo.language) for exo in self.exercises_of(theme)))
+
+	def practice_languages(self):
+		"""The languages that have exercises, C first: {language: number of themes}."""
+		catalog, _ = self._catalog()
+		found = {exo.language for exo in catalog.exercises.values()}
+		order = list(display.LANGUAGE_NAMES)
+		languages = sorted(found, key=lambda language: order.index(language) if language in order else 99)
+		return {language: len(self.practisable_themes(language)) for language in languages}
+
+	def choose_language_and_theme(self):
+		"""The language menu (when there are several), then the theme menu; None to quit.
+
+		Back in the theme menu goes back to the language menu.
+		"""
+		languages = self.practice_languages()
+		while True:
+			language = self.language
+			if language is None and len(languages) > 1:
+				language = self.choose_language(languages)
+				if language is None:
+					return None
+			theme = self.choose_theme(self.practisable_themes(language),
+				first=self.language is not None or len(languages) <= 1)
+			if theme is not None:
+				return theme
+			if self.language is not None or len(languages) <= 1:
+				return None
+
+	def choose_language(self, languages):
+		"""Show the languages as a numbered menu; return the one picked, or None to quit."""
+		self.console.print("Choose a language:")
+		for number, (language, count) in enumerate(languages.items(), start=1):
+			name = display.LANGUAGE_NAMES.get(language, language)
+			self.console.print(f"  {number}. {name} ({count} theme{'s' if count != 1 else ''})")
+		last = len(languages) + 1
+		self.console.print(display.last_choice(last, first=True), markup=False)
+		number = self._ask_choice("Your choice:", range(1, last + 1))
+		self.console.print()
+		return None if number == last else list(languages)[number - 1]
+
+	def choose_theme(self, choices, first=True):
 		"""Show the themes as a numbered menu, with their skill; return the one picked.
 
-		The last choice quits: None is returned.
+		The last choice quits (first menu) or goes back: None is returned.
 		"""
 		_, themes = self._catalog()
 		self.console.print("Choose a theme to practise:")
 		for number, theme in enumerate(choices, start=1):
 			self.console.print(f"  {number}. {theme} · {escape(themes[theme].skill)}")
 		last = len(choices) + 1
-		self.console.print(display.last_choice(last, first=True), markup=False)
+		self.console.print(display.last_choice(last, first=first), markup=False)
 		number = self._ask_choice("Your choice:", range(1, last + 1))
+		if not first and number == last:
+			self.console.print()
 		return None if number == last else choices[number - 1]
 
 	def next_subject(self):
 		"""Give a new subject of the theme, one not given before."""
-		catalog, _ = self._catalog()
-		self.variant = draw_practice(catalog.find(self.language, self.theme), self.rng, self.seen)
+		self.variant = draw_practice(self.exercises_of(self.theme), self.rng, self.seen)
 		self.seen.add(self.variant.id)
 		self.show_subject()
 

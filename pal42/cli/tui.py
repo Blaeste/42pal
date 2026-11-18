@@ -800,17 +800,41 @@ class Pal42App(App):
 		shell = self.shell
 		theme = self.practice_theme
 		if theme is None:
-			_, themes = shell._catalog()
-			items = [(name, name, themes[name].skill,
-				f"Real levels: {', '.join(f'{exam} {levels}' for exam, levels in themes[name].exams.items())}")
-				for name in shell.practisable_themes()]
-			theme = await self.ask("Choose a theme to practise", items, first=True)
-			if theme is BACK:
+			theme = await self.choose_practice_theme()
+			if theme is None:
 				self.exit()
 				return
 		shell.theme = theme
 		self.run_quietly(shell.next_subject)
 		await self.run_session()
+
+	async def choose_practice_theme(self):
+		"""The language (when there are several), then a theme of it; None to quit.
+
+		Back in the theme menu goes back to the language menu.
+		"""
+		shell = self.shell
+		_, themes = shell._catalog()
+		languages = shell.practice_languages()
+		while True:
+			language = shell.language
+			if language is None and len(languages) > 1:
+				items = [(name, display.LANGUAGE_NAMES.get(name, name),
+					f"{count} theme{'s' if count != 1 else ''}",
+					"Exams: " + ", ".join(exam.title for exam in shell._exams() if exam.language == name))
+					for name, count in languages.items()]
+				language = await self.ask("Choose a language", items, first=True)
+				if language is BACK:
+					return None
+			first = shell.language is not None or len(languages) <= 1
+			items = [(name, name, themes[name].skill,
+				f"Real levels: {', '.join(f'{exam} {levels}' for exam, levels in themes[name].exams.items())}")
+				for name in shell.practisable_themes(language)]
+			theme = await self.ask("Choose a theme to practise", items, first=first)
+			if theme is not BACK:
+				return theme
+			if first:
+				return None
 
 	async def run_session(self):
 		"""The session screen until the end; then leave with what it printed last."""
