@@ -1099,6 +1099,20 @@ class TestUpdateOffer(unittest.TestCase):
 		shell = self.run_offer("", "pw", update=None)
 		self.assertNotIn("new version", output(shell))
 
+class TestSubjectText(unittest.TestCase):
+	"""On the screen, what changes from a variant to another stands out."""
+
+	def test_the_texts_of_the_params_are_styled_even_cut_by_the_wrapping(self):
+		from pal42.catalog import load_catalog
+		exo = load_catalog().exercises["word_pick"]
+		variant = Variant(exo, 0, {"which": "longest", "how": "upper"})
+		text = display.subject_text(variant, render(variant))
+		styled = [" ".join(text.plain[span.start:span.end].split()) for span in text.spans]
+		self.assertIn("its longest word (the first of them if several are as long)", styled)
+		self.assertIn("with its lowercase letters turned into uppercase", styled)
+		# The header and the examples stay as they are.
+		self.assertFalse(any("Assignment" in part or "$>" in part for part in styled))
+
 class TestDrivenShell(unittest.TestCase):
 	"""The shell driven one command at a time, as the full-screen interface does."""
 

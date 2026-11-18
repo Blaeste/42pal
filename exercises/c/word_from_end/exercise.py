@@ -65,7 +65,7 @@ EXERCISE = Exercise(
 		}),
 		Param("how", ("plain", "upper"), {
 			"plain": "as it is",
-			"upper": "with its lowercase letters turned into uppercase",
+			"upper": "with the lowercase letters turned into uppercase",
 		}),
 	),
 	# Each hole starts a line, so that the lines stay under 80 characters.

@@ -66,8 +66,7 @@ EXERCISE = Exercise(
 		Param("what", ("positions", "window", "backwards"), {
 			"positions": "where the characters of s1 are found in s2: for each one, in order,\n"
 				"the first index in s2 after the one found before (indexes from 0,\n"
-				"separated by spaces); only a newline if s1 is not hidden in s2 or is\n"
-				"empty",
+				"separated by spaces); nothing if s1 is not hidden in s2 or is empty",
 			"window": "the length of the shortest part of s2 (characters next to each\n"
 				"other) in which s1 is hidden; 0 if s1 is not hidden in s2 or is empty",
 			"backwards": "1 if s1 is hidden in s2 read from its last character to its first,\n"

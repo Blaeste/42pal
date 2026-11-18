@@ -3,6 +3,7 @@
 Each function returns something rich can print; the shell prints it.
 """
 
+import re
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -23,6 +24,35 @@ def short_path(path):
 def path_link(path, end=""):
 	"""A path the terminal opens when it is clicked: [link=file://...]~/path[/link]."""
 	return f"[link={Path(path).resolve().as_uri()}]{escape(short_path(path))}{end}[/link]"
+
+# How the words of a variant stand out in its subject, on the screen.
+VARIANT_STYLE = "bold #c4b5fd"
+
+def subject_text(variant, text):
+	"""The subject as a rich Text, the texts of the params of `variant` in VARIANT_STYLE.
+
+	What changes from a variant to another stands out; the file of the
+	subject stays plain text. Only the statement is looked at (between the
+	line of dashes and the examples); a text cut by the wrapping is found
+	all the same.
+	"""
+	styled = Text(text)
+	start = max(0, text.find("-" * 80))
+	end = text.find("\nExamples:")
+	end = len(text) if end < 0 else end
+	for param in variant.exercise.params:
+		words = param.text(variant.params[param.name]).split()
+		if not words:
+			continue
+		pattern = r"\s+".join(map(re.escape, words))
+		# A short text, like 5, only as a whole word.
+		if words[0][0].isalnum():
+			pattern = r"\b" + pattern
+		if words[-1][-1].isalnum():
+			pattern += r"\b"
+		for match in re.compile(pattern).finditer(text, start, end):
+			styled.stylize(VARIANT_STYLE, match.start(), match.end())
+	return styled
 
 def subject_panel(exam, level, variant, subject, rendu, mode="exam"):
 	"""The panel shown when a subject is given; mode is "exam" or "revision"."""

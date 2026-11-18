@@ -98,8 +98,8 @@ class TestRender(unittest.TestCase):
 		statement = render(repeat_twice()).split("-" * 80 + "\n")[1]
 		self.assertEqual(statement, (
 			"\n"
-			"Write a program that takes a string and displays it 2 times,\n"
-			"separated by spaces, followed by a newline.\n"
+			"Write a program that takes a string and displays it 2 times, separated by\n"
+			"spaces, followed by a newline.\n"
 			"\n"
 			"If the number of arguments is not 1, the program displays a newline.\n"
 		))
@@ -129,6 +129,39 @@ class TestRender(unittest.TestCase):
 			"$>./repeat_twice twice | cat -e\n"
 			"twice twice$\n"
 		), subject)
+
+class TestReflow(unittest.TestCase):
+	"""The prose of a statement is wrapped at 80 columns; code stays as it is."""
+
+	def test_lines_of_prose_are_joined_then_wrapped_at_80(self):
+		"""The text of a param, put at the start of a line, no longer breaks the sentence."""
+		variant = repeat_twice(subject=(
+			"Write a program that takes a string and displays it\n"
+			"$times,\n"
+			"separated by spaces, then a newline, so that the line is longer than eighty columns."
+		))
+		statement = render(variant).split("-" * 80 + "\n\n")[1]
+		lines = statement.splitlines()
+		self.assertTrue(lines[0].startswith("Write a program that takes a string and displays it 2 times,"))
+		self.assertTrue(all(len(line) <= 80 for line in lines))
+
+	def test_code_paragraphs_stay_as_they_are(self):
+		"""A prototype (with a tab) and a header (with # and braces) are not wrapped."""
+		variant = repeat_twice(subject=(
+			"Your function must be declared as follows:\n"
+			"\n"
+			"char\t*$assignment(int n);\n"
+			"\n"
+			"#ifndef X_H\n"
+			"# define X_H\n"
+			"\n"
+			"typedef struct s_x\n"
+			"{\n"
+			"\tint\tn;\n"
+			"}\tt_x;"
+		))
+		self.assertIn("\nchar\t*repeat_twice(int n);\n\n#ifndef X_H\n# define X_H\n\ntypedef struct s_x\n{\n"
+			"\tint\tn;\n}\tt_x;\n", render(variant))
 
 class TestGolden(unittest.TestCase):
 	"""The subject stays the same as a snapshot reviewed once by hand."""

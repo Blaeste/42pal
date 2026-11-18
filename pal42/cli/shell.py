@@ -369,7 +369,8 @@ class Shell:
 			exam, level, self.variant, subject, rendu, self.mode,
 		))
 		self.console.print()
-		self.console.print(subject.read_text(encoding="utf-8"), markup=False, highlight=False, end="")
+		# The words of the variant stand out; rich reads no markup in a Text.
+		self.console.print(display.subject_text(self.variant, subject.read_text(encoding="utf-8")), end="")
 		self.console.print()
 
 	def command_loop(self):

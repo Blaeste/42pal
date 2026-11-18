@@ -5,6 +5,7 @@ and the front-ends write it (subject.en.txt in the terminal, a page on the web).
 """
 
 import re
+import textwrap
 from string import Template
 
 # An argument made only of these characters needs no quotes in a shell.
@@ -44,7 +45,25 @@ def statement(variant):
 	}
 	# $assignment: the name of the program or function, for a prototype.
 	texts["assignment"] = variant.name
-	return Template(variant.exercise.subject).substitute(texts)
+	return reflow(Template(variant.exercise.subject).substitute(texts))
+
+def reflow(text, width=80):
+	"""Wrap each paragraph of prose at `width` columns, like the 42 subjects.
+
+	The texts of the params come with their own line breaks: the lines of a
+	paragraph are joined, then wrapped again, so that a sentence reads in one
+	go. A paragraph of code (a prototype, a header: a line with a tab, or
+	starting with a space, #, { or }) stays as it is.
+	"""
+	paragraphs = []
+	for paragraph in text.split("\n\n"):
+		lines = paragraph.split("\n")
+		if any("\t" in line or line.startswith((" ", "#", "{", "}")) for line in lines):
+			paragraphs.append(paragraph)
+		else:
+			paragraphs.append(textwrap.fill(" ".join(line.strip() for line in lines), width,
+				break_long_words=False, break_on_hyphens=False))
+	return "\n\n".join(paragraphs)
 
 def _examples(variant):
 	"""Return the lines of the examples: each command, then what it prints.

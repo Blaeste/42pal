@@ -468,7 +468,8 @@ class SessionScreen(Screen):
 		content.append("\nHand in  ", style="dim")
 		content.append(f"{display.short_path(rendu)}/", style=open_on_click(str(rendu)))
 		content.append("\n\n")
-		content.append(subject.read_text(encoding="utf-8"))
+		# The words of the variant stand out (see display.subject_text).
+		content.append_text(display.subject_text(variant, subject.read_text(encoding="utf-8")))
 		self.query_one("#subject", Static).update(content)
 		pane = self.query_one("#subject-pane")
 		pane.border_title = f" {variant.name} "

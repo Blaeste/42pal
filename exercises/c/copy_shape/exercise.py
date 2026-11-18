@@ -62,10 +62,10 @@ EXERCISE = Exercise(
 	themes=("string_copy",),
 	params=(
 		Param("what", ("reversed", "letters", "upper", "no_spaces"), {
-			"reversed": "its characters in reverse order",
-			"letters": "its letters only (a to z and A to Z), in their order",
-			"upper": "its characters, with the lowercase letters turned into uppercase",
-			"no_spaces": "its characters without the spaces",
+			"reversed": "with its characters in reverse order",
+			"letters": "keeping only its letters (a to z and A to Z), in their order",
+			"upper": "with its lowercase letters turned into uppercase",
+			"no_spaces": "without its spaces",
 		}),
 		Param("returned", ("start", "end"), {
 			"start": "dst, the start of the copy",
@@ -74,7 +74,7 @@ EXERCISE = Exercise(
 	),
 	# Each hole starts a line, so that the lines stay under 80 characters.
 	subject=(
-		"Write a function that copies into dst the string src with\n"
+		"Write a function that copies into dst the string src\n"
 		"$what,\n"
 		"followed by a \\0, and returns\n"
 		"$returned.\n"

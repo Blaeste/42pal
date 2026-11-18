@@ -3,8 +3,8 @@ Expected files   : repeat_twice.c
 Allowed functions: write
 --------------------------------------------------------------------------------
 
-Write a program that takes a string and displays it 2 times,
-separated by spaces, followed by a newline.
+Write a program that takes a string and displays it 2 times, separated by
+spaces, followed by a newline.
 
 If the number of arguments is not 1, the program displays a newline.
 

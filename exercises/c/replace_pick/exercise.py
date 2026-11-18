@@ -47,7 +47,7 @@ EXERCISE = Exercise(
 		Param("which", ("first", "last", "every_other", "all_but_first"), {
 			"first": "the first one",
 			"last": "the last one",
-			"every_other": "one out of two: the first, the third, the fifth and so on",
+			"every_other": "one out of two (the first, the third, the fifth and so on)",
 			"all_but_first": "all of them but the first one",
 		}),
 		Param("match", ("exact", "any_case"), {

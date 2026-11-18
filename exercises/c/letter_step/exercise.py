@@ -59,12 +59,13 @@ EXERCISE = Exercise(
 	themes=("letter_step",),
 	params=(
 		Param("what", ("vowels", "consonants", "digits", "backward_letters"), {
-			"vowels": "each vowel by the next vowel: a by e, e by i, i by o, o by u and u by a\n"
+			"vowels": "each vowel replaced by the next vowel: a by e, e by i, i by o, o by u and u by a\n"
 				"(y is not a vowel)",
-			"consonants": "each consonant by the next consonant in the alphabet: b by c, d by f,\n"
-				"and z by b",
-			"digits": "each digit by the next digit: 0 by 1 and so on, and 9 by 0",
-			"backward_letters": "each letter by the letter before it in the alphabet: b by a, and a by z",
+			"consonants": "each consonant replaced by the next consonant in the alphabet: b by c,\n"
+				"d by f, and z by b",
+			"digits": "each digit replaced by the next digit: 0 by 1 and so on, and 9 by 0",
+			"backward_letters": "each letter replaced by the letter before it in the alphabet: b by\n"
+				"a, and a by z",
 		}),
 		Param("case", ("keep", "swap"), {
 			"keep": "A character replaced keeps its case",

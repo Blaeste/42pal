@@ -51,10 +51,10 @@ EXERCISE = Exercise(
 	themes=("string_print",),
 	params=(
 		Param("what", ("letters", "digits", "upper", "doubled"), {
-			"letters": "its letters only (a to z and A to Z), in their order",
-			"digits": "its digits only (0 to 9), in their order",
-			"upper": "all its characters, with the lowercase letters turned into uppercase",
-			"doubled": "each of its characters twice in a row",
+			"letters": "keeping only its letters (a to z and A to Z), in their order",
+			"digits": "keeping only its digits (0 to 9), in their order",
+			"upper": "with its lowercase letters turned into uppercase",
+			"doubled": "with each of its characters twice in a row",
 		}),
 		Param("end", ("bare", "newline"), {
 			"bare": "Nothing is displayed after them",
@@ -63,7 +63,7 @@ EXERCISE = Exercise(
 	),
 	# Each hole starts a line, so that the lines stay under 80 characters.
 	subject=(
-		"Write a function that displays, on the standard output, the string str with\n"
+		"Write a function that displays, on the standard output, the string str\n"
 		"$what.\n"
 		"$end.\n"
 		"\n"

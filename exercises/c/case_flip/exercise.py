@@ -81,7 +81,7 @@ EXERCISE = Exercise(
 	subject=(
 		"Write a program that takes one string and displays it, followed by a\n"
 		"newline, with\n"
-		"$letters\n"
+		"$letters,\n"
 		"$action.\n"
 		"Every other character is displayed as it is.\n"
 		"\n"

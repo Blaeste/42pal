@@ -53,7 +53,7 @@ EXERCISE = Exercise(
 		"Write a program that takes a number n, written with digits only and from 1\n"
 		"to 50, and displays a table of lines for k going from 1 to\n"
 		"$rows,\n"
-		"one per line, each one written\n"
+		"one per line, each one written as\n"
 		"$operation.\n"
 		"The results fit in an unsigned long long, or in a long long when negative.\n"
 		"\n"

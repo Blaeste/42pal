@@ -74,19 +74,17 @@ EXERCISE = Exercise(
 	params=(
 		Param("step", ("2", "3", "5")),
 		Param("direction", ("forward", "backward"), {
-			"forward": "from start towards end: start first, then the number step further\n"
-				"towards end, and so on",
-			"backward": "from end towards start: end first, then the number step further\n"
-				"towards start, and so on",
+			"forward": "from start towards end (start first)",
+			"backward": "from end towards start (end first)",
 		}),
 	),
 	# Each hole starts a line, so that the lines stay under 80 characters.
 	subject=(
 		"Write a function that returns a new array of ints, allocated with malloc,\n"
-		"holding numbers going\n"
+		"holding numbers\n"
+		"$step\n"
+		"apart, going\n"
 		"$direction,\n"
-		"every\n"
-		"$step,\n"
 		"without going past the other end. The array holds\n"
 		"(|end - start| / step) + 1 numbers; start and end may be in any order.\n"
 		"\n"

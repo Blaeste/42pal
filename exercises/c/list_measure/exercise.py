@@ -116,17 +116,18 @@ EXERCISE = Exercise(
 			"count_negative": "how many numbers are negative",
 		}),
 		Param("cells", ("all", "every_other"), {
-			"all": "of all its cells",
-			"every_other": "of one cell out of two: the first, the third, the fifth and so on",
+			"all": "all its cells",
+			"every_other": "one cell out of two (the first, the third, the fifth and so on)",
 		}),
 	),
 	provided_files={"cell.h": HEADER},
 	# Each hole starts a line, so that the lines stay under 80 characters.
 	subject=(
-		"Write a function that takes the first cell of a linked list of ints and\n"
+		"Write a function that takes the first cell of a linked list of ints and,\n"
+		"looking at\n"
+		"$cells,\n"
 		"returns\n"
-		"$measure\n"
-		"$cells.\n"
+		"$measure.\n"
 		"For an empty list (NULL), it returns 0.\n"
 		"\n"
 		"The cells are of the type t_cell, declared in the header cell.h, given next\n"
