@@ -241,6 +241,11 @@ Five exams, like in 42_EXAM:
 | `list_each` | function, header given | list_apply | 4 |
 | `set_run` | function | accept_span | 4 |
 | `set_find` | function | set_search | 4 |
+| `board_threat` | program | grid_attack | 8 |
+| `tape_script` | program | tiny_interpreter | 6 |
+| `byte_dump` | function | memory_dump | 4 |
+| `flag_mask` | program | option_flags | 6 |
+| `expr_eval` | program | postfix_calc | 3 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
@@ -248,10 +253,8 @@ of [themes.json](themes.json) is the style of one real exam subject, at the
 levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
 one of the subjects of the level. The levels of the Exam Rank 02 follow the
-list of [42exam.net](https://42exam.net/) (57 subjects). 72 of the 77
-styles have an exercise so far: all those of the Exam Rank 02 and of the
-piscine exams 01 to 03; the 5 left are those of level 3 and 4 of the final
-exam.
+list of [42exam.net](https://42exam.net/) (57 subjects). All 77 styles
+have an exercise.
 
 ## For contributors
 
