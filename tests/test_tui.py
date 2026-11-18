@@ -120,6 +120,31 @@ class TestExamScreens(FullScreenTest):
 			self.assertEqual(app.shell.level, 2)
 
 	@screen_test
+	async def test_up_and_down_go_through_the_commands_typed(self):
+		"""Up brings back status, then grademe... ; down goes back to what was being typed."""
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			await pilot.press("enter", "enter")
+			await pilot.pause()
+			command = app.screen.query_one("#command")
+			await self.type(pilot, "help")
+			await self.type(pilot, "status")
+			await self.type(pilot, "status")
+			await pilot.press("h", "e")
+			await pilot.press("up")
+			self.assertEqual(command.value, "status")
+			await pilot.press("up")
+			self.assertEqual(command.value, "help")
+			await pilot.press("up")
+			self.assertEqual(command.value, "help")
+			await pilot.press("down", "down")
+			self.assertEqual(command.value, "he")
+			await pilot.press("backspace", "backspace", "up", "enter")
+			await pilot.pause()
+			self.assertEqual(log_text(app.screen).count("examshell> status"), 3)
+
+	@screen_test
 	async def test_exam_mode_skips_the_level_menu_and_finish_ends(self):
 		"""Exam mode starts at level 1; finish, then Enter leaves with the summary."""
 		app = self.exam_app()

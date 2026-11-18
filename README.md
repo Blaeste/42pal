@@ -72,9 +72,9 @@ input is not a terminal (answers sent through a pipe).
 | `finish` | `f` | ends the exam, with a summary |
 | `help` | `?` | lists the commands |
 
-Type the command (or its letter), then Enter. In full screen, the right arrow
-completes a command; in the text interface, Tab does, and the arrow keys
-bring back the commands you typed. The grading runs while the screen stays
+Type the command (or its letter), then Enter. The up and down arrows bring
+back the commands you typed: up then Enter runs the last one again. The
+right arrow (full screen) or Tab (text interface) completes a command. The grading runs while the screen stays
 alive, with the number of the test being run.
 
 ### What grademe checks

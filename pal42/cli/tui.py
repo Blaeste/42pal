@@ -273,12 +273,15 @@ class SessionScreen(Screen):
 	what it prints goes to the log. A grading runs in a thread, so that the
 	screen stays alive. When the exam is over, Enter leaves; the screen is
 	dismissed with the last thing printed (the summary). PgUp and PgDn
-	scroll the subject while typing.
+	scroll the subject while typing; up and down bring back the commands
+	typed before, like in a shell.
 	"""
 
 	BINDINGS = [
 		("pageup", "scroll_subject(-1)", "Subject up"),
 		("pagedown", "scroll_subject(1)", "Subject down"),
+		("up", "history(-1)", "Previous command"),
+		("down", "history(1)", "Next command"),
 	]
 
 	def __init__(self, shell, practice=False):
@@ -292,6 +295,11 @@ class SessionScreen(Screen):
 		self.busy = False
 		self.over = False
 		self.final = ""
+		# The commands typed, the oldest first; while going through them, the
+		# place shown (None: not going through) and what was being typed.
+		self.history = []
+		self.history_place = None
+		self.draft = ""
 
 	def compose(self) -> ComposeResult:
 		yield Static(id="header")
@@ -305,9 +313,9 @@ class SessionScreen(Screen):
 		letters = ", ".join(f"{letter} {command}" for letter, command in self.shortcuts.items())
 		yield Input(id="command", placeholder=f"{self.prompt} type a command ({letters})",
 			suggester=SuggestFromList(list(self.commands), case_sensitive=False))
-		keys = [(letter, command) for letter, command in self.shortcuts.items()]
-		yield Static(hints(keys + [("pgup pgdn", "subject"), ("→", "complete"),
-			("ctrl+c", "leave")]), id="session-hints")
+		# The one-letter commands are in the placeholder of the command line.
+		yield Static(hints([("⏎", "run"), ("↑↓", "history"), ("→", "complete"),
+			("pgup pgdn", "subject"), ("ctrl+c", "leave")]), id="session-hints")
 
 	def on_mount(self):
 		self.query_one("#log").border_title = " log "
@@ -320,6 +328,25 @@ class SessionScreen(Screen):
 
 	def on_resize(self, event):
 		self.set_class(event.size.width >= WIDE_WIDTH, "-wide")
+
+	def action_history(self, step):
+		"""Up (-1) and down (1): the commands typed before; below the last, the draft."""
+		if not self.history or self.busy or self.over:
+			return
+		command = self.query_one("#command", Input)
+		if self.history_place is None:
+			if step > 0:
+				return
+			self.draft = command.value
+			self.history_place = len(self.history)
+		self.history_place = max(0, self.history_place + step)
+		if self.history_place >= len(self.history):
+			self.history_place = None
+			value = self.draft
+		else:
+			value = self.history[self.history_place]
+		command.value = value
+		command.cursor_position = len(value)
 
 	def action_scroll_subject(self, step):
 		pane = self.query_one("#subject-pane")
@@ -412,6 +439,10 @@ class SessionScreen(Screen):
 			return
 		if self.busy:
 			return
+		# Kept for up and down; the same command twice in a row, once.
+		if command and (not self.history or self.history[-1] != command):
+			self.history.append(command)
+		self.history_place = None
 		log = self.query_one("#log", RichLog)
 		log.write(Text(f"{self.prompt} {command}", style="bold #a5b4fc"))
 		# Here, not in the grading thread: the widgets belong to the screen.
