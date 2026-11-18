@@ -237,6 +237,8 @@ Five exams, like in 42_EXAM:
 | `rev_inplace` | function | string_reverse | 4 |
 | `bit_flip` | function | bit_reverse | 3 |
 | `match_trace` | program | hidden_word | 6 |
+| `list_loop` | function, header given | list_cycle | 3 |
+| `list_each` | function, header given | list_apply | 4 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
