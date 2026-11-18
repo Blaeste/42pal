@@ -216,6 +216,8 @@ Five exams, like in 42_EXAM:
 | `word_spread` | program | space_spread | 6 |
 | `caps_start` | program | capitalize_first | 6 |
 | `caps_end` | program | capitalize_last | 6 |
+| `prime_facts` | program | prime_sum | 6 |
+| `divisor_facts` | program | common_divisor | 4 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
