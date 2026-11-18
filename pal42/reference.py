@@ -7,9 +7,10 @@ core, this module never prints.
 
 import shutil
 import tempfile
+import traceback
 from pathlib import Path
 
-from pal42.grader import grade
+from pal42.grader import Grade, grade
 from pal42.runners.c import DEFAULT_COMMAND, CRunner
 from pal42.variant import draw
 
@@ -60,4 +61,10 @@ def check_variant(variant, ref):
 			if source.is_file():
 				shutil.copy(source, Path(rendu) / name)
 		runner = CRunner(DEFAULT_COMMAND + variant.defines)
-		return grade(variant, rendu, runner)
+		try:
+			return grade(variant, rendu, runner)
+		# The oracle or the generator of the exercise failed: said, so that the
+		# other variants and exercises are still checked.
+		except Exception as error:
+			trace = "".join(traceback.format_exception_only(type(error), error))
+			return Grade(False, f"The exercise itself failed:\n{trace}", 0, 0)

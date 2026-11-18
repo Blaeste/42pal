@@ -98,6 +98,19 @@ class TestCheckVariant(unittest.TestCase):
 		self.assertFalse(result.passed)
 		self.assertIn("-hello$\n+HELLO$", result.trace)
 
+	def test_an_oracle_that_fails_gives_a_failed_variant_not_a_crash(self):
+		"""An exception in the oracle (or the generator) is said in the trace."""
+		def broken(params, test):
+			raise IndexError("string index out of range")
+		exo = make_exercise(name="echo_first", expected_files=("echo_first.c",),
+			oracle=broken, generate_tests=echo_tests)
+		with tempfile.TemporaryDirectory() as tmp:
+			ref = Path(tmp) / "ref.c"
+			ref.write_text(ECHO_OK, encoding="utf-8")
+			result = check_variant(Variant(exo, 3, {"mode": "common"}), ref)
+		self.assertFalse(result.passed)
+		self.assertIn("IndexError: string index out of range", result.trace)
+
 	def test_a_header_the_student_hands_in_is_taken_next_to_ref_c(self):
 		"""Expected files echo_first.c and echo.h: echo.h comes from the folder of ref.c."""
 		exo = make_exercise(
