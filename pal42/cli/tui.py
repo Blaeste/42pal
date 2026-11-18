@@ -173,8 +173,7 @@ class LoginScreen(IntroScreen):
 				yield Static("login", classes="field-label")
 				yield Input(value=self.user, id="login")
 				yield Static("password", classes="field-label")
-				yield Input(password=True, id="password",
-					placeholder="anything: it is never checked nor kept")
+				yield Input(password=True, id="password")
 			yield Static(hints([("⏎", "next"), ("esc", "quit")]), classes="hints")
 
 	def on_mount(self):

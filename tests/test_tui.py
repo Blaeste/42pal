@@ -162,6 +162,27 @@ class TestExamScreens(FullScreenTest):
 		self.assertEqual(self.store.history()[0]["end"], "finish")
 
 	@screen_test
+	async def test_the_menu_does_not_move_when_the_details_change(self):
+		"""Exam, Revision and Back have details of different lengths: the card stays."""
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			card = app.screen.query_one(".card")
+			places = set()
+			for key in ["up", "down", "down", "up"]:
+				await pilot.press(key)
+				await pilot.pause()
+				places.add((card.region.y, app.screen.query_one(".details").region.height))
+			self.assertEqual(len(places), 1, places)
+
+	@screen_test
+	async def test_the_password_field_says_nothing(self):
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await pilot.pause()
+			self.assertEqual(app.screen.query_one("#password").placeholder, "")
+
+	@screen_test
 	async def test_escape_in_the_first_menu_quits(self):
 		app = self.exam_app()
 		async with app.run_test(size=(100, 40)) as pilot:
