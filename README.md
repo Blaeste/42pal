@@ -146,26 +146,34 @@ levels (25 points at rank 02), for a grade out of 100.
 ## Practise one theme
 
 ```sh
-./42pal practice                       # a menu of the themes
+./42pal practice                       # a menu of the languages, then of the themes
 ./42pal practice --theme letter_rotation
 ```
 
 Subjects of one theme, one after the other: no login, no timer, no wait.
+The first menu chooses C or Python; Back in the theme menu returns to it.
 A passed `grademe` (`g`) gives the next subject; `next` (`n`) skips to
 another one; `finish` (`f`) stops. It opens full screen too, unless `--plain`
 is given.
 
 ## What the catalog has today
 
-Five exams, like in 42_EXAM:
+Six exams: the piscine ones like in 42_EXAM, the ranks like on
+[42exam.net](https://42exam.net/). A student chooses between the two ranks.
 
-| Exam | Levels | Time | Levels that can be played today |
-|---|---|---|---|
-| Exam Rank 02 | 4 (25 points each) | 3 h | 1, 2, 3, 4 |
-| Piscine Exam 01 | 8 (12.5 points each) | 4 h | 1 to 8 |
-| Piscine Exam 02 | 8 (12.5 points each) | 4 h | 1 to 8 |
-| Piscine Exam 03 | 4 (25 points each) | 4 h | 1 to 4 |
-| Piscine Final Exam | 4 (25 points each) | 8 h | 1 to 4 |
+| Exam | Language | Levels | Time | Levels that can be played today |
+|---|---|---|---|---|
+| Exam Rank 02 | C | 4 (25 points each) | 3 h | 1, 2, 3, 4 |
+| Exam Rank 03 | Python | 6 (16.67 points each) | 3 h | 1 to 6 |
+| Piscine Exam 01 | C | 8 (12.5 points each) | 4 h | 1 to 8 |
+| Piscine Exam 02 | C | 8 (12.5 points each) | 4 h | 1 to 8 |
+| Piscine Exam 03 | C | 4 (25 points each) | 4 h | 1 to 4 |
+| Piscine Final Exam | C | 4 (25 points each) | 8 h | 1 to 4 |
+
+In Python, the student hands in a `.py` file with the function the subject
+asks for: a test main imports it, calls it and compares what it returns
+with the expected value. The subject says which modules may be imported
+(usually none) and which calls are forbidden (like `sorted()`).
 
 | Exercise | Kind | Theme | Variants |
 |---|---|---|---|
@@ -247,14 +255,35 @@ Five exams, like in 42_EXAM:
 | `flag_mask` | program | option_flags | 6 |
 | `expr_eval` | program | postfix_calc | 3 |
 
+The Python exercises of the Exam Rank 03, all functions:
+
+| Exercise | Theme | Variants |
+|---|---|---|
+| `nest_check` | bracket_balance | 6 |
+| `key_sort` | multi_key_sort | 3 |
+| `mirror_word` | palindrome_check | 3 |
+| `grid_turn` | matrix_flip | 4 |
+| `trace_letters` | subsequence_check | 3 |
+| `char_mix` | shared_chars | 3 |
+| `base_shift` | base_convert | 3 |
+| `digit_steps` | digit_pairs | 4 |
+| `letter_bag` | same_letters | 3 |
+| `merge_twist` | sorted_merge | 3 |
+| `char_balance` | char_multiset | 3 |
+| `case_wave` | case_alternate | 3 |
+| `shift_list` | list_rotate | 3 |
+| `key_shift` | letter_shift | 3 |
+
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
 of [themes.json](themes.json) is the style of one real exam subject, at the
 levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
-one of the subjects of the level. The levels of the Exam Rank 02 follow the
-list of [42exam.net](https://42exam.net/) (57 subjects). All 77 styles
-have an exercise.
+one of the subjects of the level. The levels of the ranks follow the lists
+of [42exam.net](https://42exam.net/) (57 subjects for the Exam Rank 02,
+then the Python ranks). All 77 C styles have an exercise, and the 14
+Python styles of the Exam Rank 03; the Python ranks 04 to 06 (23 styles)
+come next.
 
 ## For contributors
 
@@ -265,7 +294,8 @@ python3 -m unittest
 ```
 
 Check that the whole catalog grades right: each exercise has a reference
-solution (`ref.c`) that must pass every one of its variants. When the
+solution (`ref.c`, or `ref.py` in Python) that must pass every one of its
+variants. When the
 student hands in a header too, the reference header sits next to `ref.c`,
 under its own name.
 
@@ -278,7 +308,8 @@ under its own name.
 | `pal42/` | the core: exercises, variants, subjects, grading (no display) |
 | `pal42/cli/` | the terminal: examshell, practice, check-catalog, and the full screen (`tui.py`, `tui.tcss`) |
 | `exercises/c/<name>/` | one exercise: `exercise.py`, its `ref.c` (and the header the student hands in, if any) |
-| `exams/` | the exams: title, duration, compile command, retry waits |
+| `exercises/python/<name>/` | one Python exercise: `exercise.py` and its `ref.py`, which holds the function of every variant |
+| `exams/` | the exams: title, language, duration, compile command (the interpreter in Python), retry waits |
 | `tests/` | the tests |
 
 The plan of the project, in French, is in
