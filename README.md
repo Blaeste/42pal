@@ -202,6 +202,8 @@ Five exams, like in 42_EXAM:
 | `copy_shape` | function | string_copy | 8 |
 | `put_filter` | function (void, prints) | string_print | 8 |
 | `bip_bop` | program | number_words | 8 |
+| `mirror_group` | program | alphabet_mirror | 7 |
+| `word_from_end` | program | end_word | 8 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
