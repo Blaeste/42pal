@@ -306,5 +306,153 @@
 	"longest_part": {
 		"skill": "Find the longest part of a string with a property",
 		"exams": {"piscine_final": [4]}
+	},
+	"bracket_balance": {
+		"skill": "Check the brackets of a string with a stack",
+		"exams": {"rank03": [1]}
+	},
+	"multi_key_sort": {
+		"skill": "Sort strings on several keys without sorted()",
+		"exams": {"rank03": [1]}
+	},
+	"palindrome_check": {
+		"skill": "Read a string the same way from both ends",
+		"exams": {"rank03": [2]}
+	},
+	"matrix_flip": {
+		"skill": "Build a matrix turned or flipped from another",
+		"exams": {"rank03": [2]}
+	},
+	"subsequence_check": {
+		"skill": "Find the letters of a word, in order, in another string",
+		"exams": {"rank03": [3]}
+	},
+	"shared_chars": {
+		"skill": "Compare the characters of two strings",
+		"exams": {"rank03": [3]}
+	},
+	"base_convert": {
+		"skill": "Read and write numbers in a base from 2 to 36",
+		"exams": {"rank03": [3]}
+	},
+	"digit_pairs": {
+		"skill": "Count patterns of neighbouring digits in a string",
+		"exams": {"rank03": [3]}
+	},
+	"same_letters": {
+		"skill": "Compare strings by the letters they hold",
+		"exams": {"rank03": [4]}
+	},
+	"sorted_merge": {
+		"skill": "Merge two sorted lists in one pass",
+		"exams": {"rank03": [4]}
+	},
+	"char_multiset": {
+		"skill": "Count the characters of two strings",
+		"exams": {"rank03": [4]}
+	},
+	"case_alternate": {
+		"skill": "Change the case of letters by their position",
+		"exams": {"rank03": [5]}
+	},
+	"list_rotate": {
+		"skill": "Move the items of a list around",
+		"exams": {"rank03": [5]}
+	},
+	"letter_shift": {
+		"skill": "Shift letters in the alphabet",
+		"exams": {"rank03": [6]}
+	},
+	"rotation_check": {
+		"skill": "Tell whether a list is a rotation of another",
+		"exams": {"rank04": [1]}
+	},
+	"grid_plot": {
+		"skill": "Draw points on a grid of characters",
+		"exams": {"rank04": [1]}
+	},
+	"sorted_intersection": {
+		"skill": "Intersect sorted lists",
+		"exams": {"rank04": [2]}
+	},
+	"k_way_merge": {
+		"skill": "Merge many sorted lists",
+		"exams": {"rank04": [2]}
+	},
+	"palindrome_cuts": {
+		"skill": "Cut a string into palindromes with dynamic programming",
+		"exams": {"rank04": [3]}
+	},
+	"dependency_order": {
+		"skill": "Order items so that each comes after what it needs",
+		"exams": {"rank04": [3]}
+	},
+	"window_max": {
+		"skill": "Compute a value over each window of a list",
+		"exams": {"rank04": [4]}
+	},
+	"run_length": {
+		"skill": "Encode and decode runs of characters",
+		"exams": {"rank05": [1]}
+	},
+	"spiral_fill": {
+		"skill": "Fill a matrix along a path",
+		"exams": {"rank05": [1]}
+	},
+	"interval_rooms": {
+		"skill": "Share out time intervals",
+		"exams": {"rank05": [1]}
+	},
+	"graph_cycle": {
+		"skill": "Find a cycle in a directed graph",
+		"exams": {"rank05": [2]}
+	},
+	"grid_regions": {
+		"skill": "Count the regions of a grid",
+		"exams": {"rank05": [2]}
+	},
+	"grid_word_search": {
+		"skill": "Find words in a grid in every direction",
+		"exams": {"rank05": [3]}
+	},
+	"word_steps": {
+		"skill": "Find the shortest chain of words with a breadth-first search",
+		"exams": {"rank05": [3]}
+	},
+	"prefix_tree": {
+		"skill": "Write a class that stores words in a prefix tree",
+		"exams": {"rank06": [1]}
+	},
+	"string_packing": {
+		"skill": "Pack a list of strings into one string and back",
+		"exams": {"rank06": [1]}
+	},
+	"task_schedule": {
+		"skill": "Order tasks that depend on each other",
+		"exams": {"rank06": [1]}
+	},
+	"extra_edge": {
+		"skill": "Find the edge that closes a cycle in a graph",
+		"exams": {"rank06": [1]}
+	},
+	"prefix_complete": {
+		"skill": "Complete words from a prefix",
+		"exams": {"rank06": [1]}
+	},
+	"disjoint_sets": {
+		"skill": "Write a class that joins sets and finds their leaders",
+		"exams": {"rank06": [2]}
+	},
+	"lru_cache": {
+		"skill": "Write a class that keeps the most recently used values",
+		"exams": {"rank06": [2]}
+	},
+	"binary_heap": {
+		"skill": "Write a class that keeps the smallest value on top",
+		"exams": {"rank06": [2]}
+	},
+	"graph_bridges": {
+		"skill": "Find the edges a graph cannot lose",
+		"exams": {"rank06": [2]}
 	}
 }

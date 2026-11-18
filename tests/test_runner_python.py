@@ -192,6 +192,14 @@ class TestPythonSubject(unittest.TestCase):
 		])
 		self.assertTrue(subject.endswith("Examples:\n\n>>> twice_common(21)\n42\n"), subject)
 
+	def test_a_declaration_that_changes_with_the_variant(self):
+		"""$prototype: given by prototype(name, params); unknown without it."""
+		exo = make_exercise(subject="Declared as:\n\n$prototype",
+			prototype=lambda name, params: f"def {name}(text: str) -> {params['mode']}:")
+		self.assertIn("\ndef char_filter(text: str) -> common:\n", render(Variant(exo, 0, {"mode": "common"})))
+		with self.assertRaises(ExerciseError):
+			make_exercise(subject="Declared as: $prototype")
+
 	def test_a_python_exercise_allows_no_c_function(self):
 		with self.assertRaises(ExerciseError):
 			make_exercise(language="python", allowed_functions=("write",))

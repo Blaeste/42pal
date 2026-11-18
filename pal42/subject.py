@@ -52,6 +52,9 @@ def statement(variant):
 	}
 	# $assignment: the name of the program or function, for a prototype.
 	texts["assignment"] = variant.name
+	# $prototype: a declaration that changes with the variant.
+	if variant.exercise.prototype:
+		texts["prototype"] = variant.exercise.prototype(variant.name, variant.params)
 	return reflow(Template(variant.exercise.subject).substitute(texts))
 
 def reflow(text, width=80):

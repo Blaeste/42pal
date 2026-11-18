@@ -89,6 +89,9 @@ class Exercise:
 	name): files given by the exercise, like a header with a struct, put
 	next to the subject and in the compilation; the student does not hand
 	them in.
+	prototype(name, params), when the declaration of the function changes
+	with the variant (its arguments, what it returns), gives that
+	declaration; the subject shows it with $prototype.
 	For Python, allowed_functions stays empty: allowed_imports lists the
 	modules the student may import, and forbidden_calls the functions and
 	methods they may not call (like sorted or sort). The test main is then
@@ -113,6 +116,7 @@ class Exercise:
 	provided_files: dict[str, str] = field(default_factory=dict)
 	allowed_imports: tuple[str, ...] = ()
 	forbidden_calls: tuple[str, ...] = ()
+	prototype: Callable | None = None
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
@@ -127,7 +131,8 @@ class Exercise:
 		self._check_kind()
 		if self.language == "python" and self.allowed_functions:
 			self._fail("a Python exercise allows modules (allowed_imports), not C functions")
-		self._check_template(self.subject, "the subject", extra=("assignment",))
+		extra = ("assignment", "prototype") if self.prototype else ("assignment",)
+		self._check_template(self.subject, "the subject", extra=extra)
 		self._check_template(self.assignment_name, "the name")
 		self._check_template(self.harness, "the test main")
 		for name, content in self.provided_files.items():

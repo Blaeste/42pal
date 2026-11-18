@@ -59,7 +59,8 @@ class TestBadThemesFile(unittest.TestCase):
 # The real subjects of each level of each exam (names only: no real subject
 # is in this repository). piscine_01 to piscine_final are read in the
 # folders of 42_EXAM, its exam_01 to exam_04; rank02 in the list of
-# 42exam.net, which has 57 subjects where the exam_02 of 42_EXAM had 49.
+# 42exam.net, which has 57 subjects where the exam_02 of 42_EXAM had 49, and
+# the Python ranks 03 to 06 in the lists of 42exam.net too.
 REAL_LEVELS = {
 	"piscine_01": {
 		1: "aff_a ft_countdown ft_print_numbers",
@@ -104,6 +105,29 @@ REAL_LEVELS = {
 			"lcm paramsum pgcd print_hex rstr_capitalizer str_capitalizer tab_mult",
 		4: "flood_fill fprime ft_itoa ft_list_foreach ft_list_remove_if ft_split rev_wstr "
 			"rostring sort_int_tab sort_list",
+	},
+	"rank03": {
+		1: "py_bracket_validator py_cryptic_sorter",
+		2: "py_echo_validator py_mirror_matrix",
+		3: "py_hidenp py_inter py_number_base_converter py_pattern_tracker",
+		4: "py_anagram py_shadow_merge py_string_permutation_checker",
+		5: "py_string_sculptor py_twist_sequence",
+		6: "py_whisper_cipher",
+	},
+	"rank04": {
+		1: "py_array_rotation_detector py_constellation_mapper",
+		2: "py_list_intersection_finder py_merge_sorted_lists",
+		3: "py_package_dependency_resolver py_palindrome_partitioner",
+		4: "py_sliding_window_maximum",
+	},
+	"rank05": {
+		1: "py_compress_decompress py_room_scheduler py_spiral_matrix",
+		2: "py_graph_cycle_detector py_island_matrix_counter",
+		3: "py_prism_detector py_word_ladder",
+	},
+	"rank06": {
+		1: "pack_strings prefix_dictionary redundant_link task_order trie_autocomplete",
+		2: "bridge_finder cache_keeper min_heap union_find_system",
 	},
 }
 
@@ -188,6 +212,44 @@ THEME_OF = {
 	"tiny_interpreter": "brainfuck",
 	"memory_dump": "print_memory",
 	"longest_part": "biggest_pal",
+	# The Python ranks of 42exam.net.
+	"bracket_balance": "py_bracket_validator",
+	"multi_key_sort": "py_cryptic_sorter",
+	"palindrome_check": "py_echo_validator",
+	"matrix_flip": "py_mirror_matrix",
+	"subsequence_check": "py_hidenp",
+	"shared_chars": "py_inter",
+	"base_convert": "py_number_base_converter",
+	"digit_pairs": "py_pattern_tracker",
+	"same_letters": "py_anagram",
+	"sorted_merge": "py_shadow_merge",
+	"char_multiset": "py_string_permutation_checker",
+	"case_alternate": "py_string_sculptor",
+	"list_rotate": "py_twist_sequence",
+	"letter_shift": "py_whisper_cipher",
+	"rotation_check": "py_array_rotation_detector",
+	"grid_plot": "py_constellation_mapper",
+	"sorted_intersection": "py_list_intersection_finder",
+	"k_way_merge": "py_merge_sorted_lists",
+	"palindrome_cuts": "py_palindrome_partitioner",
+	"dependency_order": "py_package_dependency_resolver",
+	"window_max": "py_sliding_window_maximum",
+	"run_length": "py_compress_decompress",
+	"spiral_fill": "py_spiral_matrix",
+	"interval_rooms": "py_room_scheduler",
+	"graph_cycle": "py_graph_cycle_detector",
+	"grid_regions": "py_island_matrix_counter",
+	"grid_word_search": "py_prism_detector",
+	"word_steps": "py_word_ladder",
+	"prefix_tree": "prefix_dictionary",
+	"string_packing": "pack_strings",
+	"task_schedule": "task_order",
+	"extra_edge": "redundant_link",
+	"prefix_complete": "trie_autocomplete",
+	"disjoint_sets": "union_find_system",
+	"lru_cache": "cache_keeper",
+	"binary_heap": "min_heap",
+	"graph_bridges": "bridge_finder",
 }
 
 class TestRealLevels(unittest.TestCase):
