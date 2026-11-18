@@ -73,10 +73,18 @@
 	},
 	"string_reverse": {
 		"skill": "Reverse a string in place",
-		"exams": {"piscine_02": [7], "piscine_03": [2]}
+		"exams": {"piscine_02": [7], "piscine_03": [2], "rank02": [2]}
 	},
 	"char_span": {
-		"skill": "Measure the start of a string made of, or free of, some characters",
+		"skill": "Measure the start of a string free of some characters",
+		"exams": {"rank02": [2]}
+	},
+	"accept_span": {
+		"skill": "Measure a run of characters that belong to a set given as a string",
+		"exams": {"rank02": [2]}
+	},
+	"set_search": {
+		"skill": "Find in a string a character that belongs, or not, to a set",
 		"exams": {"rank02": [2]}
 	},
 	"value_swap": {
@@ -157,7 +165,7 @@
 	},
 	"hidden_word": {
 		"skill": "Find the letters of a word, in order, in another string",
-		"exams": {"piscine_02": [8], "piscine_03": [2]}
+		"exams": {"piscine_02": [8], "piscine_03": [2], "rank02": [2]}
 	},
 	"hidden_order": {
 		"skill": "Tell whether a string hides another one, in order",
@@ -213,7 +221,7 @@
 	},
 	"bit_reverse": {
 		"skill": "Reorder the bits of a byte",
-		"exams": {"piscine_02": [6], "piscine_03": [1]}
+		"exams": {"piscine_02": [6], "piscine_03": [1], "rank02": [2]}
 	},
 	"bit_rotate": {
 		"skill": "Move the bits of a byte around",
@@ -249,7 +257,7 @@
 	},
 	"array_sort": {
 		"skill": "Sort an array of ints in place",
-		"exams": {"piscine_final": [3]}
+		"exams": {"piscine_final": [3], "rank02": [4]}
 	},
 	"list_walk": {
 		"skill": "Go through a linked list to count or measure it",
@@ -257,11 +265,11 @@
 	},
 	"list_apply": {
 		"skill": "Apply a function to the nodes of a linked list",
-		"exams": {"piscine_final": [3]}
+		"exams": {"piscine_final": [3], "rank02": [4]}
 	},
 	"list_remove": {
 		"skill": "Remove nodes from a linked list",
-		"exams": {"piscine_final": [3]}
+		"exams": {"piscine_final": [3], "rank02": [4]}
 	},
 	"list_sort": {
 		"skill": "Sort a linked list",

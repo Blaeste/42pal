@@ -56,10 +56,10 @@ class TestBadThemesFile(unittest.TestCase):
 		with self.assertRaisesRegex(ThemesError, "words.*twice"):
 			load_themes(self.path)
 
-# The real subjects of each level of each exam, read in the folders of
-# 42_EXAM (names only: no real subject is in this repository). piscine_01
-# to piscine_final are its exam_01 to exam_04, rank02 its exam_02 of the
-# cursus.
+# The real subjects of each level of each exam (names only: no real subject
+# is in this repository). piscine_01 to piscine_final are read in the
+# folders of 42_EXAM, its exam_01 to exam_04; rank02 in the list of
+# 42exam.net, which has 57 subjects where the exam_02 of 42_EXAM had 49.
 REAL_LEVELS = {
 	"piscine_01": {
 		1: "aff_a ft_countdown ft_print_numbers",
@@ -97,11 +97,13 @@ REAL_LEVELS = {
 	"rank02": {
 		1: "first_word fizzbuzz ft_putstr ft_strcpy ft_strlen ft_swap repeat_alpha rev_print "
 			"rot_13 rotone search_and_replace ulstr",
-		2: "alpha_mirror camel_to_snake do_op ft_atoi ft_strcmp ft_strcspn ft_strdup inter "
-			"is_power_of_2 last_word max print_bits snake_to_camel swap_bits union",
+		2: "alpha_mirror camel_to_snake do_op ft_atoi ft_strcmp ft_strcspn ft_strdup ft_strpbrk "
+			"ft_strrev ft_strspn inter is_power_of_2 last_word max print_bits reverse_bits "
+			"snake_to_camel swap_bits union wdmatch",
 		3: "add_prime_sum epur_str expand_str ft_atoi_base ft_list_size ft_range ft_rrange hidenp "
 			"lcm paramsum pgcd print_hex rstr_capitalizer str_capitalizer tab_mult",
-		4: "flood_fill fprime ft_itoa ft_split rev_wstr rostring sort_list",
+		4: "flood_fill fprime ft_itoa ft_list_foreach ft_list_remove_if ft_split rev_wstr "
+			"rostring sort_int_tab sort_list",
 	},
 }
 
@@ -129,6 +131,8 @@ THEME_OF = {
 	"string_compare": "ft_strcmp",
 	"string_reverse": "ft_strrev",
 	"char_span": "ft_strcspn",
+	"accept_span": "ft_strspn",
+	"set_search": "ft_strpbrk",
 	"value_swap": "ft_swap",
 	"letter_repeat": "repeat_alpha",
 	"char_replace": "search_and_replace",
@@ -187,7 +191,7 @@ THEME_OF = {
 }
 
 class TestRealLevels(unittest.TestCase):
-	"""themes.json follows the levels of the real subjects of 42_EXAM."""
+	"""themes.json follows the levels of the real subjects (42_EXAM, 42exam.net)."""
 
 	def test_each_theme_is_the_style_of_one_real_subject(self):
 		"""One real subject per theme: a level offers as many styles as real subjects."""
