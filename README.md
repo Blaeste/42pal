@@ -172,6 +172,7 @@ Five exams, like in 42_EXAM:
 | `repeat_rule` | program | letter_repeat | 5 |
 | `pointer_pair` | function | value_swap | 5 |
 | `copy_shape` | function | string_copy | 8 |
+| `put_filter` | function (void, prints) | string_print | 8 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
