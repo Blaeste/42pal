@@ -220,6 +220,8 @@ Five exams, like in 42_EXAM:
 | `divisor_facts` | program | common_divisor | 4 |
 | `multiple_facts` | program | common_multiple | 4 |
 | `arg_measure` | program | argument_count | 4 |
+| `op_table` | program | number_table | 8 |
+| `hop_range` | function, leaks checked | int_range_back | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
