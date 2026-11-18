@@ -106,7 +106,7 @@ class TestHarness(Folders):
 			"Your function raised IndexError: list index out of range\n")
 
 	def test_a_missing_function_is_said(self):
-		self.assertIn("Cannot import pick from pick.py", self.run_main("def other():\n\tpass\n", 1))
+		self.assertEqual(self.run_main("def other():\n\tpass\n", 1), "pick.py has no function pick\n")
 
 class TestHelpers(unittest.TestCase):
 	def test_case_values_call_and_shown(self):

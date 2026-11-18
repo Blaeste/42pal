@@ -24,17 +24,22 @@ from pal42.model import TestCase
 HARNESS = '''"""The test main of 42pal: it calls your function and prints what it returns."""
 
 import ast
+import importlib
 import sys
 
 def main():
 	try:
-		from MODULE import FUNCTION
+		module = importlib.import_module("MODULE")
 	except Exception as error:
-		print(f"Cannot import FUNCTION from MODULE.py: {type(error).__name__}: {error}")
+		print(f"Cannot import MODULE.py: {type(error).__name__}: {error}")
+		return
+	function = getattr(module, "FUNCTION", None)
+	if not callable(function):
+		print("MODULE.py has no function FUNCTION")
 		return
 	args = [ast.literal_eval(arg) for arg in sys.argv[1:]]
 	try:
-		result = FUNCTION(*args)
+		result = function(*args)
 	except Exception as error:
 		print(f"Your function raised {type(error).__name__}: {error}")
 		return
