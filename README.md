@@ -222,15 +222,16 @@ Five exams, like in 42_EXAM:
 | `arg_measure` | program | argument_count | 4 |
 | `op_table` | program | number_table | 8 |
 | `hop_range` | function, leaks checked | int_range_back | 6 |
+| `hidden_trace` | program | hidden_order | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
 of [themes.json](themes.json) is the style of one real exam subject, at the
 levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
-one of the subjects of the level. 43 of the 75 styles have an exercise so
-far; every level of every exam has at least one, and levels 1 and 2 of the
-Exam Rank 02 have all of theirs (12 and 15).
+one of the subjects of the level. 54 of the 75 styles have an exercise so
+far; every level of every exam has at least one, and levels 1, 2 and 3 of
+the Exam Rank 02 have all of theirs (12, 15 and 15).
 
 ## For contributors
 
