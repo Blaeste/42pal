@@ -204,6 +204,8 @@ Five exams, like in 42_EXAM:
 | `bip_bop` | program | number_words | 8 |
 | `mirror_group` | program | alphabet_mirror | 7 |
 | `word_from_end` | program | end_word | 8 |
+| `merge_chars` | program | merged_chars | 8 |
+| `sentence_case` | program | case_convert_back | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
