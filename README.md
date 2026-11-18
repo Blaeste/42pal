@@ -218,6 +218,8 @@ Five exams, like in 42_EXAM:
 | `caps_end` | program | capitalize_last | 6 |
 | `prime_facts` | program | prime_sum | 6 |
 | `divisor_facts` | program | common_divisor | 4 |
+| `multiple_facts` | program | common_multiple | 4 |
+| `arg_measure` | program | argument_count | 4 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
