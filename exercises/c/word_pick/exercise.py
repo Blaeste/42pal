@@ -72,7 +72,7 @@ EXERCISE = Exercise(
 	assignment_name="${which}_word_${how}",
 	expected_files=("${which}_word_${how}.c",),
 	allowed_functions=("write",),
-	themes=("words",),
+	themes=("find_word",),
 	params=(
 		Param("which", ("first", "second", "last", "longest"), {
 			"first": "its first word",

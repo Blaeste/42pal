@@ -61,7 +61,7 @@ EXERCISE = Exercise(
 	assignment_name="${action}_${letters}",
 	expected_files=("${action}_${letters}.c",),
 	allowed_functions=("write",),
-	themes=("char_transform",),
+	themes=("case_swap",),
 	params=(
 		Param("action", ("swap", "upper", "lower"), {
 			"swap": "with its case swapped (lowercase becomes uppercase and the reverse)",

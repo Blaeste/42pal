@@ -97,7 +97,7 @@ EXERCISE = Exercise(
 	assignment_name="nest_${report}_${brackets}",
 	expected_files=("nest_${report}_${brackets}.c",),
 	allowed_functions=("write",),
-	themes=("stack_parsing",),
+	themes=("bracket_check",),
 	params=(
 		Param("report", ("depth", "error_at", "complete"), {
 			"depth": "the largest number of brackets open at the same time (0 for none)\n"

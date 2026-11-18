@@ -67,7 +67,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_char_${mode}",
 	expected_files=("ft_char_${mode}.c",),
 	allowed_functions=(),
-	themes=("string_basics",),
+	themes=("string_length",),
 	params=(
 		Param("mode", ("count", "first", "last"), {
 			"count": "how many times the character c appears in the string str",

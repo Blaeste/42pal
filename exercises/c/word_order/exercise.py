@@ -65,7 +65,7 @@ EXERCISE = Exercise(
 	assignment_name="${order}_words_${separator}",
 	expected_files=("${order}_words_${separator}.c",),
 	allowed_functions=("write",),
-	themes=("reorder_words",),
+	themes=("word_reverse",),
 	params=(
 		Param("order", ("reverse", "rotate_left", "rotate_right", "sort", "by_length"), {
 			"reverse": "from the last one to the first one",

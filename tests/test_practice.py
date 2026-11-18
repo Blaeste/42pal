@@ -14,11 +14,11 @@ class TestDrawPractice(unittest.TestCase):
 
 	def test_five_draws_give_five_seeds_of_the_same_theme(self):
 		"""Each draw is an exercise of the theme, with a seed not seen before."""
-		exercises = load_catalog().find("c", "char_sets")
+		exercises = load_catalog().find("c", "common_chars")
 		seen = set()
 		for _ in range(5):
 			variant = draw_practice(exercises, Random(1), seen)
-			self.assertIn("char_sets", variant.exercise.themes)
+			self.assertIn("common_chars", variant.exercise.themes)
 			self.assertNotIn(variant.id, seen)
 			seen.add(variant.id)
 		self.assertEqual(len(seen), 5)

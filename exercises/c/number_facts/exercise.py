@@ -58,7 +58,7 @@ EXERCISE = Exercise(
 	assignment_name="${what}_${separator}",
 	expected_files=("${what}_${separator}.c",),
 	allowed_functions=("write",),
-	themes=("primes",),
+	themes=("prime_factors",),
 	params=(
 		Param("what", ("divisors", "prime_divisors", "primes_up_to"), {
 			"divisors": "every divisor of n (1 and n included)",

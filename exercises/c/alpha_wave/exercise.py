@@ -31,7 +31,7 @@ EXERCISE = Exercise(
 	assignment_name="alpha_wave_${wave}_${start}_${separator}",
 	expected_files=("alpha_wave_${wave}_${start}_${separator}.c",),
 	allowed_functions=("write",),
-	themes=("print_basics",),
+	themes=("alternating_alphabet",),
 	params=(
 		Param("wave", ("1", "2", "3"), {
 			"1": "every letter",

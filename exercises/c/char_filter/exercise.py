@@ -73,7 +73,7 @@ EXERCISE = Exercise(
 	assignment_name="${mode}_chars",
 	expected_files=("${mode}_chars.c",),
 	allowed_functions=("write",),
-	themes=("char_sets",),
+	themes=("common_chars",),
 	params=(
 		Param("mode", ("common", "only_first", "only_second"), {
 			"common": "that appears in both s1 and s2",

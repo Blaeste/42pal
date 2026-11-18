@@ -62,7 +62,7 @@ EXERCISE = Exercise(
 	assignment_name="print_${which}_${case}",
 	expected_files=("print_${which}_${case}.c",),
 	allowed_functions=("write",),
-	themes=("program_args",),
+	themes=("pick_argument",),
 	params=(
 		Param("which", ("first", "last", "longest", "shortest"), {
 			"first": "its first argument",

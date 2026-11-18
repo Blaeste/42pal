@@ -87,7 +87,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_sort_by_${key}_${order}",
 	expected_files=("ft_sort_by_${key}_${order}.c",),
 	allowed_functions=(),
-	themes=("int_sort",),
+	themes=("array_sort",),
 	params=(
 		Param("key", ("absolute", "parity", "last_digit", "digit_count"), {
 			"absolute": "by absolute value; of two numbers as big, like -3 and 3, the\n"

@@ -16,7 +16,7 @@ from pal42.model import Exercise, Param
 EXERCISE = Exercise(
 	name="{name}", language="c", kind="program",
 	expected_files=("{name}.c",), allowed_functions=("write",),
-	themes=("char_sets",), params=(Param("mode", ("a", "b")),),
+	themes=("common_chars",), params=(Param("mode", ("a", "b")),),
 	subject="Do $mode.", oracle=None, generate_tests=None,
 )
 """
@@ -61,7 +61,7 @@ class TestLoading(unittest.TestCase):
 
 	def test_exercise_with_an_unknown_theme_is_ignored_with_a_warning(self):
 		"""Each theme of an exercise must be in themes.json."""
-		unknown = EXERCISE_SOURCE.format(name="lost").replace('"char_sets"', '"nope"')
+		unknown = EXERCISE_SOURCE.format(name="lost").replace('"common_chars"', '"nope"')
 		write_exercise(self.root, "c/lost", unknown)
 		catalog = load_catalog(self.root)
 		self.assertEqual(catalog.exercises, {})
@@ -81,9 +81,9 @@ class TestRealCatalog(unittest.TestCase):
 	"""The catalog of the project itself, in exercises/."""
 
 	def test_char_filter_is_found_under_its_theme(self):
-		"""char_filter is a C exercise of the theme char_sets."""
+		"""char_filter is a C exercise of the theme common_chars."""
 		catalog = load_catalog()
-		names = [exo.name for exo in catalog.find("c", "char_sets")]
+		names = [exo.name for exo in catalog.find("c", "common_chars")]
 		self.assertIn("char_filter", names)
 
 	def test_catalog_knows_the_folder_of_each_exercise(self):

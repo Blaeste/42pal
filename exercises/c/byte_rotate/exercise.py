@@ -61,7 +61,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_rotate_${way}_${amount}_${invert}",
 	expected_files=("ft_rotate_${way}_${amount}_${invert}.c",),
 	allowed_functions=(),
-	themes=("bits",),
+	themes=("bit_rotate",),
 	params=(
 		Param("way", ("left", "right"), {
 			"left": "to the left (toward the most significant bit)",

@@ -66,15 +66,15 @@ class TestLauncher(unittest.TestCase):
 		self.assertIn("Catalog OK", result.stdout)
 
 	def test_practice_command_gives_a_subject_of_the_theme(self):
-		"""`./42pal practice --theme char_sets`: a subject at once; finish ends."""
+		"""`./42pal practice --theme common_chars`: a subject at once; finish ends."""
 		with tempfile.TemporaryDirectory() as home:
 			result = subprocess.run(
-				[str(SCRIPT), "practice", "--theme", "char_sets"], input="finish\n",
+				[str(SCRIPT), "practice", "--theme", "common_chars"], input="finish\n",
 				capture_output=True, text=True, timeout=30,
 				env=dict(os.environ, HOME=home), start_new_session=True,
 			)
 		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-		self.assertIn("Practice · char_sets", result.stdout)
+		self.assertIn("Practice · common_chars", result.stdout)
 
 	def test_practice_with_an_unknown_theme_exits_with_1(self):
 		"""A theme with no exercise: the themes that work, and exit code 1."""

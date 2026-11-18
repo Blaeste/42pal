@@ -120,7 +120,7 @@ levels (25 points at rank 02), for a grade out of 100.
 
 ```sh
 ./42pal practice                       # a menu of the themes
-./42pal practice --theme string_basics
+./42pal practice --theme letter_rotation
 ```
 
 Subjects of one theme, one after the other: no login, no timer, no wait.
@@ -141,37 +141,39 @@ Five exams, like in 42_EXAM:
 
 | Exercise | Kind | Theme | Variants |
 |---|---|---|---|
-| `shift_letters` | program | char_transform | 18 |
-| `char_position` | function | string_basics | 6 |
-| `char_filter` | program | char_sets | 11 |
-| `split_fields` | function, leaks checked | split | 7 |
-| `print_range` | function (void, prints) | print_basics | 10 |
-| `arg_pick` | program | program_args | 6 |
-| `word_order` | program | reorder_words | 13 |
-| `number_facts` | program | primes | 9 |
-| `base_string` | function, leaks checked | number_string | 6 |
-| `byte_rotate` | function | bits | 12 |
-| `sequence_array` | function, leaks checked | int_ranges | 10 |
-| `list_drop` | function + header handed in, leaks checked | list_changes | 12 |
-| `name_style` | program | case_style | 18 |
-| `word_pick` | program | words | 10 |
+| `shift_letters` | program | letter_rotation | 18 |
+| `char_position` | function | string_length | 6 |
+| `char_filter` | program | common_chars | 11 |
+| `split_fields` | function, leaks checked | string_split | 7 |
+| `print_range` | function (void, prints) | print_digits | 10 |
+| `arg_pick` | program | pick_argument | 6 |
+| `word_order` | program | word_reverse | 13 |
+| `number_facts` | program | prime_factors | 9 |
+| `base_string` | function, leaks checked | base_to_string | 6 |
+| `byte_rotate` | function | bit_rotate | 12 |
+| `sequence_array` | function, leaks checked | int_range | 10 |
+| `list_drop` | function + header handed in, leaks checked | list_remove | 12 |
+| `name_style` | program | case_convert | 18 |
+| `word_pick` | program | find_word | 10 |
 | `base_print` | program | print_in_base | 8 |
-| `list_measure` | function, header given | linked_lists | 10 |
-| `number_read` | function | base_parse | 11 |
-| `tab_index` | function | int_arrays | 10 |
-| `tab_sort` | function | int_sort | 8 |
-| `nest_report` | program | stack_parsing | 9 |
-| `longest_span` | program | string_search | 8 |
-| `alpha_wave` | program | print_basics | 11 |
-| `alpha_back` | program | print_basics | 7 |
-| `case_flip` | program | char_transform | 12 |
-| `calc_form` | program | arithmetic | 11 |
+| `list_measure` | function, header given | list_walk | 10 |
+| `number_read` | function | read_base_number | 11 |
+| `tab_index` | function | array_search | 10 |
+| `tab_sort` | function | array_sort | 8 |
+| `nest_report` | program | bracket_check | 9 |
+| `longest_span` | program | longest_part | 8 |
+| `alpha_wave` | program | alternating_alphabet | 11 |
+| `alpha_back` | program | backward_alphabet | 7 |
+| `case_flip` | program | case_swap | 12 |
+| `calc_form` | program | calculator | 11 |
 
 The subjects are
-written for 42pal: no real exam subject is in this repository. The list of
-themes and the levels where they appear is in [themes.json](themes.json):
-each theme is at the levels of the real exam subjects of its skill, as
-42_EXAM places them, and a test checks it.
+written for 42pal: no real exam subject is in this repository. Each theme
+of [themes.json](themes.json) is the style of one real exam subject, at the
+levels where 42_EXAM places it, and a test checks it. A level draws one of
+its styles, then one exercise of that style: like the real exam, which draws
+one of the subjects of the level. 25 of the 75 styles have an exercise so
+far; every level of every exam has at least one.
 
 ## For contributors
 

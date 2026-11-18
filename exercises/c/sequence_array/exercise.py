@@ -82,7 +82,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_${sequence}_${order}",
 	expected_files=("ft_${sequence}_${order}.c",),
 	allowed_functions=("malloc", "free"),
-	themes=("int_ranges",),
+	themes=("int_range",),
 	params=(
 		Param("sequence", ("squares", "triangles", "fibonacci", "odds", "powers_of_two"), {
 			"squares": "square numbers: 0, 1, 4, 9, 16... (k * k for k = 0, 1, 2...)",

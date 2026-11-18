@@ -55,7 +55,7 @@ EXERCISE = Exercise(
 	assignment_name="longest_${rule}_${tie}",
 	expected_files=("longest_${rule}_${tie}.c",),
 	allowed_functions=("write",),
-	themes=("string_search",),
+	themes=("longest_part",),
 	params=(
 		Param("rule", ("unique", "repeated", "sorted", "two_chars"), {
 			"unique": "in which no character appears twice",

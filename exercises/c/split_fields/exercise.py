@@ -88,7 +88,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_split_${separator}_${empty}",
 	expected_files=("ft_split_${separator}_${empty}.c",),
 	allowed_functions=("malloc", "free"),
-	themes=("split",),
+	themes=("string_split",),
 	params=(
 		Param("separator", ("whitespace", "comma", "colon", "semicolon"), {
 			"whitespace": "each space, tab or newline",

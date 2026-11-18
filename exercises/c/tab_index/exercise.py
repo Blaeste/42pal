@@ -83,7 +83,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_index_${which}_${rule}",
 	expected_files=("ft_index_${which}_${rule}.c",),
 	allowed_functions=(),
-	themes=("int_arrays",),
+	themes=("array_search",),
 	params=(
 		Param("which", ("first", "last"), {
 			"first": "the first value (the one with the smallest index)",

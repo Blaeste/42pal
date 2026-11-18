@@ -47,7 +47,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_print_${chars}_${order}_${step}",
 	expected_files=("ft_print_${chars}_${order}_${step}.c",),
 	allowed_functions=("write",),
-	themes=("print_basics",),
+	themes=("print_digits",),
 	params=(
 		Param("chars", ("digits", "lowercase", "uppercase"), {
 			"digits": "the digits (0 to 9)",

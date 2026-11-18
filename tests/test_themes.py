@@ -13,11 +13,11 @@ from pal42.themes import ThemesError, load_themes
 class TestRealThemes(unittest.TestCase):
 	"""The themes.json of the project itself."""
 
-	def test_char_sets_appears_in_rank02_level_2(self):
+	def test_common_chars_appears_in_rank02_level_2(self):
 		"""Each theme says which skill it trains and where it appears."""
 		themes = load_themes()
-		self.assertIn(2, themes["char_sets"].exams["rank02"])
-		self.assertTrue(themes["char_sets"].skill)
+		self.assertIn(2, themes["common_chars"].exams["rank02"])
+		self.assertTrue(themes["common_chars"].skill)
 
 class TestBadThemesFile(unittest.TestCase):
 	"""A themes.json written by hand, with mistakes in it."""
@@ -105,46 +105,95 @@ REAL_LEVELS = {
 	},
 }
 
-# The theme of each real subject. A theme groups real subjects of the same
-# skill and about the same difficulty: each of its exercises can be drawn at
-# each of its levels.
+# The theme of each real subject: one theme per real subject, named after its
+# style, never after the subject. Each level draws a theme, then one of its
+# exercises, like the real exam draws one of the subjects of the level.
 THEME_OF = {
-	"print_basics": "aff_a ft_countdown ft_print_numbers hello maff_alpha aff_z maff_revalpha "
-		"only_a only_z",
-	"program_args": "aff_first_param aff_last_param paramsum",
+	"letter_search": "aff_a",
+	"letter_or_fallback": "aff_z",
+	"digit_countdown": "ft_countdown",
+	"print_digits": "ft_print_numbers",
+	"fixed_message": "hello",
+	"alternating_alphabet": "maff_alpha",
+	"backward_alphabet": "maff_revalpha",
+	"one_char": "only_a",
+	"one_char_end": "only_z",
+	"pick_argument": "aff_first_param",
+	"last_argument": "aff_last_param",
+	"argument_count": "paramsum",
 	"option_flags": "options",
-	"string_basics": "ft_strcpy ft_strlen ft_putstr rev_print ft_strcmp ft_strrev ft_strcspn",
-	"pointers": "ft_swap",
-	"char_transform": "repeat_alpha search_and_replace ulstr rot_13 rotone alpha_mirror",
-	"words": "first_word last_word",
-	"clean_words": "epur_str expand_str",
-	"reorder_words": "rev_wstr rostring",
-	"case_style": "camel_to_snake snake_to_camel rstr_capitalizer str_capitalizer",
-	"char_sets": "inter union wdmatch hidenp",
-	"number_parse": "ft_atoi",
-	"base_parse": "ft_atoi_base",
-	"number_print": "fizzbuzz",
+	"string_copy": "ft_strcpy",
+	"string_length": "ft_strlen",
+	"string_print": "ft_putstr",
+	"reverse_print": "rev_print",
+	"string_compare": "ft_strcmp",
+	"string_reverse": "ft_strrev",
+	"char_span": "ft_strcspn",
+	"value_swap": "ft_swap",
+	"letter_repeat": "repeat_alpha",
+	"char_replace": "search_and_replace",
+	"case_swap": "ulstr",
+	"letter_rotation": "rot_13",
+	"letter_step": "rotone",
+	"alphabet_mirror": "alpha_mirror",
+	"find_word": "first_word",
+	"end_word": "last_word",
+	"space_cleanup": "epur_str",
+	"space_spread": "expand_str",
+	"word_reverse": "rev_wstr",
+	"word_rotate": "rostring",
+	"case_convert": "camel_to_snake",
+	"case_convert_back": "snake_to_camel",
+	"capitalize_last": "rstr_capitalizer",
+	"capitalize_first": "str_capitalizer",
+	"common_chars": "inter",
+	"merged_chars": "union",
+	"hidden_word": "wdmatch",
+	"hidden_order": "hidenp",
+	"read_number": "ft_atoi",
+	"read_base_number": "ft_atoi_base",
+	"number_words": "fizzbuzz",
 	"print_in_base": "print_hex",
-	"number_string": "ft_itoa ft_itoa_base",
-	"arithmetic": "do_op tab_mult",
-	"primes": "add_prime_sum pgcd lcm fprime",
-	"bits": "reverse_bits swap_bits print_bits is_power_of_2",
-	"allocation": "ft_strdup",
-	"int_ranges": "ft_range ft_rrange",
-	"split": "ft_split",
-	"int_arrays": "max",
-	"int_sort": "sort_int_tab",
-	"linked_lists": "ft_list_size",
-	"list_changes": "ft_list_foreach ft_list_remove_if sort_list cycle_detector",
-	"grids": "flood_fill check_mate",
-	"stack_parsing": "brackets rpn_calc",
-	"interpreters": "brainfuck",
+	"number_to_string": "ft_itoa",
+	"base_to_string": "ft_itoa_base",
+	"calculator": "do_op",
+	"number_table": "tab_mult",
+	"prime_sum": "add_prime_sum",
+	"common_divisor": "pgcd",
+	"common_multiple": "lcm",
+	"prime_factors": "fprime",
+	"bit_reverse": "reverse_bits",
+	"bit_rotate": "swap_bits",
+	"bit_print": "print_bits",
+	"bit_test": "is_power_of_2",
+	"string_dup": "ft_strdup",
+	"int_range": "ft_range",
+	"int_range_back": "ft_rrange",
+	"string_split": "ft_split",
+	"array_search": "max",
+	"array_sort": "sort_int_tab",
+	"list_walk": "ft_list_size",
+	"list_apply": "ft_list_foreach",
+	"list_remove": "ft_list_remove_if",
+	"list_sort": "sort_list",
+	"list_cycle": "cycle_detector",
+	"grid_fill": "flood_fill",
+	"grid_attack": "check_mate",
+	"bracket_check": "brackets",
+	"postfix_calc": "rpn_calc",
+	"tiny_interpreter": "brainfuck",
 	"memory_dump": "print_memory",
-	"string_search": "biggest_pal",
+	"longest_part": "biggest_pal",
 }
 
 class TestRealLevels(unittest.TestCase):
 	"""themes.json follows the levels of the real subjects of 42_EXAM."""
+
+	def test_each_theme_is_the_style_of_one_real_subject(self):
+		"""One real subject per theme: a level offers as many styles as real subjects."""
+		for theme, names in THEME_OF.items():
+			self.assertEqual(len(names.split()), 1, theme)
+			self.assertNotIn(theme, names.split())
 
 	def test_every_real_subject_has_one_theme(self):
 		"""No real subject forgotten, none in two themes."""

@@ -69,7 +69,7 @@ EXERCISE = Exercise(
 	assignment_name="calc_${order}_${operators}_${show}",
 	expected_files=("calc_${order}_${operators}_${show}.c",),
 	allowed_functions=("write", "atoi"),
-	themes=("arithmetic",),
+	themes=("calculator",),
 	params=(
 		Param("order", ("infix", "prefix", "postfix"), {
 			"infix": "a number, the operation, then a number (7 + 3)",

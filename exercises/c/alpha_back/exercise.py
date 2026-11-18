@@ -39,7 +39,7 @@ EXERCISE = Exercise(
 	assignment_name="alpha_back_${pattern}_${step}",
 	expected_files=("alpha_back_${pattern}_${step}.c",),
 	allowed_functions=("write",),
-	themes=("print_basics",),
+	themes=("backward_alphabet",),
 	params=(
 		Param("pattern", ("alternate_lower", "alternate_upper", "thirds", "halves"), {
 			"alternate_lower": "one letter out of two is in uppercase, starting with the second\n"

@@ -65,7 +65,7 @@ EXERCISE = Exercise(
 	assignment_name="${direction}_shift_${shift}",
 	expected_files=("${direction}_shift_${shift}.c",),
 	allowed_functions=("write",),
-	themes=("char_transform",),
+	themes=("letter_rotation",),
 	params=(
 		Param("shift", ("2", "3", "5"), {
 			"2": "2 positions",

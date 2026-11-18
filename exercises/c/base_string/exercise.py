@@ -56,7 +56,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_${base}_string_${format}",
 	expected_files=("ft_${base}_string_${format}.c",),
 	allowed_functions=("malloc",),
-	themes=("number_string",),
+	themes=("base_to_string",),
 	params=(
 		Param("base", ("binary", "octal", "hex"), {
 			"binary": "in binary (base 2)",

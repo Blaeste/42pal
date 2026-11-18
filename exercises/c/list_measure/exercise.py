@@ -106,7 +106,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_list_${measure}_${cells}",
 	expected_files=("ft_list_${measure}_${cells}.c",),
 	allowed_functions=(),
-	themes=("linked_lists",),
+	themes=("list_walk",),
 	params=(
 		Param("measure", ("sum", "max", "min", "count_even", "count_negative"), {
 			"sum": "the sum of the numbers",

@@ -155,11 +155,10 @@ class TestDifficulty(unittest.TestCase):
 				self.assertNotIn(name, self.names_at(exam_id, level))
 
 	def test_they_are_still_drawn_where_the_real_subjects_are(self):
-		"""Level 4 of the rank 02, level 3 of the final exam."""
-		for exam_id, level in [("rank02", 4), ("piscine_final", 3)]:
-			names = self.names_at(exam_id, level)
-			for name in ["base_string", "word_order", "list_drop"]:
-				self.assertIn(name, names, f"{exam_id} level {level}")
+		"""Level 3 of the final exam, and level 4 of the rank 02 for word_order."""
+		for name in ["base_string", "word_order", "list_drop"]:
+			self.assertIn(name, self.names_at("piscine_final", 3))
+		self.assertIn("word_order", self.names_at("rank02", 4))
 
 	def test_the_models_are_drawn_where_their_real_subjects_are(self):
 		"""word_pick like first_word, base_print like print_hex, list_measure like ft_list_size."""

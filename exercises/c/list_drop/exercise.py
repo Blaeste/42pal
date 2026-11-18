@@ -127,7 +127,7 @@ EXERCISE = Exercise(
 	assignment_name="ft_drop_${which}_${condition}",
 	expected_files=("ft_drop_${which}_${condition}.c", "node.h"),
 	allowed_functions=("free",),
-	themes=("list_changes",),
+	themes=("list_remove",),
 	params=(
 		Param("which", ("all", "first", "last"), {
 			"all": "every node",

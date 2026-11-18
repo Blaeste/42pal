@@ -86,7 +86,7 @@ EXERCISE = Exercise(
 	assignment_name="${source}_to_${target}",
 	expected_files=("${source}_to_${target}.c",),
 	allowed_functions=("write",),
-	themes=("case_style",),
+	themes=("case_convert",),
 	params=(
 		Param("source", STYLE_NAMES, STYLE_TEXTS),
 		Param("target", STYLE_NAMES, STYLE_TEXTS),
