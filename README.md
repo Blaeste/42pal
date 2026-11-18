@@ -206,6 +206,8 @@ Five exams, like in 42_EXAM:
 | `word_from_end` | program | end_word | 8 |
 | `merge_chars` | program | merged_chars | 8 |
 | `sentence_case` | program | case_convert_back | 6 |
+| `bit_check` | function | bit_test | 5 |
+| `byte_show` | function (void, prints) | bit_print | 5 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
