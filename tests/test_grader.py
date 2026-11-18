@@ -120,6 +120,27 @@ class TestGrade(unittest.TestCase):
 			"Functions KO\n"
 		))
 
+	def test_memset_put_by_the_compiler_is_not_refused(self):
+		"""= {0} on an array: the compiler calls memset itself; the student did not."""
+		self.hand_in(ECHO_OK.replace("\tint\tn;\n",
+			"\tint\tn;\n\tchar\tbuffer[512] = {0};\n\n\t(void)buffer;\n", 1))
+		result = grade(ECHO, self.rendu, CRunner())
+		self.assertTrue(result.passed, result.trace)
+
+	def test_memset_written_by_the_student_is_refused(self):
+		"""memset in the code: refused, like any function that is not allowed."""
+		self.hand_in("#include <string.h>\n" + ECHO_OK.replace("\tint\tn;\n",
+			"\tint\tn;\n\tchar\tbuffer[512];\n\n\tmemset(buffer, 0, 512);\n", 1))
+		result = grade(ECHO, self.rendu, CRunner())
+		self.assertIn("Forbidden function: memset", result.trace)
+
+	def test_memset_named_in_a_comment_or_a_string_is_not_a_call(self):
+		self.hand_in(ECHO_OK.replace("\tint\tn;\n",
+			"\tint\tn;\n\tchar\tbuffer[512] = {0}; /* not memset */\n\n"
+			"\t(void)buffer;\n\t(void)\"memset\";\n", 1))
+		result = grade(ECHO, self.rendu, CRunner())
+		self.assertTrue(result.passed, result.trace)
+
 SHIFT_FORWARD_2 = r"""#include <unistd.h>
 
 int	main(int ac, char **av)

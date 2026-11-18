@@ -72,8 +72,9 @@ def grade(variant, rendu, runner, progress=None, valgrind="valgrind"):
 			)
 			return Grade(False, text, 0, len(tests))
 		program = compiled.binary
-		# Only the student's objects: the test main may use printf.
-		used = checks.used_functions(*compiled.objects)
+		# Only the student's objects: the test main may use printf. And only
+		# what the student calls: not the memset the compiler adds for = {0}.
+		used = checks.written_calls(checks.used_functions(*compiled.objects), sources)
 		forbidden = sorted(used - set(exo.allowed_functions))
 		if forbidden:
 			text = trace.forbidden_trace(forbidden, exo.allowed_functions)

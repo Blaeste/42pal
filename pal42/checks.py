@@ -28,6 +28,33 @@ def used_functions(*files, nm="nm"):
 	defined = _symbols(files, nm, "--defined-only")
 	return {name for name in undefined - defined if not name.startswith("_")}
 
+# The functions gcc and clang call on their own: memset for "int tab[512] =
+# {0};", memcpy for a copy of a struct or of a local table. Found by nm, they
+# only count when the student's code names them.
+COMPILER_CALLS = {"memset", "memcpy", "memmove"}
+
+# What is not code in C: comments, then strings and characters (escapes kept in).
+NOT_CODE = re.compile(r"""//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'""", re.DOTALL)
+
+def named_in_code(name, sources):
+	"""True if one of the C `sources` names the function `name` in its code.
+
+	Comments, strings and characters do not count; __builtin_name does.
+	"""
+	pattern = re.compile(rf"\b(?:__builtin_)?{re.escape(name)}\b")
+	for source in sources:
+		try:
+			code = NOT_CODE.sub(" ", Path(source).read_text(encoding="utf-8", errors="replace"))
+		except OSError:
+			continue
+		if pattern.search(code):
+			return True
+	return False
+
+def written_calls(used, sources):
+	"""The names of `used` the student really calls: without the compiler's own calls."""
+	return {name for name in used if name not in COMPILER_CALLS or named_in_code(name, sources)}
+
 def defines_main(*files, nm="nm"):
 	"""True when `files` define a main: a function rendu must not have one."""
 	return "main" in (_symbols(files, nm, "--defined-only") or set())
