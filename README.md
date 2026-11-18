@@ -164,6 +164,7 @@ Five exams, like in 42_EXAM:
 | `longest_span` | program | string_search | 8 |
 | `alpha_wave` | program | print_basics | 11 |
 | `alpha_back` | program | print_basics | 7 |
+| `case_flip` | program | char_transform | 12 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. The list of
