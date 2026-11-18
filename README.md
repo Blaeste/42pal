@@ -21,8 +21,9 @@ cd 42pal
 ./42pal
 ```
 
-No `pip`, no virtual environment: the only library used for the display,
-[rich](https://github.com/Textualize/rich), is copied in `vendor/` (see
+No `pip`, no virtual environment: the libraries of the display,
+[textual](https://github.com/Textualize/textual) and
+[rich](https://github.com/Textualize/rich), are copied in `vendor/` (see
 [vendor/README.md](vendor/README.md)).
 
 ## Take an exam
@@ -30,6 +31,14 @@ No `pip`, no virtual environment: the only library used for the display,
 ```sh
 ./42pal
 ```
+
+In a terminal, 42pal opens **full screen**: move in the menus with the arrow
+keys (or `j` and `k`) and Enter, or with the mouse; `Esc` goes back to the
+menu before. During the exam, the screen shows the level, the grade and the
+time left (it runs live), the subject (`PgUp` and `PgDn` scroll it), a log of
+your commands, and the `examshell>` line where you type them. `./42pal
+--plain` gives the text interface, line by line; it is also used when the
+input is not a terminal (answers sent through a pipe).
 
 1. **Log in** like at the exam. The login defaults to your user name; the
    password can be anything, it is never checked nor kept.
@@ -42,7 +51,7 @@ No `pip`, no virtual environment: the only library used for the display,
    levels and length of each exam, the waits of each mode, the points of a
    level. Its last choice goes back to the menu before (Quit in the first
    one).
-3. **Read the subject**: it is printed in the terminal and written in
+3. **Read the subject**: it is shown on the screen and written in
    `~/42pal_exam/subjects/<name>/subject.en.txt`.
 4. **Write your code** in `~/42pal_exam/rendu/<name>/`.
 5. **Type `grademe`** at the `examshell>` prompt.
@@ -56,14 +65,17 @@ No `pip`, no virtual environment: the only library used for the display,
 
 ### Commands
 
-| Command | What it does |
-|---|---|
-| `grademe` | grades your work |
-| `status` | exam, level, subject, time spent and left, next grademe |
-| `finish` | ends the exam, with a summary |
-| `help` | lists the commands |
+| Command | Or | What it does |
+|---|---|---|
+| `grademe` | `g` | grades your work |
+| `status` | `s` | exam, level, subject, time spent and left, next grademe |
+| `finish` | `f` | ends the exam, with a summary |
+| `help` | `?` | lists the commands |
 
-Tab completes the commands, and the arrow keys bring back the ones you typed.
+Type the command (or its letter), then Enter. In full screen, the right arrow
+completes a command; in the text interface, Tab does, and the arrow keys
+bring back the commands you typed. The grading runs while the screen stays
+alive, with the number of the test being run.
 
 ### What grademe checks
 
@@ -107,8 +119,9 @@ levels (25 points at rank 02), for a grade out of 100.
 
 ### Time, resume and history
 
-- In exam mode, when the time is up, the next command ends the exam: a late
-  grademe is not graded. You are warned once, 10 minutes before the end.
+- In exam mode, when the time is up, the exam ends (in full screen, at once;
+  in the text interface, at the next command): a late grademe is not graded.
+  You are warned once, 10 minutes before the end.
 - Closed the terminal, or pressed Ctrl-C? Run `./42pal` again: it offers to
   resume your exam, with the same subject; the time kept running.
 - Every finished exam is kept in `~/.42pal/history.json`.
@@ -124,8 +137,9 @@ levels (25 points at rank 02), for a grade out of 100.
 ```
 
 Subjects of one theme, one after the other: no login, no timer, no wait.
-A passed `grademe` gives the next subject; `next` skips to another one;
-`finish` stops.
+A passed `grademe` (`g`) gives the next subject; `next` (`n`) skips to
+another one; `finish` (`f`) stops. It opens full screen too, unless `--plain`
+is given.
 
 ## What the catalog has today
 
@@ -204,7 +218,7 @@ under its own name.
 | Folder | What is in it |
 |---|---|
 | `pal42/` | the core: exercises, variants, subjects, grading (no display) |
-| `pal42/cli/` | the terminal: examshell, practice, check-catalog |
+| `pal42/cli/` | the terminal: examshell, practice, check-catalog, and the full screen (`tui.py`, `tui.tcss`) |
 | `exercises/c/<name>/` | one exercise: `exercise.py`, its `ref.c` (and the header the student hands in, if any) |
 | `exams/` | the exams: title, duration, compile command, retry waits |
 | `tests/` | the tests |

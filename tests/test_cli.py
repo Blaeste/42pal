@@ -368,6 +368,14 @@ class TestLauncher(unittest.TestCase):
 				self.assertTrue((Path(home) / "42pal_exam/rendu/.git").is_dir())
 				self.assertTrue((Path(home) / ".42pal/rendu.git").is_dir())
 
+	def test_full_screen_only_in_a_real_terminal(self):
+		"""--plain, or input that is not a terminal, gives the text interface."""
+		from pal42.__main__ import full_screen
+		self.assertFalse(full_screen(plain=True, stdin_tty=True, stdout_tty=True))
+		self.assertFalse(full_screen(plain=False, stdin_tty=False, stdout_tty=True))
+		self.assertFalse(full_screen(plain=False, stdin_tty=True, stdout_tty=False))
+		self.assertTrue(full_screen(plain=False, stdin_tty=True, stdout_tty=True))
+
 	def test_the_hard_option_is_gone(self):
 		"""The mode is chosen in the menu now: --hard is refused."""
 		result = subprocess.run([str(ROOT / "42pal"), "--hard"], capture_output=True, text=True)
@@ -396,9 +404,10 @@ def run_in_terminal(home, steps, timeout=15):
 	"""
 	pid, fd = pty.fork()
 	if pid == 0:
-		# The child: becomes ./42pal, with HOME set to the temporary folder.
+		# The child: becomes ./42pal --plain (the text interface, line by
+		# line), with HOME set to the temporary folder.
 		os.environ["HOME"] = home
-		os.execv(str(ROOT / "42pal"), ["42pal"])
+		os.execv(str(ROOT / "42pal"), ["42pal", "--plain"])
 	screen = b""
 	deadline = time.monotonic() + timeout
 

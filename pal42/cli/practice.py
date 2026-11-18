@@ -84,9 +84,14 @@ class PracticeShell(Shell):
 
 	def next_subject(self):
 		"""Give a new subject of the theme, one not given before."""
-		catalog, themes = self._catalog()
+		catalog, _ = self._catalog()
 		self.variant = draw_practice(catalog.find(self.language, self.theme), self.rng, self.seen)
 		self.seen.add(self.variant.id)
+		self.show_subject()
+
+	def show_subject(self):
+		"""Write the current subject in the workspace and show it."""
+		_, themes = self._catalog()
 		subject = self.workspace.give_subject(self.variant)
 		rendu = self.workspace.rendu / self.variant.name
 		self.console.print()
@@ -130,11 +135,17 @@ class PracticeShell(Shell):
 			self.console.print()
 		return False
 
-def main(theme=None):
-	"""Practise on the real keyboard and terminal; return the exit code."""
+def main(theme=None, full_screen=False):
+	"""Practise on the real keyboard and terminal; return the exit code.
+
+	full_screen: the full-screen interface (pal42.cli.tui) instead of the text one.
+	"""
+	workspace = Workspace(remote=STATE_DIR / "rendu.git")
+	if full_screen:
+		from pal42.cli.tui import run_practice
+		return run_practice(workspace, theme)
 	console, ask, _ = terminal(PRACTICE_COMMANDS)
 	try:
-		workspace = Workspace(remote=STATE_DIR / "rendu.git")
 		return PracticeShell(console, ask, workspace).run(theme)
 	except KeyboardInterrupt:
 		console.print("\nPractice stopped (Ctrl-C).")

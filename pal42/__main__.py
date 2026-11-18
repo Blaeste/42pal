@@ -1,8 +1,16 @@
 """Command-line entry point, run by `python3 -m pal42` (see the ./42pal launcher)."""
 
 import argparse
+import sys
 
 from pal42 import __version__
+
+def full_screen(plain, stdin_tty, stdout_tty):
+	"""True for the full-screen interface: a real terminal, and no --plain.
+
+	Answers sent through a pipe (scripts, tests) get the text interface.
+	"""
+	return not plain and stdin_tty and stdout_tty
 
 def main(argv=None):
 	"""Parse the command-line arguments and return the process exit code.
@@ -14,6 +22,8 @@ def main(argv=None):
 	# The "version" action prints the string, then exits with code 0.
 	# %(prog)s is replaced by the program name given above.
 	parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+	plain_help = "the text interface, line by line, instead of the full screen"
+	parser.add_argument("--plain", action="store_true", help=plain_help)
 	commands = parser.add_subparsers(dest="command")
 	commands.add_parser(
 		"check-catalog", help="check that every ref.c passes its own exercise",
@@ -22,16 +32,19 @@ def main(argv=None):
 		"practice", help="practise one theme: subjects one after the other, no timer",
 	)
 	practice.add_argument("--theme", help="the theme to practise (a menu if not given)")
+	# SUPPRESS: ./42pal --plain practice keeps the --plain given before.
+	practice.add_argument("--plain", action="store_true", default=argparse.SUPPRESS, help=plain_help)
 	arguments = parser.parse_args(argv)
+	screen = full_screen(arguments.plain, sys.stdin.isatty(), sys.stdout.isatty())
 	# Imported here: --version must work even if the terminal front-end breaks.
 	if arguments.command == "check-catalog":
 		from pal42.cli.check import check_catalog
 		return check_catalog()
 	if arguments.command == "practice":
 		from pal42.cli.practice import main as practice_main
-		return practice_main(arguments.theme)
+		return practice_main(arguments.theme, full_screen=screen)
 	from pal42.cli.shell import main as shell_main
-	return shell_main()
+	return shell_main(full_screen=screen)
 
 if __name__ == "__main__":
 	# SystemExit turns the value returned by main() into the process exit code.

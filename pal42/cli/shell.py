@@ -591,12 +591,18 @@ def terminal(commands):
 
 	return Console(), ask, ask_password
 
-def main():
-	"""Start the examshell on the real keyboard and terminal; return the exit code."""
+def main(full_screen=False):
+	"""Start the examshell on the real keyboard and terminal; return the exit code.
+
+	full_screen: the full-screen interface (pal42.cli.tui) instead of the text one.
+	"""
+	# rendu/ is a git repository that pushes to a bare one in ~/.42pal.
+	workspace = Workspace(remote=STATE_DIR / "rendu.git")
+	if full_screen:
+		from pal42.cli.tui import run_exam
+		return run_exam(workspace, SessionStore())
 	console, ask, ask_password = terminal(COMMANDS)
 	try:
-		# rendu/ is a git repository that pushes to a bare one in ~/.42pal.
-		workspace = Workspace(remote=STATE_DIR / "rendu.git")
 		Shell(console, ask, ask_password, workspace=workspace, store=SessionStore()).run()
 	except KeyboardInterrupt:
 		console.print("\nExam stopped (Ctrl-C): run ./42pal again to resume it.")
