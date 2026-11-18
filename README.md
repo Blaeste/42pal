@@ -166,6 +166,7 @@ Five exams, like in 42_EXAM:
 | `alpha_back` | program | backward_alphabet | 7 |
 | `case_flip` | program | case_swap | 12 |
 | `calc_form` | program | calculator | 11 |
+| `replace_pick` | program | char_replace | 8 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
