@@ -214,6 +214,8 @@ Five exams, like in 42_EXAM:
 | `span_set` | function | char_span | 8 |
 | `word_join` | program | space_cleanup | 8 |
 | `word_spread` | program | space_spread | 6 |
+| `caps_start` | program | capitalize_first | 6 |
+| `caps_end` | program | capitalize_last | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
