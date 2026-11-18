@@ -234,15 +234,18 @@ Five exams, like in 42_EXAM:
 | `say_message` | program | fixed_message | 6 |
 | `count_down` | program | digit_countdown | 6 |
 | `param_from_end` | program | last_argument | 6 |
+| `rev_inplace` | function | string_reverse | 4 |
+| `bit_flip` | function | bit_reverse | 3 |
+| `match_trace` | program | hidden_word | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
 of [themes.json](themes.json) is the style of one real exam subject, at the
 levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
-one of the subjects of the level. 58 of the 75 styles have an exercise so
-far; every level of every exam has at least one, and every level of the
-Exam Rank 02 has all of its styles (12, 15, 15 and 7).
+one of the subjects of the level. 68 of the 75 styles have an exercise so
+far: all those of the Exam Rank 02 and of the piscine exams 01 to 03; the
+7 left are those of level 3 and 4 of the final exam.
 
 ## For contributors
 
