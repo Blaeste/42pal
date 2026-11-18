@@ -173,14 +173,16 @@ Five exams, like in 42_EXAM:
 | `pointer_pair` | function | value_swap | 5 |
 | `copy_shape` | function | string_copy | 8 |
 | `put_filter` | function (void, prints) | string_print | 8 |
+| `bip_bop` | program | number_words | 8 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
 of [themes.json](themes.json) is the style of one real exam subject, at the
 levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
-one of the subjects of the level. 25 of the 75 styles have an exercise so
-far; every level of every exam has at least one.
+one of the subjects of the level. 33 of the 75 styles have an exercise so
+far; every level of every exam has at least one, and level 1 of the Exam
+Rank 02 has all of its 12.
 
 ## For contributors
 
