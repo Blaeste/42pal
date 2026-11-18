@@ -170,6 +170,7 @@ Five exams, like in 42_EXAM:
 | `letter_step` | program | letter_step | 7 |
 | `rev_part` | program | reverse_print | 5 |
 | `repeat_rule` | program | letter_repeat | 5 |
+| `pointer_pair` | function | value_swap | 5 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
