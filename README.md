@@ -231,6 +231,9 @@ Five exams, like in 42_EXAM:
 | `set_first` | program | letter_or_fallback | 8 |
 | `char_only` | program | one_char | 8 |
 | `char_line` | program | one_char_end | 6 |
+| `say_message` | program | fixed_message | 6 |
+| `count_down` | program | digit_countdown | 6 |
+| `param_from_end` | program | last_argument | 6 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme

@@ -49,3 +49,28 @@ class TestVariants(unittest.TestCase):
 			for params in exercise.combinations():
 				for line in render(Variant(exercise, 0, params)).splitlines():
 					self.assertLessEqual(len(line), 80, f"{params} : {line}")
+
+SAY = run_path(str(FOLDER / "say_message/exercise.py"))["EXERCISE"]
+COUNT = run_path(str(FOLDER / "count_down/exercise.py"))["EXERCISE"]
+PARAM = run_path(str(FOLDER / "param_from_end/exercise.py"))["EXERCISE"]
+
+class TestMoreOracles(unittest.TestCase):
+	def test_say_message_and_count_down(self):
+		self.assertEqual(run(SAY, {"message": "good_morning", "case": "upper"}), "GOOD MORNING!\n")
+		self.assertEqual(run(SAY, {"message": "forty_two", "case": "as_is"}, "x"), "42 is the answer.\n")
+		self.assertEqual(run(COUNT, {"start": "5", "separator": "space"}), "5 4 3 2 1 0\n")
+		self.assertEqual(run(COUNT, {"start": "12", "separator": "comma"}),
+			"12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0\n")
+
+	def test_param_from_end(self):
+		self.assertEqual(run(PARAM, {"which": "second_last", "how": "plain"}, "a", "Bc", "dEf"), "Bc\n")
+		self.assertEqual(run(PARAM, {"which": "last_two", "how": "upper"}, "a", "Bc", "dEf"), "BC DEF\n")
+		self.assertEqual(run(PARAM, {"which": "last_two", "how": "reversed"}, "a", "Bc", "dEf"), "cB fEd\n")
+		self.assertEqual(run(PARAM, {"which": "second_last", "how": "plain"}, "alone"), "\n")
+
+	def test_more_counts_and_80_columns(self):
+		for exercise, count in [(SAY, 6), (COUNT, 6), (PARAM, 6)]:
+			self.assertEqual(len(exercise.combinations()), count)
+			for params in exercise.combinations():
+				for line in render(Variant(exercise, 0, params)).splitlines():
+					self.assertLessEqual(len(line), 80, f"{params} : {line}")
