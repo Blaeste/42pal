@@ -13,7 +13,6 @@ from pal42.cli import display
 from pal42.cli.shell import STATE_DIR, Shell, terminal
 from pal42.cli.workspace import Workspace
 from pal42.practice import draw_practice
-from pal42.runners.c import DEFAULT_COMMAND
 
 # The practice commands and what they do, shown by help.
 PRACTICE_COMMANDS = {
@@ -127,7 +126,8 @@ class PracticeShell(Shell):
 		elif command == "next":
 			self.next_subject()
 		elif command == "grademe":
-			if self._grade_and_show(DEFAULT_COMMAND).passed:
+			# None: the default command of the language (cc -Wall -Wextra -Werror, python3).
+			if self._grade_and_show(None).passed:
 				self.passed += 1
 				self.next_subject()
 		elif command:

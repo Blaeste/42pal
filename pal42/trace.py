@@ -65,11 +65,11 @@ def crash_trace(number, command, result):
 		reason,
 	]) + "\n"
 
-def compile_trace(command, files, name, output):
+def compile_trace(command_line, output):
 	"""Return the trace of a failed compilation: the command, then the compiler's words."""
 	return "\n".join([
 		header("Compilation"),
-		f"$> {' '.join([*command, *files, '-o', name])}",
+		f"$> {command_line}",
 		output.rstrip("\n"),
 		"",
 		"Compilation KO",
@@ -92,6 +92,18 @@ def forbidden_trace(forbidden, allowed):
 		f"Allowed functions: {', '.join(allowed) or 'none'}",
 		"",
 		"Functions KO",
+	]) + "\n"
+
+def python_forbidden_trace(found, allowed_imports, forbidden_calls):
+	"""Return the trace of a Python file that imports or calls what it may not."""
+	forbidden = ", ".join(f"{name}()" for name in forbidden_calls)
+	return "\n".join([
+		header("Forbidden"),
+		*(f"Forbidden: {name}" for name in found),
+		f"Allowed imports: {', '.join(allowed_imports) or 'none'}",
+		*([f"Forbidden calls: {forbidden}"] if forbidden else []),
+		"",
+		"Forbidden KO",
 	]) + "\n"
 
 def main_trace():

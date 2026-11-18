@@ -21,7 +21,7 @@ from pal42.cli.workspace import Workspace
 from pal42.exam import AUDIENCES, ExamError, list_exams, load_exam
 from pal42.grader import grade
 from pal42.retry import RetryPolicy
-from pal42.runners.c import CRunner
+from pal42.runners import runner_for
 from pal42.session import STATE_DIR, Session, SessionStore
 from pal42.themes import load_themes
 from pal42.update import apply_update, restart
@@ -471,7 +471,8 @@ class Shell:
 		"""
 		self.attempts += 1
 		rendu = self.workspace.rendu / self.variant.name
-		runner = CRunner(compile_command)
+		# The language of the subject: practice has no exam, only a subject.
+		runner = runner_for(self.variant.exercise.language, compile_command)
 		# A spinner while grading, with the number of the test being run.
 		with self._status("Grading…") as status:
 			# step is "memory" when the tests run again under valgrind.

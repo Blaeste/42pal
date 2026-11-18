@@ -14,6 +14,8 @@ from pal42.variant import Variant, draw
 from tests.helpers import ECHO_OK, echo_oracle, echo_tests, make_exercise
 
 CATALOG = load_catalog()
+# ref.c and its -D flags are for C; a ref.py needs no flag.
+C_EXERCISES = {name: exo for name, exo in CATALOG.exercises.items() if exo.language == "c"}
 
 def compile_reference(name, params, work, flags=None):
 	"""Compile the ref.c of exercise `name` for `params`; return the CompileResult.
@@ -42,8 +44,8 @@ class TestReferences(unittest.TestCase):
 	"""Every exercise of the catalog has a ref.c that builds each of its variants."""
 
 	def test_ref_c_compiles_for_every_allowed_combination(self):
-		"""cc -Wall -Wextra -Werror -D...: no error, for every variant."""
-		for name, exo in CATALOG.exercises.items():
+		"""cc -Wall -Wextra -Werror -D...: no error, for every variant of a C exercise."""
+		for name, exo in C_EXERCISES.items():
 			for params in exo.combinations():
 				with self.subTest(f"{name} {params}"), tempfile.TemporaryDirectory() as work:
 					result = compile_reference(name, params, work)
@@ -51,7 +53,7 @@ class TestReferences(unittest.TestCase):
 
 	def test_ref_c_refuses_to_compile_without_its_flags(self):
 		"""No -D flag: #error says which one to choose, so the flags are really used."""
-		for name, exo in CATALOG.exercises.items():
+		for name, exo in C_EXERCISES.items():
 			with self.subTest(name), tempfile.TemporaryDirectory() as work:
 				result = compile_reference(name, exo.combinations()[0], work, flags=())
 				self.assertFalse(result.ok)

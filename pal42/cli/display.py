@@ -247,6 +247,11 @@ def exam_summary(exam):
 	"""The size of an exam, for a menu: 8 levels, 4 h."""
 	return f"{exam.level_count} levels, {exam_length(exam.duration_minutes)}"
 
+def exam_tools(exam):
+	"""How the rendus of an exam are built: compiled in C, run in Python."""
+	verb = "Run" if exam.language == "python" else "Compiled"
+	return f"{verb} with {' '.join(exam.compile_command)}."
+
 def last_choice(number, first):
 	"""The last choice of a menu: back to the menu before, or quit in the first one."""
 	return f"  {number}. {'Quit' if first else 'Back (previous menu)'}"

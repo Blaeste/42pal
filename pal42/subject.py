@@ -18,11 +18,18 @@ def render(variant):
 	exercise has some.
 	"""
 	exo = variant.exercise
+	if exo.language == "python":
+		# What a Python file may use: modules to import, and calls it may not make.
+		allowed = [f"Allowed imports  : {', '.join(exo.allowed_imports) or 'none'}"]
+		if exo.forbidden_calls:
+			allowed.append(f"Forbidden        : {', '.join(f'{name}()' for name in exo.forbidden_calls)}")
+	else:
+		allowed = [f"Allowed functions: {', '.join(exo.allowed_functions)}"]
 	# The labels are padded so that the colons line up, like in the 42 subjects.
 	lines = [
 		f"Assignment name  : {variant.name}",
 		f"Expected files   : {', '.join(variant.expected_files)}",
-		f"Allowed functions: {', '.join(exo.allowed_functions)}",
+		*allowed,
 		# Files given by the exercise, next to the subject (a header...).
 		*([f"Given files      : {', '.join(exo.provided_files)}"] if exo.provided_files else []),
 		"-" * 80,
@@ -73,6 +80,11 @@ def _examples(variant):
 	exo = variant.exercise
 	lines = []
 	for test in variant.examples:
+		if exo.language == "python" and exo.call:
+			# Like in the Python shell: the call, then what it returns.
+			lines.append(f">>> {exo.call(variant.name, test)}")
+			lines.append(exo.oracle(variant.params, test).removesuffix("\n"))
+			continue
 		# A program shows its shell command; a function, its call.
 		if exo.call:
 			lines.append(exo.call(variant.name, test))

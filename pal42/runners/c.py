@@ -17,6 +17,10 @@ class CRunner:
 		# Seconds the student's program may run on one test.
 		self.timeout = timeout
 
+	def command_line(self, files, name):
+		"""The command a compilation trace shows: cc ... files -o name."""
+		return " ".join([*self.command, *files, "-o", name])
+
 	def compile(self, sources, workdir, name, extra=()):
 		"""Compile `sources` (the student's files) into the program workdir/name.
 

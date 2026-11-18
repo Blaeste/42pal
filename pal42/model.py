@@ -89,6 +89,10 @@ class Exercise:
 	name): files given by the exercise, like a header with a struct, put
 	next to the subject and in the compilation; the student does not hand
 	them in.
+	For Python, allowed_functions stays empty: allowed_imports lists the
+	modules the student may import, and forbidden_calls the functions and
+	methods they may not call (like sorted or sort). The test main is then
+	Python too (see python_exercise.harness).
 	"""
 	name: str
 	language: str
@@ -107,6 +111,8 @@ class Exercise:
 	check_leaks: bool = False
 	call: Callable | None = None
 	provided_files: dict[str, str] = field(default_factory=dict)
+	allowed_imports: tuple[str, ...] = ()
+	forbidden_calls: tuple[str, ...] = ()
 
 	def __post_init__(self):
 		"""Check the exercise as soon as it is created (dataclass hook)."""
@@ -119,6 +125,8 @@ class Exercise:
 				f"unknown kind '{self.kind}', choose among: {', '.join(KINDS)}"
 			)
 		self._check_kind()
+		if self.language == "python" and self.allowed_functions:
+			self._fail("a Python exercise allows modules (allowed_imports), not C functions")
 		self._check_template(self.subject, "the subject", extra=("assignment",))
 		self._check_template(self.assignment_name, "the name")
 		self._check_template(self.harness, "the test main")

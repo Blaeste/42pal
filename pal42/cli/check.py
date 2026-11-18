@@ -1,8 +1,9 @@
 """./42pal check-catalog: is every exercise of the catalog graded right?
 
-For each exercise, its ref.c is graded like a student's rendu on every
-variant (see pal42.reference). A variant where ref.c fails means that the
-oracle or ref.c is wrong: the command names it (exo#seed) with its trace.
+For each exercise, its reference solution (ref.c, or ref.py for Python) is
+graded like a student's rendu on every variant (see pal42.reference). A
+variant where it fails means that the oracle or the reference is wrong: the
+command names it (exo#seed) with its trace.
 """
 
 import os
@@ -13,7 +14,7 @@ from rich.markup import escape
 from rich.text import Text
 
 from pal42.catalog import load_catalog
-from pal42.reference import check_variant, variants_to_check
+from pal42.reference import check_variant, reference_path, variants_to_check
 
 def check_catalog(console=None, catalog=None):
 	"""Check every exercise of `catalog`; print the result; return the exit code.
@@ -29,9 +30,9 @@ def check_catalog(console=None, catalog=None):
 		ok = False
 	variants_checked = 0
 	for name in sorted(catalog.exercises):
-		ref = catalog.folders[name] / "ref.c"
+		ref = reference_path(catalog.exercises[name], catalog.folders[name])
 		if not ref.is_file():
-			console.print(f"[bold red]✗[/] {escape(name)}: no ref.c")
+			console.print(f"[bold red]✗[/] {escape(name)}: no {ref.name}")
 			ok = False
 			continue
 		failures, total = _check_exercise(console, catalog.exercises[name], name, ref)

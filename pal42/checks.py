@@ -3,9 +3,12 @@
 They read the symbols of the student's objects (.o) with nm: the library
 functions called, to refuse the forbidden ones, and whether a main is
 defined. They also run the program under valgrind, for leaks and memory
-errors. Like the rest of the core, this module never prints.
+errors. For Python, they read the student's source instead: the modules
+imported and the functions called. Like the rest of the core, this module
+never prints.
 """
 
+import ast
 import re
 import subprocess
 import tempfile
@@ -109,3 +112,43 @@ def memory_report(program, test, timeout=30.0, valgrind="valgrind"):
 	# Each line starts with ==12345==, the number of the process: dropped.
 	lines = [re.sub(r"^==\d+== ?", "", line) for line in text.splitlines()]
 	return "\n".join(lines).strip("\n") + "\n"
+
+# Modules any Python file may import: type hints and future syntax only.
+ALWAYS_IMPORTABLE = {"typing", "__future__"}
+
+# Calls that import or run other code: counted like an import.
+IMPORT_CALLS = {"__import__", "exec", "eval", "compile"}
+
+def python_violations(sources, allowed_imports=(), forbidden_calls=()):
+	"""Return what the Python `sources` use without the right, sorted.
+
+	"import x" for each module imported that is not in allowed_imports (nor
+	typing or __future__), and "name()" for each call of a name in
+	forbidden_calls, as a function (sorted(x)) or as a method (x.sort()),
+	and of __import__, exec, eval or compile. The source is read, not run:
+	comments and strings do not count. The sources must parse (the runner
+	checked their syntax first).
+	"""
+	allowed = set(allowed_imports) | ALWAYS_IMPORTABLE
+	found = set()
+	for source in sources:
+		tree = ast.parse(Path(source).read_text(encoding="utf-8"))
+		for node in ast.walk(tree):
+			if isinstance(node, ast.Import):
+				found.update(f"import {alias.name}" for alias in node.names
+					if alias.name.split(".")[0] not in allowed)
+			elif isinstance(node, ast.ImportFrom):
+				# node.level > 0: a relative import (from . import x).
+				if node.level or (node.module or "").split(".")[0] not in allowed:
+					found.add(f"import {'.' * node.level}{node.module or ''}")
+			elif isinstance(node, ast.Call):
+				function = node.func
+				if isinstance(function, ast.Name):
+					name = function.id
+				elif isinstance(function, ast.Attribute):
+					name = function.attr
+				else:
+					continue
+				if name in forbidden_calls or name in IMPORT_CALLS:
+					found.add(f"{name}()")
+	return sorted(found)

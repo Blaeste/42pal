@@ -770,7 +770,7 @@ class Pal42App(App):
 			return exams[0], False
 		items = [(exam, exam.title, display.exam_summary(exam),
 			f"{display.points(exam.points_per_level)} points a level, 100 to pass. "
-			f"Compiled with {' '.join(exam.compile_command)}.") for exam in exams]
+			f"{display.exam_tools(exam)}") for exam in exams]
 		return await self.ask("Choose your exam", items, first), True
 
 	async def pick_mode(self, chosen, first):
