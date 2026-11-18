@@ -223,6 +223,8 @@ Five exams, like in 42_EXAM:
 | `op_table` | program | number_table | 8 |
 | `hop_range` | function, leaks checked | int_range_back | 6 |
 | `hidden_trace` | program | hidden_order | 6 |
+| `int_to_text` | function, leaks checked | number_to_string | 4 |
+| `word_rotate` | program | word_rotate | 4 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
