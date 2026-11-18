@@ -44,7 +44,12 @@ time left (it runs live), the subject (`PgUp` and `PgDn` scroll it), a log of
 your commands, and the `examshell>` line where you type them. The paths of
 the subject, of your rendu and of the traces, and the web addresses, open with
 a click: a file in its default application, a folder in the file manager, a
-page in the browser (`xdg-open`, or `open` on macOS). `./42pal --plain` gives
+page in the browser (`xdg-open`, or `open` on macOS). To copy a prototype
+or a header, select it with the mouse in the subject (or in the log; a
+double-click takes the whole subject), then press Ctrl+C: it goes to the
+clipboard (through the terminal, and `xclip`, `xsel` or `wl-copy` when there
+is one). Ctrl+C with nothing selected, or Ctrl+Q, leaves. Shift+drag also
+works: it is the terminal's own selection. `./42pal --plain` gives
 the text interface, line by line; it is also used when the input is not a
 terminal (answers sent through a pipe). There, the terminal opens the paths
 with a Ctrl+click, if it knows links.

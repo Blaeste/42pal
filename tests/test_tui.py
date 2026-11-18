@@ -311,7 +311,7 @@ class TestLinks(FullScreenTest):
 			await self.login(pilot)
 			await pilot.press("enter", "enter")
 			await pilot.pause()
-			where = app.screen.query_one("#subject").content.renderables[0]
+			where = app.screen.query_one("#subject").content
 			actions = [span.style.meta["@click"] for span in where.spans
 				if not isinstance(span.style, str) and "@click" in span.style.meta]
 			name = app.shell.variant.name
@@ -340,3 +340,87 @@ class TestPlainLinks(unittest.TestCase):
 		output = console.file.getvalue()
 		self.assertIn("file:///tmp/s/subject.en.txt", output)
 		self.assertIn("file:///tmp/r", output)
+
+class TestCopy(FullScreenTest):
+	"""The subject and the log can be selected and copied."""
+
+	async def start_session(self, pilot):
+		await self.login(pilot)
+		await pilot.press("enter", "enter")
+		await pilot.pause()
+
+	@screen_test
+	async def test_the_subject_can_be_selected_and_copied(self):
+		"""Select all of the subject, Ctrl+C: it is in the clipboard; 42pal goes on."""
+		app = self.exam_app()
+		copied = []
+		app.clipboard_commands = [["no-such-clipboard-program"]]
+		app.copy_with_program = lambda text: copied.append(text)
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.start_session(pilot)
+			app.screen.query_one("#subject").text_select_all()
+			await pilot.pause()
+			self.assertIn("Assignment name  : echo_first", app.screen.get_selected_text())
+			await pilot.press("ctrl+c")
+			await pilot.pause()
+			self.assertIsInstance(app.screen, SessionScreen)
+			self.assertIn("Assignment name  : echo_first", app.clipboard)
+			self.assertEqual(copied, [app.clipboard])
+
+	@screen_test
+	async def test_the_log_can_be_selected(self):
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.start_session(pilot)
+			await self.type(pilot, "s")
+			app.screen.query_one("#log").text_select_all()
+			await pilot.pause()
+			self.assertRegex(app.screen.get_selected_text(), r"Level\s+1 of 4")
+
+	@screen_test
+	async def test_ctrl_c_with_nothing_selected_leaves(self):
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.start_session(pilot)
+			await pilot.press("ctrl+c")
+			await pilot.pause()
+		self.assertIsNone(app.return_value)
+
+	def test_the_first_clipboard_program_found_gets_the_text(self):
+		"""A program that is not there is skipped; the next one gets the text on its input."""
+		import sys
+		app = self.exam_app()
+		target = Path(self.tmp.name) / "clipboard.txt"
+		app.clipboard_commands = [["no-such-clipboard-program"],
+			[sys.executable, "-c", f"import sys; open({str(target)!r}, 'w').write(sys.stdin.read())"]]
+		app.copy_with_program("int\tft_x(int n);")
+		self.assertEqual(target.read_text(), "int\tft_x(int n);")
+
+class TestLogLinks(unittest.TestCase):
+	"""A link in the selectable log still opens with a click."""
+
+	@screen_test
+	async def test_a_link_in_the_log_opens_with_a_click(self):
+		from rich.text import Text
+		from textual.app import App
+		from pal42.cli.tui import SelectableLog, clickable
+
+		class LogApp(App):
+			def __init__(self):
+				super().__init__()
+				self.opened = []
+
+			def compose(self):
+				yield SelectableLog(id="log", wrap=False)
+
+			def action_open_link(self, target):
+				self.opened.append(target)
+
+		app = LogApp()
+		async with app.run_test(size=(80, 10)) as pilot:
+			app.query_one("#log").write(clickable(Text.from_markup(
+				"Trace: [link=file:///tmp/t/01.trace]~/t/01.trace[/link]")))
+			await pilot.pause()
+			await pilot.click("#log", offset=(10, 0))
+			await pilot.pause()
+		self.assertEqual(app.opened, ["/tmp/t/01.trace"])

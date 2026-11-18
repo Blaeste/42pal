@@ -18,8 +18,9 @@ import subprocess
 import sys
 from urllib.parse import unquote, urlparse
 
-from rich.console import Console, Group
+from rich.console import Console
 from rich.markup import escape
+from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
 from textual import work
@@ -27,6 +28,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical, VerticalScroll
 from textual.css.scalar import ScalarOffset
 from textual.screen import Screen
+from textual.strip import Strip
 from textual.suggester import SuggestFromList
 from textual.widgets import Input, OptionList, RichLog, Static
 from textual.widgets.option_list import Option
@@ -107,6 +109,16 @@ def launch(command):
 	"""Start `command` apart from 42pal: it goes on if 42pal stops, and says nothing."""
 	subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
 		stderr=subprocess.DEVNULL, start_new_session=True)
+
+# The programs that put a text in the clipboard, the first one found is used:
+# many terminals (GNOME Terminal among them) ignore the clipboard sequence
+# that textual sends.
+CLIPBOARD_COMMANDS = [
+	["wl-copy"],
+	["xclip", "-selection", "clipboard"],
+	["xsel", "--clipboard", "--input"],
+	["pbcopy"],
+]
 
 def capture_console():
 	"""The console the shells print to: kept as text with colors, for the screens."""
@@ -285,6 +297,46 @@ class Activity:
 	def __exit__(self, *error):
 		self.show(None)
 
+class SelectableLog(RichLog):
+	"""The log of a session, whose text can be selected with the mouse.
+
+	RichLog keeps its lines already drawn, with their colors: the selection
+	is taken from their text, and drawn over them.
+	"""
+
+	def get_selection(self, selection):
+		text = "\n".join(line.text.rstrip() for line in self.lines)
+		return selection.extract(text), "\n"
+
+	def selection_updated(self, selection):
+		self.refresh()
+
+	def render_line(self, y):
+		strip = super().render_line(y)
+		line = self.scroll_offset.y + y
+		if line >= len(self.lines):
+			return strip
+		# Where the line is in the text: textual needs it to know what the mouse selects.
+		strip = strip.apply_offsets(self.scroll_offset.x, line)
+		selection = self.text_selection
+		span = selection.get_span(line) if selection is not None else None
+		if span is None:
+			return strip
+		start, end = span
+		if end == -1:
+			end = len(self.lines[line].text.rstrip())
+		start = max(0, start - self.scroll_offset.x)
+		end = min(strip.cell_length, end - self.scroll_offset.x)
+		if start >= end:
+			return strip
+		before, selected, after = strip.divide([start, end, strip.cell_length])
+		# Only the background of the selection, over each piece: its own
+		# background would hide it below, and its text keeps its color.
+		style = Style(bgcolor=self.screen.get_component_rich_style("screen--selection").bgcolor)
+		selected = Strip([Segment(piece, (piece_style or Style()) + style, control)
+			for piece, piece_style, control in selected], selected.cell_length)
+		return Strip.join([before, selected, after])
+
 class ScreenShellMixin:
 	"""What the shells change on a screen: the subject goes to its own pane.
 
@@ -349,14 +401,14 @@ class SessionScreen(Screen):
 				yield Static(id="subject")
 			# No wrap: the shell already prints at the width of the log (see
 			# fit_console); wrapping again would cut the frames at their spaces.
-			yield RichLog(id="log", wrap=False, markup=False, highlight=False)
+			yield SelectableLog(id="log", wrap=False, markup=False, highlight=False)
 		yield Static(id="activity")
 		letters = ", ".join(f"{letter} {command}" for letter, command in self.shortcuts.items())
 		yield Input(id="command", placeholder=f"{self.prompt} type a command ({letters})",
 			suggester=SuggestFromList(list(self.commands), case_sensitive=False))
 		# The one-letter commands are in the placeholder of the command line.
-		yield Static(hints([("⏎", "run"), ("↑↓", "history"), ("→", "complete"),
-			("pgup pgdn", "subject"), ("ctrl+c", "leave")]), id="session-hints")
+		yield Static(hints([("↑↓", "history"), ("→", "complete"), ("pgup pgdn", "subject"),
+			("drag ctrl+c", "copy"), ("ctrl+q", "leave")]), id="session-hints")
 
 	def on_mount(self):
 		self.query_one("#log").border_title = " log "
@@ -408,14 +460,16 @@ class SessionScreen(Screen):
 		subject = workspace.subjects / variant.name / "subject.en.txt"
 		rendu = workspace.rendu / variant.name
 		# The paths open with a click: the subject in an editor, the rendu in
-		# the file manager.
-		where = Text()
-		where.append("Read it  ", style="dim")
-		where.append(display.short_path(subject), style=open_on_click(str(subject)))
-		where.append("\nHand in  ", style="dim")
-		where.append(f"{display.short_path(rendu)}/", style=open_on_click(str(rendu)))
-		where.append("\n")
-		self.query_one("#subject", Static).update(Group(where, Text(subject.read_text(encoding="utf-8"))))
+		# the file manager. One Text: textual can only select in a single text,
+		# for the prototypes and headers to be copied.
+		content = Text()
+		content.append("Read it  ", style="dim")
+		content.append(display.short_path(subject), style=open_on_click(str(subject)))
+		content.append("\nHand in  ", style="dim")
+		content.append(f"{display.short_path(rendu)}/", style=open_on_click(str(rendu)))
+		content.append("\n\n")
+		content.append(subject.read_text(encoding="utf-8"))
+		self.query_one("#subject", Static).update(content)
 		pane = self.query_one("#subject-pane")
 		pane.border_title = f" {variant.name} "
 		pane.scroll_home(animate=False)
@@ -533,7 +587,11 @@ class Pal42App(App):
 	CSS_PATH = "tui.tcss"
 	ENABLE_COMMAND_PALETTE = False
 	TITLE = "42pal"
-	BINDINGS = [("ctrl+c", "quit", "Leave")]
+	# Ctrl+C copies the text selected (textual's screens do it first); with
+	# nothing selected, it leaves, like Ctrl+Q.
+	BINDINGS = [("ctrl+c", "quit", "Leave"), ("ctrl+q", "quit", "Leave")]
+	# The clipboard programs to try (the tests put their own).
+	clipboard_commands = CLIPBOARD_COMMANDS
 
 	# How a command is started apart (the tests put their own).
 	launch = staticmethod(launch)
@@ -553,6 +611,25 @@ class Pal42App(App):
 			self.practice_flow()
 		else:
 			self.exam_flow()
+
+	def copy_to_clipboard(self, text):
+		"""Copy `text`: through the terminal, and with a clipboard program if there is one."""
+		super().copy_to_clipboard(text)
+		self.copy_with_program(text)
+		lines = text.count("\n") + 1
+		self.notify(f"Copied: {lines} line{'s' if lines != 1 else ''}", timeout=2)
+
+	def copy_with_program(self, text):
+		"""Give `text` to the first clipboard program found (xclip, xsel, wl-copy...)."""
+		for command in self.clipboard_commands:
+			if shutil.which(command[0]) is None:
+				continue
+			try:
+				subprocess.run(command, input=text, text=True, timeout=3,
+					stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+			except (OSError, subprocess.TimeoutExpired):
+				continue
+			return
 
 	def action_open_link(self, target):
 		"""Open a file, a folder or a web page with the default application of the system."""
