@@ -210,15 +210,17 @@ Five exams, like in 42_EXAM:
 | `byte_show` | function (void, prints) | bit_print | 5 |
 | `dup_shape` | function, leaks checked | string_dup | 5 |
 | `compare_rule` | function | string_compare | 8 |
+| `read_int` | function | read_number | 7 |
+| `span_set` | function | char_span | 8 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
 of [themes.json](themes.json) is the style of one real exam subject, at the
 levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
-one of the subjects of the level. 33 of the 75 styles have an exercise so
-far; every level of every exam has at least one, and level 1 of the Exam
-Rank 02 has all of its 12.
+one of the subjects of the level. 43 of the 75 styles have an exercise so
+far; every level of every exam has at least one, and levels 1 and 2 of the
+Exam Rank 02 have all of theirs (12 and 15).
 
 ## For contributors
 
