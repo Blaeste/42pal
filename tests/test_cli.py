@@ -972,6 +972,14 @@ class TestPractice(unittest.TestCase):
 		self.assertIn("1. char_sets · Compare characters", text)
 		self.assertIn("Practice · char_sets", text)
 
+	def test_one_letter_shortcuts_and_handle(self):
+		"""n for next, ? for help, f for finish: handle says when it is over."""
+		shell = self.practise("n", "?", "f")
+		text = output(shell)
+		self.assertEqual(text.count("Practice · char_sets"), 2)
+		self.assertIn("another subject of the same theme", text)
+		self.assertIn("Practice summary", text)
+
 	def test_the_last_choice_of_the_theme_menu_quits(self):
 		"""2 after the only theme: goodbye, no subject."""
 		shell = self.practise("2", theme=None)
@@ -1030,3 +1038,61 @@ class TestRevisionMode(unittest.TestCase):
 		shell.run()
 		self.assertEqual((shell.mode, shell.variant.id), ("revision", "echo_first#5"))
 		self.assertTrue(any("no time limit" in prompt for prompt in script.prompts))
+
+class TestDrivenShell(unittest.TestCase):
+	"""The shell driven one command at a time, as the full-screen interface does."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+		self.store = SessionStore(Path(self.tmp.name) / ".42pal")
+		self.clock = FakeClock()
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		self.shell = Shell(console, Script().ask, Script().ask_password, Workspace(self.root),
+			rng=Random(1), clock=self.clock, sleep=lambda seconds: None,
+			store=self.store, catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def test_begin_starts_an_exam_without_any_menu(self):
+		"""begin(exam, mode, level): the subject is given, the waits follow the mode."""
+		exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.shell.begin(exam, "revision", 2)
+		self.assertEqual((self.shell.level, self.shell.mode), (2, "revision"))
+		self.assertEqual(self.shell.retry, exam.retry["soft"])
+		self.assertIn("Assignment name  : echo_first", output(self.shell))
+
+	def test_handle_runs_one_command_and_tells_when_the_exam_is_over(self):
+		"""status goes on; finish ends the exam and says so."""
+		exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.shell.begin(exam, "exam", 1)
+		self.assertFalse(self.shell.handle("status"))
+		self.assertRegex(output(self.shell), r"Level\s+1 of 4")
+		self.assertTrue(self.shell.handle("finish"))
+		self.assertIn("End of the exam", output(self.shell))
+
+	def test_one_letter_shortcuts(self):
+		"""g, s, f and ? stand for grademe, status, finish and help."""
+		exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.shell.begin(exam, "revision", 1)
+		self.shell.handle("?")
+		self.assertIn("grade your work", output(self.shell))
+		self.shell.handle("s")
+		self.assertRegex(output(self.shell), r"Subject\s+echo_first")
+		self.shell.handle("g")
+		self.assertIn("Missing file", output(self.shell))
+		self.assertTrue(self.shell.handle("f"))
+
+	def test_a_saved_exam_is_restored_then_resumed_or_abandoned(self):
+		"""restore_saved puts it back; abandon_saved keeps it in the history."""
+		self.store.save(Session(
+			exam="rank02", level=2, variant="echo_first#5", started_at=self.clock.now - 600,
+			mode="exam", attempts=2, oks=1, failures=0, passed_levels=[1],
+		))
+		self.assertTrue(self.shell.restore_saved())
+		self.assertEqual((self.shell.level, self.shell.variant.id), (2, "echo_first#5"))
+		self.shell.abandon_saved()
+		self.assertEqual(self.store.history()[0]["end"], "abandoned")
+		self.assertIsNone(self.shell.exam)
+		self.assertFalse(self.shell.restore_saved())

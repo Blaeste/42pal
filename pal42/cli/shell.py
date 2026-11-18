@@ -33,6 +33,9 @@ COMMANDS = {
 	"help": "show this help",
 }
 
+# One letter (then Enter) for each command: g, s, f and ?.
+SHORTCUTS = {"g": "grademe", "s": "status", "f": "finish", "?": "help"}
+
 # The two modes and the waits each one takes from the exam file: the exam
 # mode is 42_EXAM's (hard waits, the real duration), the revision mode is
 # softer (soft waits, no time limit).
@@ -122,9 +125,7 @@ class Shell:
 				if start is None:
 					self.console.print("Goodbye!")
 					return
-				exam, self.mode, level = start
-				self.retry = exam.retry[RETRY_OF_MODE[self.mode]]
-				self.start(exam, level)
+				self.begin(*start)
 		# Ctrl-D before the exam has started: just leave.
 		except EOFError:
 			self.console.print("\nGoodbye!")
@@ -143,9 +144,22 @@ class Shell:
 	def resume(self):
 		"""Offer to resume the saved exam; return True if it was resumed.
 
+		Refusing keeps it in the history as "abandoned".
+		"""
+		if not self.restore_saved():
+			return False
+		question = display.resume_question(self.exam, self.level, self.variant, self._time_left())
+		if self.ask(question, "y").strip().lower().startswith("n"):
+			self.abandon_saved()
+			return False
+		self.show_subject()
+		return True
+
+	def restore_saved(self):
+		"""Put back the saved exam, if there is one to resume; return True then.
+
 		An exam whose time ran out while away goes to the history without a
-		question; one whose subject is gone cannot be resumed. Refusing keeps
-		it in the history as "abandoned".
+		question; one whose subject is gone cannot be resumed. Both are said.
 		"""
 		session = self.store.load() if self.store else None
 		if session is None:
@@ -161,17 +175,15 @@ class Shell:
 			self.console.print(display.cannot_resume(session.variant))
 			return False
 		self._restore(session, exam, variant)
-		left = self._time_left()
-		if left <= 0:
+		if self._time_left() <= 0:
 			self.console.print(display.time_ran_out_while_away(exam))
 			self._forget("time")
 			return False
-		answer = self.ask(display.resume_question(exam, self.level, variant, left), "y")
-		if answer.strip().lower().startswith("n"):
-			self._forget("abandoned")
-			return False
-		self._show_subject()
 		return True
+
+	def abandon_saved(self):
+		"""Give up the restored exam: kept in the history as "abandoned"."""
+		self._forget("abandoned")
 
 	def _restore(self, session, exam, variant):
 		"""Put back the state of a saved exam."""
@@ -298,6 +310,12 @@ class Shell:
 		for line in lines:
 			self.console.print(line, markup=False, highlight=False)
 
+	def begin(self, exam, mode, level):
+		"""Start an exam in `mode` ("exam" or "revision") at `level`, without menus."""
+		self.mode = mode
+		self.retry = exam.retry[RETRY_OF_MODE[mode]]
+		self.start(exam, level)
+
 	def start(self, exam, level):
 		"""Draw a subject at `level`, write it in the workspace and show it.
 
@@ -309,10 +327,10 @@ class Shell:
 		self.variant = exam.draw(level, self.rng)
 		if self.started_at is None:
 			self.started_at = self.clock()
-		self._show_subject()
+		self.show_subject()
 		self._save()
 
-	def _show_subject(self):
+	def show_subject(self):
 		"""Write the current subject in the workspace and show it."""
 		exam, level = self.exam, self.level
 		subject = self.workspace.give_subject(self.variant)
@@ -341,32 +359,42 @@ class Shell:
 			# Ctrl-D: the same as finish.
 			except EOFError:
 				command = "finish"
-			left = self._time_left()
-			if left <= 0:
-				self.console.print(display.time_up())
-				self.end_exam("time")
+			if self.handle(command):
 				return
-			if left < WARNING_SECONDS and not self.warned:
-				self.warned = True
-				self.console.print(display.almost_over(left))
-			if command == "finish":
-				self.end_exam()
-				return
-			if command == "help":
-				self.console.print(display.help_table(COMMANDS))
-			elif command == "status":
-				self.show_status()
-			elif command == "grademe":
-				if self.grademe():
-					return
-			elif command:
-				# escape: what the student typed must not be read as rich markup.
-				self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
-			# A blank line after each answer sets it apart from the next prompt;
-			# Enter alone gave no answer, so it adds nothing.
-			if command:
-				self.console.print()
-			self._save()
+
+	def handle(self, command):
+		"""Run one examshell command; return True when the exam is over.
+
+		The time is checked first: a command typed too late is not run.
+		"""
+		command = SHORTCUTS.get(command.strip(), command.strip())
+		left = self._time_left()
+		if left <= 0:
+			self.console.print(display.time_up())
+			self.end_exam("time")
+			return True
+		if left < WARNING_SECONDS and not self.warned:
+			self.warned = True
+			self.console.print(display.almost_over(left))
+		if command == "finish":
+			self.end_exam()
+			return True
+		if command == "help":
+			self.console.print(display.help_table(COMMANDS))
+		elif command == "status":
+			self.show_status()
+		elif command == "grademe":
+			if self.grademe():
+				return True
+		elif command:
+			# escape: what the student typed must not be read as rich markup.
+			self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
+		# A blank line after each answer sets it apart from the next prompt;
+		# Enter alone gave no answer, so it adds nothing.
+		if command:
+			self.console.print()
+		self._save()
+		return False
 
 	def grademe(self):
 		"""Grade the rendu and show the result; return True when the exam is over.
@@ -417,9 +445,8 @@ class Shell:
 		self.attempts += 1
 		rendu = self.workspace.rendu / self.variant.name
 		runner = CRunner(compile_command)
-		# A spinner while grading, with the number of the test being run;
-		# rich shows it only in a real terminal.
-		with self.console.status("Grading…", spinner="dots") as status:
+		# A spinner while grading, with the number of the test being run.
+		with self._status("Grading…") as status:
 			# step is "memory" when the tests run again under valgrind.
 			def progress(number, total, step="output"):
 				doing = "Checking memory" if step == "memory" else "Grading"
@@ -437,6 +464,14 @@ class Shell:
 		if not result.passed:
 			self.console.print(display.trace_panel(result.trace))
 		return result
+
+	def _status(self, text):
+		"""The spinner shown while grading: rich shows it only in a real terminal.
+
+		It returns a context manager whose update(text) changes the text; the
+		full-screen interface puts its own instead.
+		"""
+		return self.console.status(text, spinner="dots")
 
 	@property
 	def grade(self):

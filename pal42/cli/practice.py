@@ -23,6 +23,9 @@ PRACTICE_COMMANDS = {
 	"help": "show this help",
 }
 
+# One letter (then Enter) for each command: g, n, f and ?.
+PRACTICE_SHORTCUTS = {"g": "grademe", "n": "next", "f": "finish", "?": "help"}
+
 class PracticeShell(Shell):
 	"""Practising one theme: the grading and display of the examshell, no exam."""
 
@@ -101,24 +104,31 @@ class PracticeShell(Shell):
 				command = self.ask("practice>").strip()
 			except EOFError:
 				command = "finish"
-			if command == "finish":
-				self.console.print(
-					f"Practice summary: {self.passed} subject{'s' if self.passed != 1 else ''}"
-					f" passed, {self.attempts} grademe"
-				)
+			if self.handle(command):
 				return
-			if command == "help":
-				self.console.print(display.help_table(PRACTICE_COMMANDS))
-			elif command == "next":
+
+	def handle(self, command):
+		"""Run one practice command; return True when the practice is over."""
+		command = PRACTICE_SHORTCUTS.get(command.strip(), command.strip())
+		if command == "finish":
+			self.console.print(
+				f"Practice summary: {self.passed} subject{'s' if self.passed != 1 else ''}"
+				f" passed, {self.attempts} grademe"
+			)
+			return True
+		if command == "help":
+			self.console.print(display.help_table(PRACTICE_COMMANDS))
+		elif command == "next":
+			self.next_subject()
+		elif command == "grademe":
+			if self._grade_and_show(DEFAULT_COMMAND).passed:
+				self.passed += 1
 				self.next_subject()
-			elif command == "grademe":
-				if self._grade_and_show(DEFAULT_COMMAND).passed:
-					self.passed += 1
-					self.next_subject()
-			elif command:
-				self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
-			if command:
-				self.console.print()
+		elif command:
+			self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
+		if command:
+			self.console.print()
+		return False
 
 def main(theme=None):
 	"""Practise on the real keyboard and terminal; return the exit code."""
