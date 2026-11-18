@@ -186,6 +186,17 @@ def practice_panel(theme, variant, subject, rendu):
 	]
 	return Panel("\n".join(lines), title="42pal", width=80)
 
+def update_message(update):
+	"""Said when a newer 42pal is found: how many commits, and the last ones."""
+	plural = "s" if update.count != 1 else ""
+	lines = [f"[bold #a5b4fc]A new version of 42pal is available: {update.count} new commit{plural}.[/]"]
+	lines += [f"  · {escape(change)}" for change in update.changes]
+	return "\n".join(lines)
+
+def update_failed(why):
+	"""Said when git pull refused: nothing was changed."""
+	return f"[yellow]The update failed: {escape(why)}[/] Nothing was changed; 42pal goes on."
+
 def points(value):
 	"""Write points without a useless .0: 25, but 12.5."""
 	return f"{value:g}"

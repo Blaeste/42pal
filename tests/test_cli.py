@@ -30,6 +30,7 @@ from pal42.retry import RetryPolicy
 from pal42.session import Session, SessionStore
 from pal42.subject import render
 from pal42.themes import Theme
+from pal42.update import Update
 from pal42.variant import Variant
 from rich.console import Console
 from tests.helpers import ECHO, ECHO_OK, echo_oracle, echo_tests, make_exercise
@@ -1047,6 +1048,56 @@ class TestRevisionMode(unittest.TestCase):
 		shell.run()
 		self.assertEqual((shell.mode, shell.variant.id), ("revision", "echo_first#5"))
 		self.assertTrue(any("no time limit" in prompt for prompt in script.prompts))
+
+class FakeCheck:
+	"""An update check that already knows its answer."""
+
+	def __init__(self, update):
+		self.update = update
+
+	def result(self, wait=3):
+		return self.update
+
+class TestUpdateOffer(unittest.TestCase):
+	"""After the login, the update found at launch is offered."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def run_offer(self, *answers, update=Update(2, ("feat: add a", "fix: repair b")), pulled=(True, "")):
+		shell = make_shell(Script(*answers), self.root)
+		shell.update_check = FakeCheck(update)
+		self.pulls = []
+		shell.updater = lambda: self.pulls.append(1) or pulled
+		shell.run()
+		return shell
+
+	def test_yes_pulls_and_asks_for_a_restart(self):
+		shell = self.run_offer("", "pw", "")
+		text = output(shell)
+		self.assertIn("A new version of 42pal is available: 2 new commits", text)
+		self.assertIn("feat: add a", text)
+		self.assertEqual(self.pulls, [1])
+		self.assertTrue(shell.restart)
+
+	def test_no_goes_on_with_this_version(self):
+		shell = self.run_offer("", "pw", "n")
+		self.assertEqual(self.pulls, [])
+		self.assertFalse(shell.restart)
+		self.assertIn("Who are you?", output(shell))
+
+	def test_a_failed_pull_is_said_and_42pal_goes_on(self):
+		shell = self.run_offer("", "pw", "y", pulled=(False, "error: your local changes"))
+		self.assertIn("The update failed: error: your local changes", output(shell))
+		self.assertFalse(shell.restart)
+
+	def test_nothing_new_asks_nothing(self):
+		shell = self.run_offer("", "pw", update=None)
+		self.assertNotIn("new version", output(shell))
 
 class TestDrivenShell(unittest.TestCase):
 	"""The shell driven one command at a time, as the full-screen interface does."""

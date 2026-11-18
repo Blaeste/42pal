@@ -24,6 +24,7 @@ from pal42.retry import RetryPolicy
 from pal42.runners.c import CRunner
 from pal42.session import STATE_DIR, Session, SessionStore
 from pal42.themes import load_themes
+from pal42.update import apply_update, restart
 
 # The examshell commands and what they do, shown by help.
 COMMANDS = {
@@ -95,6 +96,11 @@ class Shell:
 		self.store = store
 		self.catalog = catalog
 		self.themes = themes
+		# The check for a newer 42pal started at launch (an UpdateCheck), the
+		# function that pulls it, and True once pulled: 42pal must restart.
+		self.update_check = None
+		self.updater = apply_update
+		self.restart = False
 
 	def _reset(self):
 		"""No exam in progress: the state before an exam starts."""
@@ -120,6 +126,8 @@ class Shell:
 		"""The whole session: login, exam (or the saved one), then the commands."""
 		try:
 			self.login()
+			if self.offer_update():
+				return
 			if not self.resume():
 				start = self.choose_start()
 				if start is None:
@@ -140,6 +148,24 @@ class Shell:
 		self.ask_password("password: ")
 		display.typewriter(self.console, f"Welcome {self.user}!", sleep=self.sleep)
 		self.console.print()
+
+	def offer_update(self):
+		"""Offer the newer 42pal found at launch; return True once pulled (to restart)."""
+		update = self.update_check.result() if self.update_check else None
+		if update is None:
+			return False
+		self.console.print(display.update_message(update))
+		if self.ask("Update now?", "y").strip().lower().startswith("n"):
+			self.console.print()
+			return False
+		ok, why = self.updater()
+		if not ok:
+			self.console.print(display.update_failed(why))
+			self.console.print()
+			return False
+		self.console.print("42pal is updated: it starts again.")
+		self.restart = True
+		return True
 
 	def resume(self):
 		"""Offer to resume the saved exam; return True if it was resumed.
@@ -591,19 +617,24 @@ def terminal(commands):
 
 	return Console(), ask, ask_password
 
-def main(full_screen=False):
+def main(full_screen=False, update_check=None):
 	"""Start the examshell on the real keyboard and terminal; return the exit code.
 
-	full_screen: the full-screen interface (pal42.cli.tui) instead of the text one.
+	full_screen: the full-screen interface (pal42.cli.tui) instead of the text
+	one. update_check: the check for a newer 42pal started at launch, if any.
 	"""
 	# rendu/ is a git repository that pushes to a bare one in ~/.42pal.
 	workspace = Workspace(remote=STATE_DIR / "rendu.git")
 	if full_screen:
 		from pal42.cli.tui import run_exam
-		return run_exam(workspace, SessionStore())
+		return run_exam(workspace, SessionStore(), update_check)
 	console, ask, ask_password = terminal(COMMANDS)
 	try:
-		Shell(console, ask, ask_password, workspace=workspace, store=SessionStore()).run()
+		shell = Shell(console, ask, ask_password, workspace=workspace, store=SessionStore())
+		shell.update_check = update_check
+		shell.run()
+		if shell.restart:
+			restart()
 	except KeyboardInterrupt:
 		console.print("\nExam stopped (Ctrl-C): run ./42pal again to resume it.")
 		return 130

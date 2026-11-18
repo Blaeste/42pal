@@ -21,6 +21,11 @@ cd 42pal
 ./42pal
 ```
 
+When a new version is pushed, `./42pal` says so after the login and offers
+to update: yes runs `git pull`, then 42pal starts again on the new version.
+It never asks for a password: with no network, or a remote that needs one,
+it says nothing. `PAL42_NO_UPDATE=1 ./42pal` turns the check off.
+
 No `pip`, no virtual environment: the libraries of the display,
 [textual](https://github.com/Textualize/textual) and
 [rich](https://github.com/Textualize/rich), are copied in `vendor/` (see

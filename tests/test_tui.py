@@ -222,6 +222,41 @@ class TestExamScreens(FullScreenTest):
 			self.assertIsInstance(app.screen, SessionScreen)
 			self.assertEqual((app.shell.level, app.shell.variant.id), (2, "echo_first#5"))
 
+class TestUpdateScreen(FullScreenTest):
+	"""The update found at launch, offered after the login."""
+
+	@screen_test
+	async def test_update_now_pulls_then_restarts(self):
+		from pal42.cli.tui import RESTART
+		from pal42.update import Update
+		from tests.test_cli import FakeCheck
+		app = self.exam_app()
+		app.update_check = FakeCheck(Update(3, ("feat: add a",)))
+		pulls = []
+		app.updater = lambda: pulls.append(1) or (True, "")
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			self.assertEqual(app.screen.title, "A new version of 42pal")
+			await pilot.press("enter")
+			for _ in range(100):
+				await pilot.pause(0.05)
+				if pulls and app.return_value is RESTART:
+					break
+		self.assertEqual(pulls, [1])
+		self.assertIs(app.return_value, RESTART)
+
+	@screen_test
+	async def test_not_now_goes_to_the_menus(self):
+		from pal42.update import Update
+		from tests.test_cli import FakeCheck
+		app = self.exam_app()
+		app.update_check = FakeCheck(Update(1, ("fix: b",)))
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			await pilot.press("down", "enter")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "Exam Rank 02 · mode")
+
 class TestPracticeScreens(FullScreenTest):
 	"""./42pal practice in full screen."""
 

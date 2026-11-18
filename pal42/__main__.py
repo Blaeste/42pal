@@ -43,8 +43,14 @@ def main(argv=None):
 	if arguments.command == "practice":
 		from pal42.cli.practice import main as practice_main
 		return practice_main(arguments.theme, full_screen=screen)
+	# A newer 42pal is looked for while the student logs in; only when someone
+	# can answer the question (not for answers sent through a pipe).
+	update_check = None
+	if sys.stdin.isatty():
+		from pal42.update import UpdateCheck
+		update_check = UpdateCheck().start()
 	from pal42.cli.shell import main as shell_main
-	return shell_main(full_screen=screen)
+	return shell_main(full_screen=screen, update_check=update_check)
 
 if __name__ == "__main__":
 	# SystemExit turns the value returned by main() into the process exit code.

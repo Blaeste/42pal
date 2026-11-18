@@ -9,6 +9,7 @@ The flow: a fake login, the saved exam to resume if any, then the menus
 back; then the session screen, until the exam ends.
 """
 
+import asyncio
 import getpass
 import io
 import re
@@ -34,6 +35,7 @@ from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
 from pal42.cli.shell import BACK, COMMANDS, RETRY_OF_MODE, SHORTCUTS, Shell
 from pal42.exam import AUDIENCES
+from pal42.update import apply_update, restart
 
 LOGO = [
 	"██╗  ██╗██████╗ ██████╗  █████╗ ██╗     ",
@@ -48,6 +50,9 @@ LOGO = [
 GRADIENT = ["#5eead4", "#67e8f9", "#7dd3fc", "#93c5fd", "#a5b4fc", "#c4b5fd", "#d8b4fe"]
 
 TAGLINE = "exam trainer · random variants · local moulinette"
+
+# What the app exits with once a newer 42pal is pulled: it must start again.
+RESTART = object()
 
 # Under this many lines, the screens get the "-compact" class (see tui.tcss).
 COMPACT_HEIGHT = 30
@@ -532,6 +537,9 @@ class Pal42App(App):
 
 	# How a command is started apart (the tests put their own).
 	launch = staticmethod(launch)
+	# The check for a newer 42pal started at launch, and the function that pulls it.
+	update_check = None
+	updater = staticmethod(apply_update)
 
 	def __init__(self, shell, practice=False, theme=None, user=None):
 		super().__init__()
@@ -576,6 +584,8 @@ class Pal42App(App):
 	async def exam_flow(self):
 		shell = self.shell
 		shell.user = await self.push_screen(LoginScreen(self.user), wait_for_dismiss=True)
+		if await self.offer_update():
+			return
 		if self.run_quietly(shell.restore_saved):
 			if await self.ask_resume() == "resume":
 				shell.show_subject()
@@ -587,6 +597,38 @@ class Pal42App(App):
 			return
 		self.run_quietly(lambda: shell.begin(*start))
 		await self.run_session()
+
+	async def offer_update(self):
+		"""Offer the newer 42pal found at launch; return True when the app is leaving.
+
+		Update now pulls it, then the app exits with RESTART; a failed pull is
+		said, and the app goes on with this version.
+		"""
+		if self.update_check is None:
+			return False
+		# result() may wait a little for the check: not in the loop of the screens.
+		update = await asyncio.to_thread(self.update_check.result)
+		if update is None:
+			return False
+		plural = "s" if update.count != 1 else ""
+		changes = "\n".join(f"· {change[:56]}" for change in update.changes[:3])
+		choice = await self.ask("A new version of 42pal", [
+			("update", "Update now", f"{update.count} new commit{plural}, then 42pal starts again",
+				changes),
+			("later", "Not now", "keep this version", "You will be asked again next time."),
+		], first=True)
+		if choice is BACK:
+			self.exit()
+			return True
+		if choice == "later":
+			return False
+		self.notify("Updating…", timeout=3)
+		ok, why = await asyncio.to_thread(self.updater)
+		if not ok:
+			self.notify(f"The update failed, nothing was changed: {why}", severity="error", timeout=10)
+			return False
+		self.exit(RESTART)
+		return True
 
 	async def ask_resume(self):
 		"""Resume the saved exam, or start a new one (the saved one is abandoned)."""
@@ -700,15 +742,23 @@ class Pal42App(App):
 def finish_in_terminal(final, shell, practice=False):
 	"""After the full screen: the summary stays in the terminal, or how to resume."""
 	console = Console()
+	if final is RESTART:
+		console.print("42pal is updated: it starts again.")
+		restart()
 	if final:
 		console.print(Text.from_ansi(final.rstrip("\n")))
 	elif not practice and shell.variant is not None and shell.store and shell.store.load():
 		console.print("Exam stopped: run ./42pal again to resume it.")
 
-def run_exam(workspace, store):
-	"""42pal in full screen, on the real terminal; return the exit code."""
+def run_exam(workspace, store, update_check=None):
+	"""42pal in full screen, on the real terminal; return the exit code.
+
+	update_check: the check for a newer 42pal started at launch, if any.
+	"""
 	shell = ScreenShell(capture_console(), None, None, workspace=workspace, store=store)
-	final = Pal42App(shell).run()
+	app = Pal42App(shell)
+	app.update_check = update_check
+	final = app.run()
 	finish_in_terminal(final, shell)
 	return 0
 
