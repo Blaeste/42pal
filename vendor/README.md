@@ -5,12 +5,19 @@ campus machines with nothing to install and no sudo.
 
 | Library | Version | License | Why |
 |---|---|---|---|
-| [rich](https://github.com/Textualize/rich) | 13.9.4 | MIT (`LICENSES/rich.txt`) | terminal display: colors, tables, panels, live timer |
-| [typing_extensions](https://github.com/python/typing_extensions) | 4.12.2 | PSF (`LICENSES/typing_extensions.txt`) | needed by `rich.progress` on Python 3.10 |
+| [textual](https://github.com/Textualize/textual) | 8.2.8 | MIT (`LICENSES/textual.txt`) | the full-screen interface: menus, exam screen, keyboard and mouse |
+| [rich](https://github.com/Textualize/rich) | 15.0.0 | MIT (`LICENSES/rich.txt`) | terminal display: colors, tables, panels; textual draws with it |
+| [platformdirs](https://github.com/tox-dev/platformdirs) | 4.12.4 | MIT (`LICENSES/platformdirs.txt`) | needed by textual |
+| [typing_extensions](https://github.com/python/typing_extensions) | 4.16.0 | PSF (`LICENSES/typing_extensions.txt`) | needed by rich and textual on Python 3.10 |
+
+platformdirs is not at its latest version on purpose: from 4.13, it needs
+Python 3.11, and the campus machines have 3.10. Each copy is exactly the
+content of the official wheel, without its `__pycache__`.
 
 Not copied, on purpose: `pygments` (5 MB, only for code highlighting) and
-`markdown-it-py` (only for Markdown). `rich.syntax` and `rich.markdown` do not
-work without them, and 42pal does not use them.
+`markdown-it-py` with its plugins (only for Markdown). `rich.syntax`,
+`rich.markdown` and textual's `Markdown` widget do not work without them,
+and 42pal does not use them.
 
 Only `pal42/cli/` uses these libraries: `pal42/cli/__init__.py` puts this
 folder first in Python's path. The core (`pal42/` outside `cli/`) stays
@@ -18,11 +25,15 @@ standard library only.
 
 ## Updating
 
+Download the wheels for the oldest Python the campus has, so that pip picks
+versions that still run on it:
+
 ```sh
-python3 -m pip download "rich==<version>" --no-deps -d /tmp/wheels
-python3 -m pip download "typing_extensions==<version>" --no-deps -d /tmp/wheels
+python3 -m pip download --no-deps --only-binary=:all: --python-version 3.10 \
+	textual rich platformdirs typing_extensions -d /tmp/wheels
 ```
 
 Extract each wheel (`python3 -m zipfile -e <wheel> <folder>`), replace
-`vendor/rich/` and `vendor/typing_extensions.py`, copy the `LICENSE` of each
-`.dist-info` into `LICENSES/`, update the table above, then run the tests.
+`vendor/textual/`, `vendor/rich/`, `vendor/platformdirs/` and
+`vendor/typing_extensions.py`, copy the `LICENSE` of each `.dist-info` into
+`LICENSES/`, update the table above, then run the tests with Python 3.10.
