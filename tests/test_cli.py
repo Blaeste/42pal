@@ -1281,7 +1281,7 @@ class TestDrivenShell(unittest.TestCase):
 		self.assertIn("End of the exam", output(self.shell))
 
 	def test_one_letter_shortcuts(self):
-		"""g, s, f and ? stand for grademe, status, finish and help."""
+		"""g, s, r, f and ? stand for grademe, status, report, finish and help."""
 		exam = load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES)
 		self.shell.begin(exam, "revision", 1)
 		self.shell.handle("?")
@@ -1290,6 +1290,8 @@ class TestDrivenShell(unittest.TestCase):
 		self.assertRegex(output(self.shell), r"Subject\s+echo_first")
 		self.shell.handle("g")
 		self.assertIn("Missing file", output(self.shell))
+		self.shell.handle("r")
+		self.assertIn("Report written", output(self.shell))
 		self.assertTrue(self.shell.handle("f"))
 
 	def test_a_saved_exam_is_restored_then_resumed_or_abandoned(self):

@@ -442,7 +442,7 @@ class SessionScreen(Screen):
 			suggester=SuggestFromList(list(self.commands), case_sensitive=False))
 		# The one-letter commands are in the placeholder of the command line.
 		yield Static(hints([("↑↓", "history"), ("→", "complete"), ("pgup pgdn", "subject"),
-			("drag ctrl+c", "copy"), ("ctrl+q", "leave")]), id="session-hints")
+			("ctrl+c ctrl+shift+c", "copy"), ("r", "report"), ("ctrl+q", "leave")]), id="session-hints")
 
 	def on_mount(self):
 		self.query_one("#log").border_title = " log "

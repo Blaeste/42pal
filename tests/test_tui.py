@@ -437,6 +437,17 @@ class TestCopy(FullScreenTest):
 			self.assertEqual(copied, [app.clipboard])
 
 	@screen_test
+	async def test_the_hints_say_how_to_copy(self):
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.start_session(pilot)
+			hints = str(app.screen.query_one("#session-hints").render())
+			self.assertIn("ctrl+c ctrl+shift+c", hints)
+			self.assertIn("copy", hints)
+			self.assertIn("report", hints)
+			self.assertIn("r report", app.screen.query_one("#command").placeholder)
+
+	@screen_test
 	async def test_ctrl_shift_c_copies_too_and_never_leaves(self):
 		"""Ctrl+Shift+C copies the selection like Ctrl+C; with nothing selected, it does nothing."""
 		app = self.exam_app()

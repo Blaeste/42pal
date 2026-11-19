@@ -24,8 +24,8 @@ PRACTICE_COMMANDS = {
 	"help": "show this help",
 }
 
-# One letter (then Enter) for each command: g, n, f and ?.
-PRACTICE_SHORTCUTS = {"g": "grademe", "n": "next", "f": "finish", "?": "help"}
+# One letter (then Enter) for each command: g, n, r, f and ?.
+PRACTICE_SHORTCUTS = {"g": "grademe", "n": "next", "r": "report", "f": "finish", "?": "help"}
 
 class PracticeShell(Shell):
 	"""Practising one theme: the grading and display of the examshell, no exam."""

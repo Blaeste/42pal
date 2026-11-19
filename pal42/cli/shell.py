@@ -38,8 +38,8 @@ COMMANDS = {
 	"help": "show this help",
 }
 
-# One letter (then Enter) for each command: g, s, f and ?.
-SHORTCUTS = {"g": "grademe", "s": "status", "f": "finish", "?": "help"}
+# One letter (then Enter) for each command: g, s, r, f and ?.
+SHORTCUTS = {"g": "grademe", "s": "status", "r": "report", "f": "finish", "?": "help"}
 
 # The two modes and the waits each one takes from the exam file: the exam
 # mode is 42_EXAM's (hard waits, the real duration), the revision mode is
