@@ -56,7 +56,7 @@ class TestRealExams(unittest.TestCase):
 
 	def test_the_python_ranks_have_their_levels_playable(self):
 		"""Like 42exam.net: in Python, run with python3, every level playable."""
-		for exam_id, levels in {"rank03": 6, "rank04": 4, "rank05": 3}.items():
+		for exam_id, levels in {"rank03": 6, "rank04": 4, "rank05": 3, "rank06": 2}.items():
 			with self.subTest(exam_id):
 				exam = load_exam(exam_id)
 				self.assertEqual((exam.language, exam.compile_command), ("python", ("python3",)))
@@ -66,7 +66,7 @@ class TestRealExams(unittest.TestCase):
 		"""Each file of exams/ is a valid exam with at least one playable level."""
 		self.assertEqual(list_exams(),
 			["piscine_01", "piscine_02", "piscine_03", "piscine_final", "rank02", "rank03", "rank04",
-			"rank05"])
+			"rank05", "rank06"])
 		for exam_id in list_exams():
 			with self.subTest(exam_id):
 				self.assertTrue(load_exam(exam_id).playable_levels)
@@ -146,7 +146,7 @@ class TestAudience(unittest.TestCase):
 		self.assertEqual(audiences, {
 			"piscine_01": "piscine", "piscine_02": "piscine", "piscine_03": "piscine",
 			"piscine_final": "piscine", "rank02": "student", "rank03": "student",
-			"rank04": "student", "rank05": "student",
+			"rank04": "student", "rank05": "student", "rank06": "student",
 		})
 
 class TestDifficulty(unittest.TestCase):
