@@ -4,6 +4,8 @@
 
 # 42pal
 
+[![tests](https://github.com/Blaeste/42pal/actions/workflows/tests.yml/badge.svg)](https://github.com/Blaeste/42pal/actions/workflows/tests.yml)
+
 An exam trainer for 42 students: it works like the examshell, but every
 subject you get is a **variant** of an exercise, drawn at random, so you
 train on the skill instead of learning one subject by heart. Your work is
@@ -387,6 +389,9 @@ under its own name.
 ```sh
 ./42pal check-catalog
 ```
+
+GitHub runs both at each push, on Python 3.10 and 3.13, with clang as `cc`
+(see [.github/workflows/tests.yml](.github/workflows/tests.yml)).
 
 | Folder | What is in it |
 |---|---|
