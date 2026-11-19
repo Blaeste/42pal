@@ -10,7 +10,7 @@ import time
 from rich.markup import escape
 
 from pal42.cli import display
-from pal42.cli.shell import STATE_DIR, Shell, terminal
+from pal42.cli.shell import BACK, STATE_DIR, Shell, terminal
 from pal42.cli.workspace import Workspace
 from pal42.practice import draw_practice
 
@@ -39,15 +39,20 @@ class PracticeShell(Shell):
 		self.seen = set()
 		self.passed = 0
 
-	def run(self, theme=None):
+	def run(self, theme=None, first=True):
 		"""Practise `theme` (asked if None); return the exit code.
 
 		1 when the theme has no exercise (unknown, or none written yet).
+		first: the menus of practice are the first ones shown, so their last
+		choice quits; otherwise (practice chosen in the first menu of the
+		examshell) it goes back, and run returns BACK.
 		"""
 		choices = self.practisable_themes()
 		try:
 			if theme is None:
-				theme = self.choose_language_and_theme()
+				theme = self.choose_language_and_theme(first)
+				if theme is None and not first:
+					return BACK
 				if theme is None:
 					self.console.print("Goodbye!")
 					return 0
@@ -82,33 +87,34 @@ class PracticeShell(Shell):
 		languages = sorted(found, key=lambda language: order.index(language) if language in order else 99)
 		return {language: len(self.practisable_themes(language)) for language in languages}
 
-	def choose_language_and_theme(self):
-		"""The language menu (when there are several), then the theme menu; None to quit.
+	def choose_language_and_theme(self, first=True):
+		"""The language menu (when there are several), then the theme menu; None to leave.
 
-		Back in the theme menu goes back to the language menu.
+		Back in the theme menu goes back to the language menu. first: the
+		outer menu shown quits; otherwise it goes back (None too).
 		"""
 		languages = self.practice_languages()
+		asks_language = self.language is None and len(languages) > 1
 		while True:
 			language = self.language
-			if language is None and len(languages) > 1:
-				language = self.choose_language(languages)
+			if asks_language:
+				language = self.choose_language(languages, first)
 				if language is None:
 					return None
-			theme = self.choose_theme(self.practisable_themes(language),
-				first=self.language is not None or len(languages) <= 1)
+			theme = self.choose_theme(self.practisable_themes(language), first=first and not asks_language)
 			if theme is not None:
 				return theme
-			if self.language is not None or len(languages) <= 1:
+			if not asks_language:
 				return None
 
-	def choose_language(self, languages):
-		"""Show the languages as a numbered menu; return the one picked, or None to quit."""
+	def choose_language(self, languages, first=True):
+		"""Show the languages as a numbered menu; return the one picked, or None to leave."""
 		self.console.print("Choose a language:")
 		for number, (language, count) in enumerate(languages.items(), start=1):
 			name = display.LANGUAGE_NAMES.get(language, language)
 			self.console.print(f"  {number}. {name} ({count} theme{'s' if count != 1 else ''})")
 		last = len(languages) + 1
-		self.console.print(display.last_choice(last, first=True), markup=False)
+		self.console.print(display.last_choice(last, first=first), markup=False)
 		number = self._ask_choice("Your choice:", range(1, last + 1))
 		self.console.print()
 		return None if number == last else list(languages)[number - 1]

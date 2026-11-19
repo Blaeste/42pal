@@ -66,6 +66,9 @@ complete_command = make_completer(COMMANDS)
 # or quit when it is the first menu shown.
 BACK = object()
 
+# The choice of the first menu that leads to practice instead of an exam.
+PRACTICE = "practice"
+
 class Shell:
 	"""One exam session in the terminal.
 
@@ -130,6 +133,10 @@ class Shell:
 				return
 			if not self.resume():
 				start = self.choose_start()
+				while start == PRACTICE:
+					if self.practise():
+						return
+					start = self.choose_start()
 				if start is None:
 					self.console.print("Goodbye!")
 					return
@@ -237,7 +244,8 @@ class Shell:
 		The last choice of each menu goes back to the menu before it; in the
 		first menu shown, it quits. A step that needs no menu (a single exam,
 		the level in exam mode) is skipped again on the way back. Return
-		(exam, mode, level), or None to quit.
+		(exam, mode, level), PRACTICE when practice is chosen in the first
+		menu, or None to quit.
 		"""
 		steps = [
 			lambda chosen, first: self.choose_audience(first),
@@ -259,28 +267,51 @@ class Shell:
 					chosen.pop()
 				chosen.pop()
 				continue
+			if answer == PRACTICE:
+				return PRACTICE
 			chosen.append(answer)
 			shown.append(self.menus_shown > menus_before)
 		_, exam, mode, level = chosen
 		return exam, mode, level
 
 	def choose_audience(self, first=True):
-		"""Ask who the student is: "piscine" or "student"; return it, or BACK.
+		"""The first menu: "piscine" or "student" (their exams), or PRACTICE; or BACK.
 
-		Asked only when both have exams that can be played.
+		Asked only when there is more than one choice.
 		"""
 		by_audience = {}
 		for exam in self._exams():
 			by_audience.setdefault(exam.audience, []).append(exam)
 		by_audience = {audience: by_audience[audience] for audience in AUDIENCES
 			if audience in by_audience}
-		if len(by_audience) == 1:
-			return next(iter(by_audience))
-		self._print_lines(display.audience_menu(by_audience, first))
-		last = len(by_audience) + 1
+		choices = list(by_audience) + ([PRACTICE] if self._can_practise() else [])
+		if len(choices) == 1:
+			return choices[0]
+		self._print_lines(display.audience_menu(by_audience, first, practice=PRACTICE in choices))
+		last = len(choices) + 1
 		number = self._ask_choice("Your choice:", range(1, last + 1))
 		self.console.print()
-		return BACK if number == last else list(by_audience)[number - 1]
+		return BACK if number == last else choices[number - 1]
+
+	def _can_practise(self):
+		"""Practice is offered when the catalog has exercises."""
+		return bool(self._catalog()[0].exercises)
+
+	def practise(self):
+		"""Practice, chosen in the first menu: True once it is over, False after Back.
+
+		The practice shell takes over with the same terminal and workspace.
+		"""
+		# Imported here: pal42.cli.practice imports this module.
+		from pal42.cli.practice import PRACTICE_COMMANDS, PracticeShell
+		catalog, themes = self._catalog()
+		practice = PracticeShell(self.console, self.ask, self.workspace, rng=self.rng,
+			catalog=catalog, themes=themes, sleep=self.sleep)
+		complete_with(PRACTICE_COMMANDS)
+		if practice.run(first=False) is BACK:
+			complete_with(COMMANDS)
+			return False
+		return True
 
 	def choose_exam(self, audience, first=False):
 		"""Show the exams of `audience` as a numbered menu; return the one picked, or BACK.
@@ -584,6 +615,12 @@ class Shell:
 				return int(answer)
 			choices = ", ".join(map(str, allowed))
 			self.console.print(f"Invalid choice: type one of these numbers: {choices}.")
+
+def complete_with(commands):
+	"""Tab completes `commands` from now on, if readline is in use."""
+	readline = sys.modules.get("readline")
+	if readline is not None:
+		readline.set_completer(make_completer(commands))
 
 def terminal(commands):
 	"""Prepare the real keyboard and terminal; return (console, ask, ask_password).

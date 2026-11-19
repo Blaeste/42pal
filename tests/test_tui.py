@@ -80,6 +80,16 @@ class FullScreenTest(unittest.TestCase):
 		await pilot.press("enter", "enter")
 		await pilot.pause()
 
+	async def login_to_exams(self, pilot):
+		"""Log in, then Enter in the first menu: the exams (practice comes after them)."""
+		await self.login(pilot)
+		self.assertEqual(self.app_title(pilot), "What do you want to do?")
+		await pilot.press("enter")
+		await pilot.pause()
+
+	def app_title(self, pilot):
+		return pilot.app.screen.title
+
 class TestExamScreens(FullScreenTest):
 	"""Login, menus, then the session screen."""
 
@@ -90,7 +100,7 @@ class TestExamScreens(FullScreenTest):
 		async with app.run_test(size=(100, 40)) as pilot:
 			await pilot.pause()
 			self.assertIsInstance(app.screen, LoginScreen)
-			await self.login(pilot)
+			await self.login_to_exams(pilot)
 			self.assertIsInstance(app.screen, MenuScreen)
 			self.assertEqual(app.screen.title, "Exam Rank 02 · mode")
 			await pilot.press("enter")
@@ -107,7 +117,7 @@ class TestExamScreens(FullScreenTest):
 		"""status shows the level; a grademe of a right rendu passes, in a thread."""
 		app = self.exam_app()
 		async with app.run_test(size=(100, 40)) as pilot:
-			await self.login(pilot)
+			await self.login_to_exams(pilot)
 			await pilot.press("enter", "enter")
 			await pilot.pause()
 			await self.type(pilot, "s")
@@ -124,7 +134,7 @@ class TestExamScreens(FullScreenTest):
 		"""Up brings back status, then grademe... ; down goes back to what was being typed."""
 		app = self.exam_app()
 		async with app.run_test(size=(100, 40)) as pilot:
-			await self.login(pilot)
+			await self.login_to_exams(pilot)
 			await pilot.press("enter", "enter")
 			await pilot.pause()
 			command = app.screen.query_one("#command")
@@ -149,7 +159,7 @@ class TestExamScreens(FullScreenTest):
 		"""Exam mode starts at level 1; finish, then Enter leaves with the summary."""
 		app = self.exam_app()
 		async with app.run_test(size=(100, 40)) as pilot:
-			await self.login(pilot)
+			await self.login_to_exams(pilot)
 			await pilot.press("up", "enter")
 			await pilot.pause()
 			self.assertIsInstance(app.screen, SessionScreen)
@@ -198,13 +208,39 @@ class TestExamScreens(FullScreenTest):
 		app = self.exam_app(catalog=None, themes=None)
 		async with app.run_test(size=(100, 40)) as pilot:
 			await self.login(pilot)
-			self.assertEqual(app.screen.title, "Who are you?")
+			self.assertEqual(app.screen.title, "What do you want to do?")
 			await pilot.press("enter")
 			await pilot.pause()
 			self.assertEqual(app.screen.title, "Choose your exam")
 			await pilot.press("escape")
 			await pilot.pause()
-			self.assertEqual(app.screen.title, "Who are you?")
+			self.assertEqual(app.screen.title, "What do you want to do?")
+
+	@screen_test
+	async def test_practice_from_the_first_menu(self):
+		"""Practice, Back from the languages, Practice again, C, a theme: the practice screen."""
+		app = self.exam_app(catalog=None, themes=None)
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			self.assertEqual(app.screen.title, "What do you want to do?")
+			await pilot.press("down", "down", "enter")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "Choose a language")
+			await pilot.press("escape")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "What do you want to do?")
+			await pilot.press("down", "down", "enter")
+			await pilot.pause()
+			await pilot.press("enter")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "Choose a theme to practise")
+			await pilot.press("enter")
+			await pilot.pause()
+			self.assertIsInstance(app.screen, SessionScreen)
+			self.assertTrue(app.practice)
+			self.assertEqual(app.shell.variant.exercise.language, "c")
+			await self.type(pilot, "f")
+			self.assertIn("Practice summary", log_text(app.screen))
 
 	@screen_test
 	async def test_a_saved_exam_can_be_resumed(self):
@@ -254,6 +290,9 @@ class TestUpdateScreen(FullScreenTest):
 		async with app.run_test(size=(100, 40)) as pilot:
 			await self.login(pilot)
 			await pilot.press("down", "enter")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "What do you want to do?")
+			await pilot.press("enter")
 			await pilot.pause()
 			self.assertEqual(app.screen.title, "Exam Rank 02 · mode")
 
@@ -338,7 +377,7 @@ class TestLinks(FullScreenTest):
 		"""Read it and Hand in open the subject file and the rendu folder."""
 		app = self.exam_app()
 		async with app.run_test(size=(100, 40)) as pilot:
-			await self.login(pilot)
+			await self.login_to_exams(pilot)
 			await pilot.press("enter", "enter")
 			await pilot.pause()
 			where = app.screen.query_one("#subject").content
@@ -375,7 +414,7 @@ class TestCopy(FullScreenTest):
 	"""The subject and the log can be selected and copied."""
 
 	async def start_session(self, pilot):
-		await self.login(pilot)
+		await self.login_to_exams(pilot)
 		await pilot.press("enter", "enter")
 		await pilot.pause()
 

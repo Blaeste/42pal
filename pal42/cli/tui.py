@@ -35,7 +35,7 @@ from textual.widgets.option_list import Option
 
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
-from pal42.cli.shell import BACK, COMMANDS, RETRY_OF_MODE, SHORTCUTS, Shell
+from pal42.cli.shell import BACK, COMMANDS, PRACTICE, RETRY_OF_MODE, SHORTCUTS, Shell
 from pal42.exam import AUDIENCES
 from pal42.update import apply_update, restart
 
@@ -670,11 +670,29 @@ class Pal42App(App):
 				await self.run_session()
 				return
 		start = await self.choose_start()
+		while start == PRACTICE:
+			practice = self.practice_shell()
+			theme = await self.choose_practice_theme(practice, first=False)
+			if theme is not None:
+				# The practice shell takes over: the session screen and the end use it.
+				self.shell, self.practice = practice, True
+				practice.theme = theme
+				self.run_quietly(practice.next_subject)
+				await self.run_session()
+				return
+			start = await self.choose_start()
 		if start is None:
 			self.exit()
 			return
 		self.run_quietly(lambda: shell.begin(*start))
 		await self.run_session()
+
+	def practice_shell(self):
+		"""A practice shell with the console, workspace and catalog of the examshell."""
+		shell = self.shell
+		catalog, themes = shell._catalog()
+		return ScreenPracticeShell(shell.console, None, shell.workspace, rng=shell.rng,
+			catalog=catalog, themes=themes, sleep=shell.sleep)
 
 	async def offer_update(self):
 		"""Offer the newer 42pal found at launch; return True when the app is leaving.
@@ -730,6 +748,7 @@ class Pal42App(App):
 
 		The last choice of each menu goes back to the one before it, skipping
 		the steps that needed no menu (a single exam, the level in exam mode).
+		Practice chosen in the first menu gives PRACTICE.
 		"""
 		steps = [self.pick_audience, self.pick_exam, self.pick_mode, self.pick_level]
 		chosen = []
@@ -737,6 +756,8 @@ class Pal42App(App):
 		shown = []
 		while len(chosen) < len(steps):
 			answer, asked = await steps[len(chosen)](chosen, not any(shown))
+			if answer == PRACTICE:
+				return PRACTICE
 			if answer is BACK:
 				if not any(shown):
 					return None
@@ -754,15 +775,18 @@ class Pal42App(App):
 		for exam in self.shell._exams():
 			by_audience.setdefault(exam.audience, []).append(exam)
 		audiences = [audience for audience in AUDIENCES if audience in by_audience]
-		if len(audiences) == 1:
-			return audiences[0], False
 		items = []
 		for audience in audiences:
 			exams = by_audience[audience]
 			meta = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
 			items.append((audience, display.AUDIENCE_TEXTS[audience], meta,
 				", ".join(exam.title for exam in exams)))
-		return await self.ask("Who are you?", items, first), True
+		if self.shell._can_practise():
+			items.append((PRACTICE, display.PRACTICE_TEXT, display.PRACTICE_SUMMARY,
+				"Subjects of one theme, one after the other: no timer, no wait."))
+		if len(items) == 1:
+			return items[0][0], False
+		return await self.ask(display.FIRST_MENU_TITLE, items, first), True
 
 	async def pick_exam(self, chosen, first):
 		exams = [exam for exam in self.shell._exams() if exam.audience == chosen[0]]
@@ -800,7 +824,7 @@ class Pal42App(App):
 		shell = self.shell
 		theme = self.practice_theme
 		if theme is None:
-			theme = await self.choose_practice_theme()
+			theme = await self.choose_practice_theme(shell)
 			if theme is None:
 				self.exit()
 				return
@@ -808,32 +832,33 @@ class Pal42App(App):
 		self.run_quietly(shell.next_subject)
 		await self.run_session()
 
-	async def choose_practice_theme(self):
-		"""The language (when there are several), then a theme of it; None to quit.
+	async def choose_practice_theme(self, shell, first=True):
+		"""The language (when there are several), then a theme of it; None to leave.
 
-		Back in the theme menu goes back to the language menu.
+		Back in the theme menu goes back to the language menu. first: the
+		outer menu quits; otherwise (practice chosen in the first menu) it goes
+		back, and None is returned too.
 		"""
-		shell = self.shell
 		_, themes = shell._catalog()
 		languages = shell.practice_languages()
+		asks_language = shell.language is None and len(languages) > 1
 		while True:
 			language = shell.language
-			if language is None and len(languages) > 1:
+			if asks_language:
 				items = [(name, display.LANGUAGE_NAMES.get(name, name),
 					f"{count} theme{'s' if count != 1 else ''}",
 					"Exams: " + ", ".join(exam.title for exam in shell._exams() if exam.language == name))
 					for name, count in languages.items()]
-				language = await self.ask("Choose a language", items, first=True)
+				language = await self.ask("Choose a language", items, first=first)
 				if language is BACK:
 					return None
-			first = shell.language is not None or len(languages) <= 1
 			items = [(name, name, themes[name].skill,
 				f"Real levels: {', '.join(f'{exam} {levels}' for exam, levels in themes[name].exams.items())}")
 				for name in shell.practisable_themes(language)]
-			theme = await self.ask("Choose a theme to practise", items, first=first)
+			theme = await self.ask("Choose a theme to practise", items, first=first and not asks_language)
 			if theme is not BACK:
 				return theme
-			if first:
+			if not asks_language:
 				return None
 
 	async def run_session(self):
@@ -861,7 +886,8 @@ def run_exam(workspace, store, update_check=None):
 	app = Pal42App(shell)
 	app.update_check = update_check
 	final = app.run()
-	finish_in_terminal(final, shell)
+	# Practice chosen in the first menu: the app ends with the practice shell.
+	finish_in_terminal(final, app.shell, practice=app.practice)
 	return 0
 
 def run_practice(workspace, theme=None):

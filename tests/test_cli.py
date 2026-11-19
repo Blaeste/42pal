@@ -158,13 +158,14 @@ class TestShell(unittest.TestCase):
 		self.assertNotIn("my-secret-password", repr(vars(shell)))
 
 	def test_the_first_menu_asks_piscine_or_student(self):
-		"""4 and x are refused; 1 is the piscine, 2 the students; 3 quits (first menu)."""
-		shell = make_shell(Script("4", "x", "1"), self.root)
+		"""5 and x are refused; 1 is the piscine, 2 the students, 3 practice; 4 quits."""
+		shell = make_shell(Script("5", "x", "1"), self.root)
 		self.assertEqual(shell.choose_audience(), "piscine")
 		text = output(shell)
 		self.assertIn("1. Piscine (piscineux)", text)
 		self.assertIn("2. Student (cursus)", text)
-		self.assertIn("3. Quit", text)
+		self.assertIn("3. Practice", text)
+		self.assertIn("4. Quit", text)
 		self.assertEqual(text.count("Invalid choice"), 2)
 		self.assertEqual(make_shell(Script("2"), self.root).choose_audience(), "student")
 
@@ -206,7 +207,30 @@ class TestShell(unittest.TestCase):
 		shell = make_shell(Script(*answers), self.root)
 		shell.run()
 		self.assertEqual((shell.exam.id, shell.mode, shell.level), ("piscine_02", "revision", 1))
-		self.assertEqual(output(shell).count("Who are you?"), 3)
+		self.assertEqual(output(shell).count("What do you want to do?"), 3)
+
+	def test_practice_is_a_choice_of_the_first_menu(self):
+		"""Practice, Python, its first theme: a practice subject, then finish."""
+		script = Script("", "pw", "3", "2", "1", "finish")
+		shell = make_shell(script, self.root)
+		shell.run()
+		text = output(shell)
+		self.assertIn("What do you want to do?", text)
+		self.assertRegex(text, r"3\. Practice +one theme, no timer")
+		self.assertIn("Choose a language:", text)
+		self.assertIn("Practice summary", text)
+		self.assertIn("practice>", script.prompts)
+		self.assertNotIn("examshell>", script.prompts)
+
+	def test_back_from_the_practice_menus_goes_to_the_first_menu(self):
+		"""Back from the languages: the first menu again, then quit."""
+		script = Script("", "pw", "3", "3", "4")
+		shell = make_shell(script, self.root)
+		shell.run()
+		text = output(shell)
+		self.assertEqual(text.count("What do you want to do?"), 2)
+		self.assertIn("3. Back (previous menu)", text)
+		self.assertIn("Goodbye!", text)
 
 	def test_back_from_the_level_menu_goes_to_the_mode_menu(self):
 		"""Revision, back from the levels, then exam mode: level 1, no level menu."""
@@ -216,8 +240,8 @@ class TestShell(unittest.TestCase):
 		self.assertEqual(output(shell).count("Choose the mode:"), 2)
 
 	def test_quit_in_the_first_menu_starts_no_exam(self):
-		"""3 in the first menu: goodbye, no subject, no examshell."""
-		script = Script("", "pw", "3")
+		"""4 in the first menu: goodbye, no subject, no examshell."""
+		script = Script("", "pw", "4")
 		shell = make_shell(script, self.root)
 		shell.run()
 		self.assertIsNone(shell.exam)
@@ -851,7 +875,8 @@ class TestResume(unittest.TestCase):
 	def test_no_keeps_the_old_exam_in_the_history_and_starts_a_new_one(self):
 		"""n: the old exam is "abandoned" in the history, a new exam starts."""
 		self.save(10)
-		self.run_shell("", "pw", "n", "", "", "finish")
+		# n, then the first menu: 1, the exams of the students.
+		self.run_shell("", "pw", "n", "1", "", "", "finish")
 		ends = [entry["end"] for entry in self.store.history()]
 		self.assertEqual(ends, ["abandoned", "finish"])
 		self.assertEqual(self.store.history()[0]["levels_passed"], [1])
@@ -859,7 +884,7 @@ class TestResume(unittest.TestCase):
 	def test_an_exam_whose_time_ran_out_goes_to_the_history_without_asking(self):
 		"""Started 200 minutes ago (180 allowed): kept as "time", no question."""
 		self.save(200)
-		shell = self.run_shell("", "pw", "", "", "finish")
+		shell = self.run_shell("", "pw", "1", "", "", "finish")
 		self.assertIn("time ran out", output(shell))
 		self.assertFalse(any("Resume" in prompt for prompt in self.script.prompts))
 		self.assertEqual(self.store.history()[0]["end"], "time")
@@ -867,7 +892,7 @@ class TestResume(unittest.TestCase):
 	def test_an_unknown_subject_cannot_be_resumed(self):
 		"""The exercise is gone from the catalog: said, and a new exam starts."""
 		self.save(10, variant="gone#3")
-		shell = self.run_shell("", "pw", "", "", "finish")
+		shell = self.run_shell("", "pw", "1", "", "", "finish")
 		self.assertIn("cannot be resumed", output(shell))
 		self.assertEqual(shell.level, 1)
 
@@ -1120,7 +1145,7 @@ class TestUpdateOffer(unittest.TestCase):
 		shell = self.run_offer("", "pw", "n")
 		self.assertEqual(self.pulls, [])
 		self.assertFalse(shell.restart)
-		self.assertIn("Who are you?", output(shell))
+		self.assertIn("What do you want to do?", output(shell))
 
 	def test_a_failed_pull_is_said_and_42pal_goes_on(self):
 		shell = self.run_offer("", "pw", "y", pulled=(False, "error: your local changes"))

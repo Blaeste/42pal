@@ -260,13 +260,22 @@ def last_choice(number, first):
 	"""The last choice of a menu: back to the menu before, or quit in the first one."""
 	return f"  {number}. {'Quit' if first else 'Back (previous menu)'}"
 
-def audience_menu(exams_by_audience, first=True):
-	"""The first menu: who the student is, and the exams it leads to."""
-	lines = ["Who are you?"]
+# The first menu: its title, and the choice that leads to practice.
+FIRST_MENU_TITLE = "What do you want to do?"
+PRACTICE_TEXT = "Practice"
+PRACTICE_SUMMARY = "one theme, no timer"
+
+def audience_menu(exams_by_audience, first=True, practice=False):
+	"""The first menu: the exams of the piscine or of the students, then practice."""
+	lines = [FIRST_MENU_TITLE]
 	for number, (audience, exams) in enumerate(exams_by_audience.items(), start=1):
 		leads_to = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
 		lines.append(f"  {number}. {AUDIENCE_TEXTS[audience]:22}{leads_to}")
-	return lines + [last_choice(len(exams_by_audience) + 1, first)]
+	count = len(exams_by_audience)
+	if practice:
+		count += 1
+		lines.append(f"  {count}. {PRACTICE_TEXT:22}{PRACTICE_SUMMARY}")
+	return lines + [last_choice(count + 1, first)]
 
 def exam_menu(exams, first=False):
 	"""The menu of the exams: each title with its levels and duration."""
