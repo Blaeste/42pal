@@ -71,7 +71,7 @@ EXERCISE = Exercise(
 				"is (it closes nothing, or a bracket of another kind)",
 		}),
 		Param("kinds", ("two", "four"), {
-			"two": "( ) and [ ]",
+			"two": "( ) and [ ] only: { } and < > are not brackets here",
 			"four": "( ), [ ], { } and < >",
 		}),
 	),
@@ -95,5 +95,7 @@ EXERCISE = Exercise(
 	harness=harness("nest_${report}_${kinds}"),
 	call=call,
 	prototype=lambda name, params: f"def {name}(text: str) -> {RETURNS[params['report']]}:",
-	examples=(case("a(b[c])(d)"), case("({<a"), case("([)]")),
+	# {a[b]c}< shows which characters are brackets: with two kinds, { } and <
+	# are ignored; with four, the < is still open.
+	examples=(case("a(b[c])(d)"), case("{a[b]c}<"), case("({<a"), case("([)]")),
 )
