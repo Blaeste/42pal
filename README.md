@@ -61,7 +61,8 @@ the subject, of your rendu and of the traces, and the web addresses, open with
 a click: a file in its default application, a folder in the file manager, a
 page in the browser (`xdg-open`, or `open` on macOS). To copy a prototype
 or a header, select it with the mouse in the subject (or in the log; a
-double-click takes the whole subject), then press Ctrl+C: it goes to the
+double-click takes the whole subject), then press Ctrl+C (or Ctrl+Shift+C,
+in the terminals that do not keep it for themselves): it goes to the
 clipboard (through the terminal, and `xclip`, `xsel` or `wl-copy` when there
 is one). Ctrl+C with nothing selected, or Ctrl+Q, leaves. Shift+drag also
 works: it is the terminal's own selection. `./42pal --plain` gives

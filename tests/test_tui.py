@@ -437,6 +437,25 @@ class TestCopy(FullScreenTest):
 			self.assertEqual(copied, [app.clipboard])
 
 	@screen_test
+	async def test_ctrl_shift_c_copies_too_and_never_leaves(self):
+		"""Ctrl+Shift+C copies the selection like Ctrl+C; with nothing selected, it does nothing."""
+		app = self.exam_app()
+		copied = []
+		app.copy_with_program = copied.append
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.start_session(pilot)
+			await pilot.press("ctrl+shift+c")
+			await pilot.pause()
+			self.assertIsInstance(app.screen, SessionScreen)
+			app.screen.query_one("#subject").text_select_all()
+			await pilot.pause()
+			await pilot.press("ctrl+shift+c")
+			await pilot.pause()
+			self.assertIsInstance(app.screen, SessionScreen)
+			self.assertIn("Assignment name  : echo_first", app.clipboard)
+			self.assertEqual(copied, [app.clipboard])
+
+	@screen_test
 	async def test_the_log_can_be_selected(self):
 		app = self.exam_app()
 		async with app.run_test(size=(100, 40)) as pilot:

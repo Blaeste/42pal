@@ -406,6 +406,9 @@ class SessionScreen(Screen):
 		("pagedown", "scroll_subject(1)", "Subject down"),
 		("up", "history(-1)", "Previous command"),
 		("down", "history(1)", "Next command"),
+		# Copies the selection like Ctrl+C, in the terminals that let it through;
+		# with nothing selected, it does nothing (Ctrl+C would leave).
+		("ctrl+shift+c", "screen.copy_text", "Copy"),
 	]
 
 	def __init__(self, shell, practice=False):
