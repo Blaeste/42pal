@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/42pal.png" alt="42pal: the login screen" width="720">
+</p>
+
 # 42pal
 
 An exam trainer for 42 students: it works like the examshell, but every
@@ -37,6 +41,10 @@ No `pip`, no virtual environment: the libraries of the display,
 ./42pal
 ```
 
+<p align="center">
+  <img src="docs/images/menu.png" alt="The first menu: the exams of the piscine, those of the students, or practice" width="760">
+</p>
+
 In a terminal, 42pal opens **full screen**: move in the menus with the arrow
 keys (or `j` and `k`) and Enter, or with the mouse; `Esc` goes back to the
 menu before. During the exam, the screen shows the level, the grade and the
@@ -56,10 +64,11 @@ with a Ctrl+click, if it knows links.
 
 1. **Log in** like at the exam. The login defaults to your user name; the
    password can be anything, it is never checked nor kept.
-2. **Say who you are**: piscine (piscineux) or student (cursus). Then
-   **choose the exam** among the ones for you: a piscine student picks one
-   of the 4 piscine exams; a student gets the Exam Rank 02, the only one so
-   far. Then choose the **mode** (see below). Exam mode starts at level 1,
+2. **Choose what to do**: the exams of the piscine (piscineux), those of
+   the students (cursus), or practice (see
+   [Practise one theme](#practise-one-theme)). Then **choose the exam**
+   among the ones for you: one of the 4 piscine exams, or one of the 5
+   ranks for a student. Then choose the **mode** (see below). Exam mode starts at level 1,
    like the real exam; revision mode asks the **starting level**, among the
    levels that have exercises. Each menu says what its choices mean: the
    levels and length of each exam, the waits of each mode, the points of a
@@ -69,6 +78,10 @@ with a Ctrl+click, if it knows links.
    `~/42pal_exam/subjects/<name>/subject.en.txt`.
 4. **Write your code** in `~/42pal_exam/rendu/<name>/`.
 5. **Type `grademe`** at the `examshell>` prompt.
+
+<p align="center">
+  <img src="docs/images/session.png" alt="An exam: the subject, then the trace of a failed grademe in the log" width="760">
+</p>
 
 ```
 ~/42pal_exam/
@@ -145,13 +158,16 @@ levels (25 points at rank 02), for a grade out of 100.
 
 ## Practise one theme
 
+Choose **Practice** in the first menu of `./42pal`, or go straight to it:
+
 ```sh
 ./42pal practice                       # a menu of the languages, then of the themes
 ./42pal practice --theme letter_rotation
 ```
 
-Subjects of one theme, one after the other: no login, no timer, no wait.
-The first menu chooses C or Python; Back in the theme menu returns to it.
+Subjects of one theme, one after the other: no timer, no wait. The first
+menu of practice chooses C or Python; Back in the theme menu returns to it
+(and Back in the language menu returns to the first menu of 42pal).
 A passed `grademe` (`g`) gives the next subject; `next` (`n`) skips to
 another one; `finish` (`f`) stops. It opens full screen too, unless `--plain`
 is given.
