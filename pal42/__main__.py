@@ -27,9 +27,10 @@ def main(argv=None):
 	plain_help = "the text interface, line by line, instead of the full screen"
 	parser.add_argument("--plain", action="store_true", help=plain_help)
 	commands = parser.add_subparsers(dest="command")
-	commands.add_parser(
+	check = commands.add_parser(
 		"check-catalog", help="check that every ref.c passes its own exercise",
 	)
+	check.add_argument("names", nargs="*", metavar="EXERCISE", help="only these exercises (all by default)")
 	practice = commands.add_parser(
 		"practice", help="practise one theme: subjects one after the other, no timer",
 	)
@@ -45,7 +46,7 @@ def main(argv=None):
 	# Imported here: --version must work even if the terminal front-end breaks.
 	if arguments.command == "check-catalog":
 		from pal42.cli.check import check_catalog
-		return check_catalog()
+		return check_catalog(names=arguments.names)
 	if arguments.command == "practice":
 		from pal42.cli.practice import main as practice_main
 		return practice_main(arguments.theme, full_screen=screen)

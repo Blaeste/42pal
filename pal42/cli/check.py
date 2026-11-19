@@ -16,11 +16,12 @@ from rich.text import Text
 from pal42.catalog import load_catalog
 from pal42.reference import check_variant, reference_path, variants_to_check
 
-def check_catalog(console=None, catalog=None):
-	"""Check every exercise of `catalog`; print the result; return the exit code.
+def check_catalog(console=None, catalog=None, names=None):
+	"""Check the exercises of `catalog` (all, or those `names`); print the result; return the exit code.
 
 	0 when everything is right, 1 when something is wrong: a ref.c that fails
-	a variant, a missing ref.c, or a folder the catalog had to skip.
+	a variant, a missing ref.c, an unknown name, or a folder the catalog had
+	to skip.
 	"""
 	console = console or Console()
 	catalog = catalog or load_catalog()
@@ -28,14 +29,19 @@ def check_catalog(console=None, catalog=None):
 	for warning in catalog.warnings:
 		console.print(f"[bold red]✗[/] {escape(warning)}")
 		ok = False
-	refs = {name: reference_path(exo, catalog.folders[name]) for name, exo in catalog.exercises.items()}
+	for name in names or ():
+		if name not in catalog.exercises:
+			console.print(f"[bold red]✗[/] Unknown exercise: {escape(name)}")
+			return 1
+	chosen = names or list(catalog.exercises)
+	refs = {name: reference_path(catalog.exercises[name], catalog.folders[name]) for name in chosen}
 	if refs and not any(ref.is_file() for ref in refs.values()):
 		# The archive of a release leaves the reference solutions out.
 		console.print("[bold red]✗[/] No reference solution here: check-catalog needs a git clone"
 			" of 42pal (the archive of a release leaves them out).")
 		return 1
 	variants_checked = 0
-	for name in sorted(catalog.exercises):
+	for name in sorted(chosen):
 		ref = refs[name]
 		if not ref.is_file():
 			console.print(f"[bold red]✗[/] {escape(name)}: no {ref.name}")
@@ -52,7 +58,7 @@ def check_catalog(console=None, catalog=None):
 			console.print(Text(result.trace))
 		ok = ok and not failures
 	if ok:
-		console.print(f"[bold green]Catalog OK[/]: {len(catalog.exercises)} exercises, "
+		console.print(f"[bold green]Catalog OK[/]: {len(chosen)} exercises, "
 			f"{variants_checked} variants")
 	else:
 		console.print("[bold red]Catalog KO[/]: see the errors above")

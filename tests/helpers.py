@@ -17,6 +17,8 @@ Not a test module itself (its name does not start with test_), so unittest
 does not look for tests in it.
 """
 
+import os
+
 from pal42.model import Exercise, Param, TestCase
 from pal42.variant import Variant
 
@@ -96,3 +98,15 @@ int	main(int ac, char **av)
 	return (0);
 }
 """
+
+def selected_exercises(names):
+	"""The exercises the slow tests go through: all of them, or those of PAL42_EXERCISES.
+
+	On GitHub, PAL42_EXERCISES holds the exercises that changed (see
+	tools/ci_scope.py): "all", "none", or names separated by spaces. Unset,
+	as on a machine of a contributor: all of them.
+	"""
+	wanted = os.environ.get("PAL42_EXERCISES", "all").split()
+	if wanted == ["all"]:
+		return list(names)
+	return [name for name in names if name in wanted]

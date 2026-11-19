@@ -9,6 +9,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from pal42.catalog import load_catalog
+from tests.helpers import selected_exercises
+
 # Project root, found from this file's location so the tests work from any directory.
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "42pal"
@@ -58,9 +61,15 @@ class TestLauncher(unittest.TestCase):
 		self.assertRegex(result.stdout.strip(), VERSION_LINE)
 
 	def test_check_catalog_command_passes_on_the_real_catalog(self):
-		"""`./42pal check-catalog` checks every ref.c and exits with 0."""
+		"""`./42pal check-catalog` checks every ref.c (or those selected) and exits with 0."""
+		every = list(load_catalog().exercises)
+		names = selected_exercises(every)
+		if not names:
+			self.skipTest("no exercise selected in PAL42_EXERCISES")
+		# The whole catalog takes a few minutes on a slow machine.
 		result = subprocess.run(
-			[str(SCRIPT), "check-catalog"], capture_output=True, text=True, timeout=120,
+			[str(SCRIPT), "check-catalog", *([] if names == every else names)], capture_output=True, text=True,
+			timeout=900,
 		)
 		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 		self.assertIn("Catalog OK", result.stdout)

@@ -396,8 +396,15 @@ under its own name.
 ./42pal check-catalog
 ```
 
-GitHub runs both at each push, on Python 3.10 and 3.13, with clang as `cc`
-(see [.github/workflows/tests.yml](.github/workflows/tests.yml)).
+`./42pal check-catalog word_each set_find` checks only the exercises named.
+
+GitHub runs the tests at each push, on Python 3.10 and 3.13, with clang as
+`cc` (see [.github/workflows/tests.yml](.github/workflows/tests.yml)). It
+checks only what changed, with what it can break
+([tools/ci_scope.py](tools/ci_scope.py)): nothing for the docs alone, the
+exercises changed when only exercises changed, and every exercise when the
+core changed. The same choice works on a machine:
+`PAL42_EXERCISES="word_each set_find" python3 -m unittest`.
 
 | Folder | What is in it |
 |---|---|

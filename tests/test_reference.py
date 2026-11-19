@@ -12,11 +12,13 @@ from pal42.catalog import load_catalog
 from pal42.reference import check_variant, reference_files, variants_to_check
 from pal42.runners.c import DEFAULT_COMMAND, CRunner
 from pal42.variant import Variant, draw
-from tests.helpers import ECHO_OK, echo_oracle, echo_tests, make_exercise
+from tests.helpers import ECHO_OK, echo_oracle, echo_tests, make_exercise, selected_exercises
 
 CATALOG = load_catalog()
-# ref.c and its -D flags are for C; a ref.py needs no flag.
-C_EXERCISES = {name: exo for name, exo in CATALOG.exercises.items() if exo.language == "c"}
+# ref.c and its -D flags are for C; a ref.py needs no flag. Only the
+# exercises selected: on GitHub, those that changed (tests.helpers).
+C_EXERCISES = {name: exo for name, exo in CATALOG.exercises.items()
+	if exo.language == "c" and name in selected_exercises(CATALOG.exercises)}
 
 def compile_reference(name, params, work, flags=None, command=DEFAULT_COMMAND):
 	"""Compile the ref.c of exercise `name` for `params`; return the CompileResult.

@@ -655,11 +655,26 @@ class TestGrademeWithLeaks(unittest.TestCase):
 class TestCheckCatalog(unittest.TestCase):
 	"""check_catalog(): every ref.c against its oracle, for the whole catalog."""
 
-	def run_check(self, catalog=None):
+	def run_check(self, catalog=None, names=None):
 		"""Run the check; return its exit code and what it printed."""
 		console = Console(file=io.StringIO(), width=120, color_system=None)
-		code = check.check_catalog(console, catalog)
+		code = check.check_catalog(console, catalog, names)
 		return code, console.file.getvalue()
+
+	def test_only_the_exercises_named_are_checked(self):
+		"""check-catalog echo_first: lonely, without its ref.c, is not looked at."""
+		with tempfile.TemporaryDirectory() as lonely, tempfile.TemporaryDirectory() as echo:
+			(Path(echo) / "ref.c").write_text(ECHO_OK, encoding="utf-8")
+			catalog = Catalog({"lonely": make_exercise(name="lonely"), "echo_first": ECHO.exercise}, [],
+				{"lonely": Path(lonely), "echo_first": Path(echo)})
+			code, text = self.run_check(catalog, ["echo_first"])
+			self.assertEqual(code, 0, text)
+			self.assertIn("echo_first", text)
+			self.assertNotIn("lonely", text)
+			self.assertIn("Catalog OK: 1 exercises", text)
+			code, text = self.run_check(catalog, ["nope"])
+		self.assertEqual(code, 1)
+		self.assertIn("Unknown exercise: nope", text)
 
 	def test_wrong_oracle_fails_naming_the_variant_and_the_test(self):
 		"""An oracle that shouts: exit code 1, broken#seed and the test named."""
