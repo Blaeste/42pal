@@ -108,6 +108,45 @@ class TestHarness(Folders):
 	def test_a_missing_function_is_said(self):
 		self.assertEqual(self.run_main("def other():\n\tpass\n", 1), "pick.py has no function pick\n")
 
+COUNTER = """class Counter:
+	def __init__(self, start):
+		self.value = start
+
+	def add(self, n):
+		self.value += n
+
+	def get(self):
+		return self.value
+"""
+
+class TestClassHarness(Folders):
+	"""A class: the test main builds an object, calls its methods, prints their results."""
+
+	def run_main(self, code, test):
+		source = self.write("count_up.py", code)
+		main = self.write("main_42pal.py", py.class_harness("count_up", "Counter"), self.work)
+		runner = PythonRunner(PYTHON)
+		result = runner.compile([source], self.work, "count_up", extra=[main])
+		return runner.run(result.binary, test).stdout.decode()
+
+	def test_each_call_gives_its_result_in_a_list(self):
+		test = py.class_case([10], [["add", 5], ["get"], ["add", -1], ["get"]])
+		self.assertEqual(self.run_main(COUNTER, test), "[None, 15, None, 14]\n")
+
+	def test_a_missing_method_or_an_exception_is_said(self):
+		self.assertEqual(self.run_main(COUNTER, py.class_case([1], [["get"], ["reset"]])),
+			"Counter has no method reset (call 2)\n")
+		self.assertEqual(self.run_main(COUNTER, py.class_case(["x"], [["add", 1]])),
+			"add() raised TypeError: can only concatenate str (not \"int\") to str (call 1)\n")
+		self.assertEqual(self.run_main("class Other:\n\tpass\n", py.class_case([], [])),
+			"count_up.py has no class Counter\n")
+
+	def test_the_call_shown_builds_the_object_then_calls(self):
+		call = py.class_call("Counter")
+		test = py.class_case([10], [["add", 5], ["get"]])
+		self.assertEqual(call("count_up", test), "o = Counter(10); [o.add(5), o.get()]")
+		self.assertEqual(py.class_values(test), ([10], [["add", 5], ["get"]]))
+
 class TestHelpers(unittest.TestCase):
 	def test_case_values_call_and_shown(self):
 		test = py.case([1, 2], "a b", True)
