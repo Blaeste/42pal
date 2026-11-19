@@ -22,6 +22,8 @@ def main(argv=None):
 	# The "version" action prints the string, then exits with code 0.
 	# %(prog)s is replaced by the program name given above.
 	parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+	parser.add_argument("--report", action="store_true",
+		help="print what to paste in an issue: versions, system, exam in progress")
 	plain_help = "the text interface, line by line, instead of the full screen"
 	parser.add_argument("--plain", action="store_true", help=plain_help)
 	commands = parser.add_subparsers(dest="command")
@@ -35,6 +37,10 @@ def main(argv=None):
 	# SUPPRESS: ./42pal --plain practice keeps the --plain given before.
 	practice.add_argument("--plain", action="store_true", default=argparse.SUPPRESS, help=plain_help)
 	arguments = parser.parse_args(argv)
+	if arguments.report:
+		from pal42.report import report_text
+		print(report_text(), end="")
+		return 0
 	screen = full_screen(arguments.plain, sys.stdin.isatty(), sys.stdout.isatty())
 	# Imported here: --version must work even if the terminal front-end breaks.
 	if arguments.command == "check-catalog":
