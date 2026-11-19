@@ -50,9 +50,9 @@ RULES = {
 		"an upper case letter: the first letter of each word is in upper case,\n"
 		"the second in lower case, and so on. The words are separated by spaces"),
 	"pattern": ("text: str, pattern: str", "the letters follow the pattern, a string of u (upper\n"
-		"case) and l (lower case) that is never empty: the first letter takes the\n"
-		"case of the first character of the pattern, the second letter of the\n"
-		"second one, and so on, starting the pattern again when it ends"),
+		"case) and l (lower case) that is never empty. The first letter takes the\n"
+		"case of the first character of the pattern, the second letter the case\n"
+		"of the second one, and so on, starting the pattern again when it ends"),
 	"all_chars": ("text: str", "the character at an even index (0, 2, 4...) is in upper case, the one\n"
 		"at an odd index in lower case. Every character counts in the index, but\n"
 		"only the letters change"),

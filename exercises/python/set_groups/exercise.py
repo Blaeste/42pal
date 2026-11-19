@@ -92,27 +92,36 @@ def generate_tests(params, rng):
 	return tests
 
 RULES = {
-	"sizes": ("Groups(n) makes n elements, numbered from 0 to n - 1, each in a group of\n"
-		"its own. union(a, b) joins the groups of a and b and returns True, or\n"
-		"returns False if they already were in the same group. size(x) returns the\n"
-		"number of elements in the group of x, and count() the number of groups",
+	"sizes": ("Its methods:\n"
+		"- Groups(n) makes n elements, numbered from 0 to n - 1, each in a group of\n"
+		"its own;\n"
+		"- union(a, b) joins the groups of a and b and returns True, or returns\n"
+		"False if they already were in the same group;\n"
+		"- size(x) returns the number of elements in the group of x;\n"
+		"- count() returns the number of groups.",
 		"    def __init__(self, n: int) -> None:\n    def union(self, a: int, b: int) -> bool:\n"
 		"    def size(self, x: int) -> int:\n    def count(self) -> int:"),
-	"names": ("Groups() starts with no element; the elements are names (strings), and a\n"
-		"name used for the first time is a new element, in a group of its own.\n"
-		"join(a, b) joins the groups of a and b and returns True, or returns False\n"
-		"if they already were in the same group. same(a, b) returns True if a and b\n"
-		"are in the same group, and members(a) the names of the group of a, sorted\n"
-		"in alphabetical order",
+	"names": ("The elements are names (strings): a name used for the first time is a\n"
+		"new element, in a group of its own. Its methods:\n"
+		"- Groups() starts with no element;\n"
+		"- join(a, b) joins the groups of a and b and returns True, or returns False\n"
+		"if they already were in the same group;\n"
+		"- same(a, b) returns True if a and b are in the same group, False\n"
+		"otherwise;\n"
+		"- members(a) returns the names of the group of a, in alphabetical order.",
 		"    def __init__(self) -> None:\n    def join(self, a: str, b: str) -> bool:\n"
 		"    def same(self, a: str, b: str) -> bool:\n    def members(self, a: str) -> list[str]:"),
-	"undo": ("Groups(n) makes n elements, numbered from 0 to n - 1, each in a group of\n"
-		"its own. union(a, b) joins the groups of a and b and returns True, or\n"
-		"returns False if they already were in the same group (that union changes\n"
-		"nothing). together(a, b) returns True if a and b are in the same group.\n"
-		"undo() cancels the last union that joined two groups and is not cancelled\n"
-		"yet, giving back the two groups it joined, and returns True; or returns\n"
-		"False if there is none",
+	"undo": ("Its methods:\n"
+		"- Groups(n) makes n elements, numbered from 0 to n - 1, each in a group of\n"
+		"its own;\n"
+		"- union(a, b) joins the groups of a and b and returns True, or returns\n"
+		"False if they already were in the same group (that union changes\n"
+		"nothing);\n"
+		"- together(a, b) returns True if a and b are in the same group, False\n"
+		"otherwise;\n"
+		"- undo() cancels the last union that joined two groups and is not\n"
+		"cancelled yet, so that these two groups are apart again, and returns True;\n"
+		"it returns False if there is none.",
 		"    def __init__(self, n: int) -> None:\n    def union(self, a: int, b: int) -> bool:\n"
 		"    def together(self, a: int, b: int) -> bool:\n    def undo(self) -> bool:"),
 }
@@ -131,7 +140,7 @@ EXERCISE = Exercise(
 		"in exactly one group, and joining two elements merges their groups.\n"
 		"Keep, for each element, a parent that leads to the leader of its group.\n"
 		"\n"
-		"$rule.\n"
+		"$rule\n"
 		"\n"
 		"The methods return their results and print nothing.\n"
 		"\n"

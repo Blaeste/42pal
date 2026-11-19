@@ -74,8 +74,8 @@ def generate_tests(params, rng):
 RULES = {
 	"components": ("n: int, edges: list[list[int]]", "int", "takes a number of nodes n (the\n"
 		"nodes are 1 to n) and a list of edges, each one a pair [u, v], and returns\n"
-		"the number of groups of the graph: nodes linked by edges, directly or\n"
-		"not, are in the same group, and a node with no edge is a group alone"),
+		"the number of groups of the graph. Nodes linked by edges, directly or\n"
+		"not, are in the same group; a node with no edge is a group alone"),
 	"cycle_edges": ("edges: list[list[int]]", "list[list[int]]", "takes the edges of a graph\n"
 		"that was a tree with nodes 1 to n (all linked, no cycle) and got one more\n"
 		"edge: n edges, each one a pair [u, v]. The graph now holds exactly one\n"

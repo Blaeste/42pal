@@ -63,8 +63,8 @@ EXERCISE = Exercise(
 				"every other character once",
 			"position": "each character as many times as its place in the string: the first\n"
 				"one once, the second one twice and so on",
-			"word_number": "each character of a word as many times as the number of its word:\n"
-				"the first word once, the second word twice and so on; words are cut by\n"
+			"word_number": "each character of a word as many times as the number of its word (the\n"
+				"first word once, the second word twice, and so on). The words are cut by\n"
 				"spaces and tabs, which are displayed once",
 			"vowel_rank": "each vowel by its rank among the vowels: a once, e twice, i 3 times,\n"
 				"o 4 times and u 5 times, whatever its case; every other character once",

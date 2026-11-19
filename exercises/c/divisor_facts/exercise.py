@@ -55,9 +55,9 @@ EXERCISE = Exercise(
 			"common_list": "the divisors they have in common, in increasing order, separated by\n"
 				"spaces",
 			"coprime": "yes if their only common divisor is 1, no otherwise",
-			"euclid_steps": "the steps of Euclid's algorithm: the two numbers, then each next\n"
-				"number is the one before the last modulo the last, until it would be 0\n"
-				"(48 18 gives 48 18 12 6), separated by spaces",
+			"euclid_steps": "the steps of Euclid's algorithm, separated by spaces. They start with\n"
+				"the two numbers; then each next number is the one before the last modulo\n"
+				"the last one, as long as it is not 0 (48 18 gives 48 18 12 6)",
 		}),
 	),
 	# Each hole starts a line, so that the lines stay under 80 characters.

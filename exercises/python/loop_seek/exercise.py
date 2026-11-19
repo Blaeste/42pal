@@ -99,12 +99,13 @@ def generate_tests(params, rng):
 	return [case(graph) for graph in graphs]
 
 RULES = {
-	"find": ("list[int] | None", "returns a cycle, found this way: a depth-first search starts\n"
-		"from each node in increasing order (a node already searched from is\n"
-		"skipped) and follows the edges of a node in their given order. The first\n"
-		"time it reaches a node that is on its current path, the cycle is that\n"
-		"path from that node to the current one, as a list of nodes. If there is\n"
-		"no cycle, it returns None"),
+	"find": ("list[int] | None", "returns a cycle, as a list of nodes, found by this depth-first\n"
+		"search (None if there is no cycle):\n"
+		"- it starts from each node in increasing order, skipping the nodes already\n"
+		"searched from;\n"
+		"- it follows the edges of a node in their given order;\n"
+		"- the first time it reaches a node that is on its current path, the cycle\n"
+		"is that path, from that node to the current one"),
 	"undirected": ("bool", "the graph is undirected: each edge is listed in both directions\n"
 		"(1 in the list of 2, and 2 in the list of 1), and no edge is listed\n"
 		"twice. It returns True if the graph holds a cycle, a node with an edge\n"

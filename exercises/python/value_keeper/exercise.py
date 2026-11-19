@@ -84,11 +84,13 @@ EXERCISE = Exercise(
 	themes=("lru_cache",),
 	params=(Param("rule", tuple(RULES), RULES),),
 	subject=(
-		"Write a class named Keeper that keeps at most capacity keys (ints) with\n"
-		"their values (ints). Keeper(capacity) makes an empty keeper; capacity is\n"
-		"at least 1. get(key) returns the value of key, or -1 if it is not kept.\n"
-		"put(key, value) gives key the value value, and returns None. When a new\n"
-		"key comes in and the keeper is full, one key goes out first:\n"
+		"Write a class named Keeper that keeps at most capacity keys (ints), each\n"
+		"with a value (an int). Its methods:\n"
+		"- Keeper(capacity) makes an empty keeper (capacity is at least 1);\n"
+		"- get(key) returns the value of key, or -1 if key is not kept;\n"
+		"- put(key, value) gives key the value value, and returns None.\n"
+		"\n"
+		"When a new key comes in and the keeper is full, one key goes out first:\n"
 		"$rule.\n"
 		"\n"
 		"The methods return their results and print nothing.\n"

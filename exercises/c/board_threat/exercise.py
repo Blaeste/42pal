@@ -73,12 +73,11 @@ def generate_tests(params, rng):
 		tests.append(TestCase(random_board(rng)))
 	return tests
 
-KNIGHT = ("An N attacks the squares two rows and one column away from it, or two\n"
-	"columns and one row away; it jumps over the squares in between.")
-GUARD = "A G attacks the 8 squares around it."
-LINE = ("An L attacks the squares of its row and of its column, in the 4\n"
-	"directions, up to the first square that is not empty (a piece or T),\n"
-	"which is attacked too.")
+KNIGHT = ("the squares two rows and one column away from it, or two columns and one\n"
+	"row away; it jumps over the squares in between")
+GUARD = "the 8 squares around it"
+LINE = ("the squares of its row and of its column, in the 4 directions, up to the\n"
+	"first square that is not empty (a piece or T), which is attacked too")
 
 EXERCISE = Exercise(
 	name="board_threat",
@@ -97,10 +96,11 @@ EXERCISE = Exercise(
 				"by a newline",
 		}),
 		Param("pieces", ("knights", "guards", "lines", "mixed"), {
-			"knights": f"the N. {KNIGHT}",
-			"guards": f"the G. {GUARD}",
-			"lines": f"the L. {LINE}",
-			"mixed": f"the N, the G and the L. {KNIGHT} {GUARD} {LINE}",
+			"knights": f"The pieces are the N. An N attacks {KNIGHT}.",
+			"guards": f"The pieces are the G. A G attacks {GUARD}.",
+			"lines": f"The pieces are the L. An L attacks {LINE}.",
+			"mixed": f"The pieces are the N, the G and the L:\n- an N attacks {KNIGHT};\n"
+				f"- a G attacks {GUARD};\n- an L attacks {LINE}.",
 		}),
 	),
 	subject=(
@@ -108,13 +108,13 @@ EXERCISE = Exercise(
 		"displays\n"
 		"$answer.\n"
 		"\n"
-		"The arguments all have the same length, and the board holds exactly one T,\n"
-		"the target. The pieces are\n"
-		"$pieces\n"
-		"Every other character is an empty square.\n"
+		"The arguments all have the same length. The board holds exactly one T, the\n"
+		"target; every character that is neither T nor a piece is an empty square.\n"
 		"\n"
-		"The rows are numbered from 1, the first argument being row 1, and the\n"
-		"columns from 1, from the left.\n"
+		"$pieces\n"
+		"\n"
+		"The rows are numbered from 1 (the first argument is row 1), and the columns\n"
+		"from 1, from the left.\n"
 		"\n"
 		"If there is no argument, the program displays a newline."
 	),

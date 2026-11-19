@@ -57,25 +57,32 @@ def generate_tests(params, rng):
 	return tests
 
 RULES = {
-	"max_heap": ("Heap() makes an empty heap whose top is its largest value. push(value)\n"
-		"adds value. pop() takes the largest value out and returns it, and peek()\n"
-		"returns it without taking it out; both return None when the heap is\n"
-		"empty. size() returns the number of values in the heap",
+	"max_heap": ("Its methods:\n"
+		"- Heap() makes an empty heap whose top is its largest value;\n"
+		"- push(value) adds value;\n"
+		"- pop() takes the largest value out and returns it, or returns None if the\n"
+		"heap is empty;\n"
+		"- peek() returns the largest value without taking it out, or None if the\n"
+		"heap is empty;\n"
+		"- size() returns the number of values in the heap.",
 		"    def __init__(self) -> None:\n    def push(self, value: int) -> None:\n"
 		"    def pop(self) -> int | None:\n    def peek(self) -> int | None:\n    def size(self) -> int:"),
-	"k_largest": ("Heap(k) makes an empty heap that follows the k largest values added (k is\n"
-		"at least 1): keep only them, the smallest of them on top. add(value) adds\n"
-		"value. kth() returns the k-th largest value added so far (a value added\n"
-		"several times counting each time), or None if fewer than k values were\n"
-		"added",
+	"k_largest": ("Its methods:\n"
+		"- Heap(k) makes an empty heap that keeps the k largest values added (k is\n"
+		"at least 1), the smallest of them on top;\n"
+		"- add(value) adds value;\n"
+		"- kth() returns the k-th largest value added so far (a value added several\n"
+		"times counts each time), or None if fewer than k values were added.",
 		"    def __init__(self, k: int) -> None:\n    def add(self, value: int) -> None:\n"
 		"    def kth(self) -> int | None:"),
-	"median": ("Heap() makes an empty heap that follows the median of the values added:\n"
-		"keep two heaps, the smaller half with its largest value on top and the\n"
-		"larger half with its smallest value on top. add(value) adds value.\n"
-		"median() returns the value in the middle of all the values added, if\n"
-		"they were sorted; for an even number of values, the smaller of the two in\n"
-		"the middle. It returns None if no value was added",
+	"median": ("It keeps two heaps: the smaller half of the values, with its largest\n"
+		"value on top, and the larger half, with its smallest value on top. Its\n"
+		"methods:\n"
+		"- Heap() makes an empty heap;\n"
+		"- add(value) adds value;\n"
+		"- median() returns the value in the middle of all the values added, as if\n"
+		"they were sorted (for an even number of values, the smaller of the two in\n"
+		"the middle), or None if no value was added.",
 		"    def __init__(self) -> None:\n    def add(self, value: int) -> None:\n"
 		"    def median(self) -> int | None:"),
 }
@@ -97,7 +104,7 @@ EXERCISE = Exercise(
 		"value that replaces the top goes down, each time swapped with a parent or\n"
 		"a child.\n"
 		"\n"
-		"$rule.\n"
+		"$rule\n"
 		"\n"
 		"You may not use sorted(), sort(), min() nor max(), nor import anything.\n"
 		"The methods return their results and print nothing.\n"

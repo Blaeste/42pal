@@ -69,17 +69,17 @@ def generate_tests(params, rng):
 
 RULES = {
 	"count": ("    def count(self, prefix: str) -> int:\n    def remove(self, word: str) -> bool:",
-		"count(prefix) returns how many words added start with prefix (a word added\n"
-		"twice counts twice, and every word starts with the empty prefix).\n"
-		"remove(word) takes one copy of word out of the tree and returns True, or\n"
-		"returns False if word is not in it"),
-	"longest": ("    def longest(self, text: str) -> str:", "longest(text) returns the longest word\n"
+		"- count(prefix) returns how many words added start with prefix (a word\n"
+		"added twice counts twice, and every word starts with the empty prefix);\n"
+		"- remove(word) takes one copy of word out of the tree and returns True, or\n"
+		"returns False if word is not in it."),
+	"longest": ("    def longest(self, text: str) -> str:", "- longest(text) returns the longest word\n"
 		"added that starts text (text itself counts), or an empty string if there\n"
-		"is none"),
-	"pattern": ("    def match(self, pattern: str) -> bool:", "match(pattern) returns True if a word\n"
+		"is none."),
+	"pattern": ("    def match(self, pattern: str) -> bool:", "- match(pattern) returns True if a word\n"
 		"added has as many letters as pattern and matches it: each dot of the\n"
 		"pattern stands for any one letter, every other letter must be the same;\n"
-		"False otherwise"),
+		"it returns False otherwise."),
 }
 
 EXERCISE = Exercise(
@@ -94,11 +94,11 @@ EXERCISE = Exercise(
 	subject=(
 		"Write a class named WordTree that stores words in a prefix tree: each node\n"
 		"holds the letters that can follow, so that the words that start the same\n"
-		"way share their first nodes. WordTree() makes an empty tree, and\n"
-		"add(word) puts a word in it (words are made of lowercase letters, and\n"
-		"returns None).\n"
-		"\n"
-		"$rule.\n"
+		"way share their first nodes. The words are made of lowercase letters. Its\n"
+		"methods:\n"
+		"- WordTree() makes an empty tree;\n"
+		"- add(word) puts word in the tree, and returns None;\n"
+		"$rule\n"
 		"\n"
 		"The methods return their results and print nothing.\n"
 		"\n"

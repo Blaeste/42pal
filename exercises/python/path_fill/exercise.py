@@ -46,19 +46,19 @@ def generate_tests(params, rng):
 	return [case(rows, cols) for rows, cols in pairs]
 
 RULES = {
-	"counter": ("n: int", "an n x n matrix (n from 0) filled along a spiral that turns\n"
-		"counterclockwise: from the top left corner, down the first column, then\n"
-		"right along the bottom row, then up the last column, then left along the\n"
-		"top row, and so on inward, each time up to a cell already filled or the\n"
-		"edge"),
-	"snake": ("rows: int, cols: int", "a matrix of rows rows of cols ints filled row after\n"
-		"row: the first row from left to right, the second from right to left,\n"
-		"the third from left to right again, and so on"),
-	"rect_spiral": ("rows: int, cols: int", "a matrix of rows rows of cols ints filled along a\n"
-		"spiral that turns clockwise: from the top left corner, right along the\n"
-		"top row, then down the last column, then left along the bottom row,\n"
-		"then up the first column, and so on inward, each time up to a cell\n"
-		"already filled or the edge"),
+	"counter": ("n: int", "a square matrix of n rows of n ints (n from 0). It is filled along a\n"
+		"spiral that turns counterclockwise: down the first column from the top left\n"
+		"corner, then right along the bottom row, then up the last column, then\n"
+		"left along the top row, and so on inward, each time up to the edge or to\n"
+		"a cell already filled"),
+	"snake": ("height: int, width: int", "a matrix of height rows of width ints. It is filled\n"
+		"row after row: the first row from left to right, the second from right to\n"
+		"left, the third from left to right again, and so on"),
+	"rect_spiral": ("height: int, width: int", "a matrix of height rows of width ints. It is\n"
+		"filled along a spiral that turns clockwise: right along the top row from\n"
+		"the top left corner, then down the last column, then left along the\n"
+		"bottom row, then up the first column, and so on inward, each time up to\n"
+		"the edge or to a cell already filled"),
 }
 
 EXERCISE = Exercise(
@@ -71,12 +71,13 @@ EXERCISE = Exercise(
 	themes=("spiral_fill",),
 	params=(Param("rule", tuple(RULES), {rule: text for rule, (_, text) in RULES.items()}),),
 	subject=(
-		"Write a function that returns a matrix (a list of rows, each a list of\n"
-		"ints) holding the numbers from 1 up to its number of cells, put one after\n"
-		"the other in the cells:\n"
+		"Write a function that returns\n"
 		"$rule.\n"
+		"Along that path, the cells get the numbers from 1 up to the number of\n"
+		"cells, one after the other.\n"
 		"\n"
-		"A matrix with no cell is an empty list.\n"
+		"The matrix is a list of rows, each one a list of ints; a matrix with no cell\n"
+		"is an empty list.\n"
 		"\n"
 		"The function returns its result and prints nothing.\n"
 		"\n"

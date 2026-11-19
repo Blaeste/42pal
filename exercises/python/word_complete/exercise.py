@@ -53,11 +53,11 @@ def generate_tests(params, rng):
 	return tests
 
 RULES = {
-	"top_k": ("words: list[str], prefix: str, k: int", "list[str]", "takes a list of words (a\n"
-		"word may be in it several times), a prefix and an int k from 0, and\n"
-		"returns, among the words that start with prefix, the k found the most\n"
-		"times in the list, each once: the most frequent first, and in ASCII\n"
-		"order among words found as many times. Fewer than k if there are fewer"),
+	"top_k": ("words: list[str], prefix: str, k: int", "list[str]", "takes a list of words, where\n"
+		"a word may appear several times, a prefix and an int k from 0. Among the\n"
+		"words that start with prefix, it returns the k found the most times in\n"
+		"the list, each once (fewer if there are fewer): the most frequent first,\n"
+		"and in ASCII order among words found as many times"),
 	"next_letters": ("words: list[str], prefix: str", "str", "takes a list of words and a\n"
 		"prefix, and returns the characters that come right after prefix in the\n"
 		"words that start with it and are longer than it: each character once,\n"

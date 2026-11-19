@@ -49,11 +49,12 @@ def generate_tests(params, rng):
 	return tests
 
 RULES = {
-	"by_key": ("text: str, key: str", "each letter is shifted by the value of a letter of key (a\n"
-		"for 0, b for 1, up to z for 25, in either case): the first letter of text\n"
-		"by the first letter of key, the second by the second, and so on,\n"
-		"starting key again when it ends. key is never empty and holds letters\n"
-		"only; the characters of text that are not letters use no letter of key"),
+	"by_key": ("text: str, key: str", "each letter is shifted by the value of a letter of key,\n"
+		"a being 0, b being 1, up to z for 25, in either case. The letters of key\n"
+		"are used in turn: the first letter of text by the first letter of key,\n"
+		"the second by the second, and so on, starting key again when it ends.\n"
+		"key is never empty and holds letters only. The characters of text that\n"
+		"are not letters use no letter of key"),
 	"growing": ("text: str, step: int", "the first letter is shifted by 0, the second by step,\n"
 		"the third by 2 times step, and so on: the letter number n, counting\n"
 		"from 0, is shifted by n times step. step may be negative"),

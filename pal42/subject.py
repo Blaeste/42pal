@@ -54,7 +54,7 @@ def statement(variant):
 	texts["assignment"] = variant.name
 	# $prototype: a declaration that changes with the variant.
 	if variant.exercise.prototype:
-		texts["prototype"] = variant.exercise.prototype(variant.name, variant.params)
+		texts["prototype"] = wrap_declaration(variant.exercise.prototype(variant.name, variant.params))
 	return reflow(Template(variant.exercise.subject).substitute(texts))
 
 def reflow(text, width=80):
@@ -68,12 +68,52 @@ def reflow(text, width=80):
 	paragraphs = []
 	for paragraph in text.split("\n\n"):
 		lines = paragraph.split("\n")
-		if any("\t" in line or line.startswith((" ", "#", "{", "}")) for line in lines):
+		if any("\t" in line or line.startswith((" ", "#", "{", "}", "def ", "class ")) for line in lines):
 			paragraphs.append(paragraph)
-		else:
-			paragraphs.append(textwrap.fill(" ".join(line.strip() for line in lines), width,
-				break_long_words=False, break_on_hyphens=False))
+			continue
+		# A line that starts with "- " starts an item of a list: each item is
+		# wrapped on its own, its next lines under its text.
+		parts = [[]]
+		for line in lines:
+			if line.startswith("- ") and parts[-1]:
+				parts.append([])
+			parts[-1].append(line.strip())
+		paragraphs.append("\n".join(
+			textwrap.fill(" ".join(part), width, subsequent_indent="  " if part[0].startswith("- ") else "",
+				break_long_words=False, break_on_hyphens=False)
+			for part in parts))
 	return "\n\n".join(paragraphs)
+
+def wrap_declaration(text, width=79):
+	"""A Python declaration longer than `width`: its arguments go on lines of their own.
+
+	def name(
+	        argument, argument,
+	        argument) -> returned:
+
+	The arguments are cut at their commas only, never inside a type like
+	dict[str, list[str]], and put on as few lines as fit.
+	"""
+	if not text.startswith("def ") or "\n" in text or len(text) <= width:
+		return text
+	head, rest = text.split("(", 1)
+	# The arguments, cut at the commas outside brackets; the last piece keeps ") -> ...:".
+	pieces, depth, start = [], 0, 0
+	for index, char in enumerate(rest):
+		depth += char in "[(" and 1 or char in "])" and -1 or 0
+		if char == "," and depth == 0:
+			pieces.append(rest[start:index + 1].strip())
+			start = index + 1
+	pieces.append(rest[start:].strip())
+	lines, current = [], ""
+	for piece in pieces:
+		if current and len("        " + current + " " + piece) > width:
+			lines.append(current)
+			current = piece
+		else:
+			current = f"{current} {piece}".strip()
+	lines.append(current)
+	return f"{head}(\n" + "\n".join("        " + line for line in lines)
 
 def _examples(variant):
 	"""Return the lines of the examples: each command, then what it prints.

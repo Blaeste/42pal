@@ -43,11 +43,11 @@ RULES = {
 	"first_extra": ("s1: str, s2: str", "str", "takes two strings, s1 and s2, and returns the first\n"
 		"character of s1 that appears more times in s1 than in s2; or an empty\n"
 		"string if there is none"),
-	"window": ("small: str, big: str", "int", "takes two strings, small and big, and returns the\n"
-		"index of the first part of big that holds the same characters as small,\n"
-		"as many times each, in any order (a part of big is characters next to\n"
-		"each other, as many as in small); or -1 if there is none, and 0 for an\n"
-		"empty small"),
+	"window": ("small: str, big: str", "int", "takes two strings, small and big. A part of big\n"
+		"is as many characters as small has, next to each other in big. The\n"
+		"function returns the index of the first part of big that holds the same\n"
+		"characters as small, as many times each, in any order; -1 if there is\n"
+		"none, and 0 for an empty small"),
 }
 
 EXERCISE = Exercise(

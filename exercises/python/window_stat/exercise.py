@@ -49,10 +49,9 @@ EXERCISE = Exercise(
 	),
 	subject=(
 		"Write a function that takes a list of ints nums and an int k. A window is k\n"
-		"values next to each other in nums; the first one starts at the first\n"
-		"value, the next one a value further, and so on up to the one that ends at\n"
-		"the last value. The function returns a list with, for each window, from\n"
-		"the first one,\n"
+		"values next to each other in nums: with k = 3, [1, 2, 3, 4] has the windows\n"
+		"[1, 2, 3] and [2, 3, 4]. The function returns a list with, for each window,\n"
+		"from the first one,\n"
 		"$rule.\n"
 		"\n"
 		"If k is less than 1 or more than the length of nums, there is no window:\n"

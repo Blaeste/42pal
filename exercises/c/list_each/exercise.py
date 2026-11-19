@@ -114,17 +114,19 @@ EXERCISE = Exercise(
 			"every_other": "one node out of two, from the first one: the first, the third, the\n"
 				"fifth and so on",
 			"backwards": "every node, from the last one to the first one",
-			"while_positive": "the nodes from the first one, as long as their value is more than 0:\n"
-				"it stops at the first value that is 0 or less",
+			"while_positive": "the nodes from the first one, as long as their value is more than 0\n"
+				"(it stops at the first node whose value is 0 or less, without calling f\n"
+				"on it)",
 			"from_second": "every node but the first one, in their order",
 		}),
 	),
 	provided_files={"box.h": HEADER},
 	subject=(
 		"Write a function that takes the first node of a linked list of ints (NULL\n"
-		"for an empty list) and a function f, and calls f on the value of\n"
-		"$which,\n"
-		"giving f the address of the value.\n"
+		"for an empty list) and a function f. It calls f once for each of these\n"
+		"nodes:\n"
+		"$which.\n"
+		"Each call gives f the address of the value of the node.\n"
 		"\n"
 		"The nodes are of the type t_box, declared in the header box.h, given next\n"
 		"to this subject:\n"

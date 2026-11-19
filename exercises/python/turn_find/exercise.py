@@ -50,12 +50,12 @@ def generate_tests(params, rng):
 RULES = {
 	"steps": ("int", "the smallest number of places k (from 0) such that a turned k places to\n"
 		"the right gives b; or -1 if there is none. Two empty lists give 0"),
-	"all_steps": ("list[int]", "the list of all the numbers of places k, from 0 to the length\n"
-		"of a minus 1, such that a turned k places to the right gives b, in\n"
-		"increasing order; an empty list if there is none. Two empty lists give\n"
-		"[0]"),
-	"mirrored": ("bool", "True if b is a read backwards, then turned some number of places to\n"
-		"the right (0 included), and False otherwise. Two empty lists give True"),
+	"all_steps": ("list[int]", "every number of places k, from 0 to the length of a minus 1,\n"
+		"such that a turned k places to the right gives b, in increasing order (an\n"
+		"empty list if there is none). Two empty lists give [0]"),
+	"mirrored": ("bool", "True if b is the list a read backwards, then turned some number of\n"
+		"places to the right (0 included), and False otherwise. Two empty lists\n"
+		"give True"),
 }
 
 EXERCISE = Exercise(

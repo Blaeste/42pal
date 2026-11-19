@@ -100,30 +100,30 @@ EXERCISE = Exercise(
 	themes=("list_sort",),
 	params=(
 		Param("key", ("absolute", "parity", "last_digit", "digit_count"), {
-			"absolute": "by absolute value; of two keys as big, like -3 and 3, the negative one\n"
-				"comes first",
-			"parity": "the even keys first (0 included), then the odd ones, each group in\n"
-				"increasing order",
-			"last_digit": "by the last digit of their absolute value, from 0 to 9; with the same\n"
-				"last digit, in increasing order",
-			"digit_count": "by the number of digits of their absolute value (0 has one); with as\n"
-				"many digits, in increasing order",
+			"absolute": "by their absolute value, from the smallest; of two keys with the same\n"
+				"absolute value, like -3 and 3, the negative one comes first",
+			"parity": "the even keys first (0 included), then the odd ones; among the even\n"
+				"keys, and among the odd ones, from the smallest",
+			"last_digit": "by the last digit of their absolute value, from 0 to 9; among keys\n"
+				"with the same last digit, from the smallest",
+			"digit_count": "by the number of digits of their absolute value, from the fewest (0\n"
+				"has one digit); among keys with as many digits, from the smallest",
 		}),
 		Param("order", ("up", "down"), {
-			"up": "The list ends up in this order, from its first item to its last one",
-			"down": "The list ends up in the exact reverse of this order: its first item is\n"
-				"the one that this order puts last",
+			"up": "The sorted list follows this order: its first item comes first in it",
+			"down": "The sorted list follows this order backwards: its first item is the one\n"
+				"that comes last in it",
 		}),
 	),
 	provided_files={"item.h": HEADER},
 	# Each hole starts a line, so that the lines stay under 80 characters.
 	subject=(
-		"Write a function that sorts a linked list of ints by their keys, in this\n"
-		"order:\n"
-		"$key.\n"
+		"Write a function that sorts a linked list by the keys of its items, and\n"
+		"returns the first item of the sorted list (NULL for an empty list). No item\n"
+		"may be lost.\n"
+		"\n"
+		"The order of the keys: $key.\n"
 		"$order.\n"
-		"It returns the first item of the sorted list (NULL for an empty list). No\n"
-		"item may be lost.\n"
 		"\n"
 		"The items are of the type t_item, declared in the header item.h, given next\n"
 		"to this subject:\n"

@@ -50,8 +50,8 @@ EXERCISE = Exercise(
 	params=(
 		Param("rule", ("left", "blocks", "keep_negatives"), {
 			"left": "the items turned to the left by k places: the first k items go to the\n"
-				"end, in their order (k may be larger than the length of the list:\n"
-				"turning by the length gives the list back)",
+				"end, in their order. k may be larger than the length of the list:\n"
+				"turning by the length gives the list back",
 			"blocks": "the items reversed by blocks of k items (k is at least 1): the first k\n"
 				"items in reverse order, then the next k items in reverse order, and so\n"
 				"on; the last block may have fewer items",

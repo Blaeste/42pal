@@ -114,32 +114,32 @@ EXERCISE = Exercise(
 	themes=("grid_fill",),
 	params=(
 		Param("connect", ("four", "eight"), {
-			"four": "its four neighbours: up, down, left and right",
-			"eight": "its eight neighbours: up, down, left, right and the four diagonals",
+			"four": "its four neighbours (up, down, left and right)",
+			"eight": "its eight neighbours (up, down, left, right and the four diagonals)",
 		}),
 		Param("measure", ("fill", "size", "edge"), {
 			"fill": "replaces every cell of the zone by the character F, and returns how\n"
 				"many cells it replaced",
-			"size": "returns how many cells the zone has; the grid must be the same after\n"
-				"the call",
-			"edge": "returns how many cells of the zone are on the border of the grid (its\n"
-				"first or last row, its first or last column); the grid must be the same\n"
-				"after the call",
+			"size": "returns how many cells the zone has, and leaves the grid as it is",
+			"edge": "returns how many cells of the zone are on the edge of the grid (in its\n"
+				"first or last row, or in its first or last column), and leaves the grid\n"
+				"as it is",
 		}),
 	),
 	# Filling with four neighbours: a real subject.
 	forbidden=({"connect": "four", "measure": "fill"},),
-	# Each hole starts a line, so that the lines stay under 80 characters.
 	subject=(
-		"grid holds height rows of width characters; the cell (x, y) is grid[y][x],\n"
-		"x counting the columns from 0 and y the rows from 0. The zone of the cell\n"
-		"(x, y) is this cell and every cell of the same character that can be\n"
-		"reached from it going from a cell to one of\n"
-		"$connect,\n"
-		"always on cells of this character.\n"
+		"Write a function that takes a grid of characters and the place (x, y) of one\n"
+		"of its cells, and works on the zone of that cell.\n"
 		"\n"
-		"Write a function that, for the zone of (x, y),\n"
-		"$measure.\n"
+		"The grid has height rows of width characters. grid[y][x] is the cell at\n"
+		"column x and row y, both counted from 0. The zone of a cell is that cell\n"
+		"and all the cells of the same character that can be reached from it, step\n"
+		"by step: each step goes to one of $connect, and every cell on the way has\n"
+		"that same character.\n"
+		"\n"
+		"The function $measure.\n"
+		"\n"
 		"(x, y) is always in the grid, and the grid is at most 50 by 50.\n"
 		"\n"
 		"Your function must be declared as follows:\n"
@@ -147,8 +147,8 @@ EXERCISE = Exercise(
 		"int\t$assignment(char **grid, int width, int height, int x, int y);\n"
 		"\n"
 		"In the examples, the comment shows the rows of the grid before the call,\n"
-		"separated by /, and the lines below show the grid after the call, then\n"
-		"the int returned."
+		"separated by /. The lines below show the grid after the call, then the int\n"
+		"returned."
 	),
 	oracle=oracle,
 	generate_tests=generate_tests,

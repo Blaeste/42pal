@@ -57,19 +57,24 @@ def generate_tests(params, rng):
 	return [case(grid, word) for grid, word in pairs]
 
 RULES = {
-	"first": ("tuple[int, int, str] | None", "the first place where the word is written in a\n"
-		"straight line, from its first letter, in one of 8 directions: right (R),\n"
-		"down (D), left (L), up (U), down-right (DR), down-left (DL), up-left (UL)\n"
-		"and up-right (UR). The cells of the first letter are tried row by row\n"
-		"from the top, each row from the left, and for each cell the directions in\n"
-		"that order. It returns a (row, col, direction) tuple, or None if the\n"
-		"word is nowhere"),
-	"path": ("bool", "True if the word can be spelled by a path of cells, each one next to\n"
-		"the one before by a side (up, down, left or right), no cell used twice;\n"
-		"False otherwise"),
-	"straight": ("int", "how many times the word is written in a straight line in one of 4\n"
-		"directions: right, down, left or up. Each first cell and direction that\n"
-		"spell it count once"),
+	"first": ("tuple[int, int, str] | None", "The function returns the first place where the\n"
+		"word is written in a straight line, as a (row, col, direction) tuple: row\n"
+		"and col are those of its first letter, and direction is the way it goes,\n"
+		"one of these 8, in this order:\n"
+		"- R (right), D (down), L (left), U (up),\n"
+		"- DR (down-right), DL (down-left), UL (up-left), UR (up-right).\n"
+		"\n"
+		"The places are tried cell by cell, row by row from the top and each row\n"
+		"from the left; for each cell, the 8 directions in the order above. If the\n"
+		"word is nowhere, the function returns None."),
+	"path": ("bool", "The function returns True if the word can be spelled along a path of\n"
+		"cells: its first letter in a cell, then each next letter in a cell next\n"
+		"to the one before by a side (up, down, left or right), no cell used\n"
+		"twice. Otherwise it returns False."),
+	"straight": ("int", "The function returns how many times the word is written in a\n"
+		"straight line, going right, down, left or up. A first cell and a\n"
+		"direction count once each: a word that reads the same both ways, written\n"
+		"once in the grid, counts twice."),
 }
 
 EXERCISE = Exercise(
@@ -82,10 +87,11 @@ EXERCISE = Exercise(
 	themes=("grid_word_search",),
 	params=(Param("rule", tuple(RULES), {rule: text for rule, (_, text) in RULES.items()}),),
 	subject=(
-		"Write a function that takes a grid of letters, a list of strings of the\n"
-		"same length (row 0 is the first string, column 0 its first character),\n"
-		"and a word of 2 letters or more. It returns\n"
-		"$rule.\n"
+		"Write a function that takes a grid of letters and a word of 2 letters or\n"
+		"more. The grid is a list of strings of the same length: row 0 is the first\n"
+		"string, and column 0 the first character of each string.\n"
+		"\n"
+		"$rule\n"
 		"\n"
 		"The function returns its result and prints nothing.\n"
 		"\n"

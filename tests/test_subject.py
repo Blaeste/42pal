@@ -145,6 +145,44 @@ class TestReflow(unittest.TestCase):
 		self.assertTrue(lines[0].startswith("Write a program that takes a string and displays it 2 times,"))
 		self.assertTrue(all(len(line) <= 80 for line in lines))
 
+	def test_a_dash_starts_an_item_of_a_list(self):
+		"""Each item on its own line, wrapped under its own text; the lines of an item are joined."""
+		variant = repeat_twice(subject=(
+			"The rules:\n"
+			"- the first rule is short;\n"
+			"- the second rule is long enough that it does not fit on one line of eighty\n"
+			"columns, so it goes on;\n"
+			"- the last one."
+		))
+		statement = render(variant).split("-" * 80 + "\n\n")[1]
+		self.assertEqual(statement, (
+			"The rules:\n"
+			"- the first rule is short;\n"
+			"- the second rule is long enough that it does not fit on one line of eighty\n"
+			"  columns, so it goes on;\n"
+			"- the last one.\n"
+		))
+
+	def test_a_long_python_declaration_breaks_after_its_bracket(self):
+		"""Not cut in the middle by the wrapping: the arguments go on an indented line."""
+		variant = repeat_twice(subject="Declared as:\n\n$prototype",
+			prototype=lambda name, params: f"def {name}(points: list[tuple[int, int]], height: int, width: int)"
+				" -> list[str]:")
+		self.assertIn("\ndef repeat_twice(\n        points: list[tuple[int, int]], height: int, width: int)"
+			" -> list[str]:\n", render(variant))
+
+	def test_arguments_too_long_for_one_line_go_on_several(self):
+		"""Cut at the commas between arguments, never inside dict[str, list[str]]."""
+		variant = repeat_twice(subject="Declared as:\n\n$prototype",
+			prototype=lambda name, params: f"def {name}(packages: dict[str, list[str]], target: str, depth: int,"
+				" names: list[str]) -> list[list[str]] | None:")
+		lines = render(variant).split("Declared as:\n\n")[1].splitlines()[:3]
+		self.assertEqual(lines, [
+			"def repeat_twice(",
+			"        packages: dict[str, list[str]], target: str, depth: int,",
+			"        names: list[str]) -> list[list[str]] | None:",
+		])
+
 	def test_code_paragraphs_stay_as_they_are(self):
 		"""A prototype (with a tab) and a header (with # and braces) are not wrapped."""
 		variant = repeat_twice(subject=(

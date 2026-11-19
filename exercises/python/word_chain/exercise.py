@@ -71,11 +71,16 @@ def generate_tests(params, rng):
 
 RULES = {
 	"path": ("start: str, end: str, words: list[str]", "list[str] | None", "returns the shortest\n"
-		"chain from start to end, a list of words where each word differs from\n"
-		"the one before by one letter changed. It is found by a breadth-first\n"
-		"search from start, which tries the words in the order of the list: the\n"
-		"first word that reaches a word is the one before it in the chain. If\n"
-		"there is no chain, it returns None"),
+		"chain from start to end: the list of its words, from start to end, each\n"
+		"one differing from the one before by one letter changed (None if there\n"
+		"is no chain). When several chains are as short, the chain is the one\n"
+		"this breadth-first search finds:\n"
+		"- it starts from start;\n"
+		"- it takes the words reached, in the order they were reached, and from\n"
+		"each one, every word of the list one change away and not reached yet, in\n"
+		"the order of the list;\n"
+		"- each word keeps the word it was first reached from: the chain goes back\n"
+		"from end along these words"),
 	"reachable": ("start: str, words: list[str]", "int", "returns how many different words of\n"
 		"the list (start left out) can be reached from start by changing one\n"
 		"letter at a time"),

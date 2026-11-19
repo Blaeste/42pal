@@ -70,22 +70,24 @@ EXERCISE = Exercise(
 		Param("layout", ("offset", "text"), {
 			"offset": "the offset of its first byte from addr, in hexadecimal on 4 digits (with\n"
 				"zeros in front), then a colon, then each of its bytes as a space followed\n"
-				"by its 2 hexadecimal digits",
-			"text": "its bytes, each as its 2 hexadecimal digits followed by a space (the\n"
+				"by its 2 hexadecimal digits.",
+			"text": "two parts:\n"
+				"- its bytes, each as its 2 hexadecimal digits followed by a space (the\n"
 				"last line gets 3 spaces for each byte it lacks, so that the columns line\n"
-				"up), then the same bytes as text between two |: a byte that is a\n"
-				"printable character, from space to ~, as itself, any other one as a dot",
+				"up);\n"
+				"- the same bytes as text, between two |: a printable byte (from space to\n"
+				"~) as itself, any other one as a dot.",
 		}),
 		Param("width", ("eight", "twelve"), {"eight": "8", "twelve": "12"}),
 	),
 	subject=(
 		"Write a function that displays the size bytes found at the address addr,\n"
 		"$width bytes per line (the last line may have fewer). Each line shows\n"
-		"$layout;\n"
-		"then a newline ends the line.\n"
+		"$layout\n"
 		"\n"
-		"The hexadecimal digits are written in lower case. If size is 0, the\n"
-		"function displays nothing.\n"
+		"A newline ends each line. The hexadecimal digits are written in lower\n"
+		"case. If size is 0, the function displays nothing.\n"
+
 		"\n"
 		"Your function must be declared as follows:\n"
 		"\n"

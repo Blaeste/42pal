@@ -48,10 +48,10 @@ EXERCISE = Exercise(
 	themes=("multi_key_sort",),
 	params=(
 		Param("rule", ("consonants", "last_char", "digits"), {
-			"consonants": "by their number of consonants, fewest first (the consonants are the\n"
-				"letters other than a, e, i, o and u, in either case), then in the\n"
-				"alphabetical order of the strings written in lower case (comparing the\n"
-				"characters by their ASCII code)",
+			"consonants": "by their number of consonants, fewest first; then, among strings with\n"
+				"as many, in the alphabetical order of the strings written in lower case,\n"
+				"comparing the characters by their ASCII code. The consonants are the\n"
+				"letters other than a, e, i, o and u, in either case",
 			"last_char": "by their last character, in ASCII order (an empty string comes first),\n"
 				"then from the longest to the shortest",
 			"digits": "by their number of digits, most first, then from the shortest to the\n"
