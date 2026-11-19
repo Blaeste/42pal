@@ -7,7 +7,6 @@ Run all the tests from the project root with: python3 -m unittest -v
 
 import unittest
 from pathlib import Path
-from random import Random
 from runpy import run_path
 
 from pal42.model import TestCase

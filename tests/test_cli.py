@@ -25,7 +25,7 @@ from pal42.cli.shell import Shell, complete_command
 from pal42.catalog import Catalog, load_catalog
 from pal42.cli import check, display
 from pal42.cli.workspace import Workspace
-from pal42.exam import list_exams, load_exam
+from pal42.exam import load_exam
 from pal42.grader import Grade
 from pal42.retry import RetryPolicy
 from pal42.session import Session, SessionStore

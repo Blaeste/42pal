@@ -36,7 +36,7 @@ from textual.widgets.option_list import Option
 from pal42 import cheat
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
-from pal42.cli.shell import BACK, COMMANDS, PRACTICE, PROGRESS, RETRY_OF_MODE, SHORTCUTS, Shell
+from pal42.cli.shell import BACK, COMMANDS, PRACTICE, PROGRESS, SHORTCUTS, Shell
 from pal42.exam import AUDIENCES
 from pal42.progress import exam_rows, summary, weak_themes
 from pal42.session import SessionStore
