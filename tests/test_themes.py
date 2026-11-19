@@ -58,9 +58,8 @@ class TestBadThemesFile(unittest.TestCase):
 
 # The real subjects of each level of each exam (names only: no real subject
 # is in this repository). piscine_01 to piscine_final are read in the
-# folders of 42_EXAM, its exam_01 to exam_04; rank02 in the list of
-# 42exam.net, which has 57 subjects where the exam_02 of 42_EXAM had 49, and
-# the Python ranks 03 to 06 in the lists of 42exam.net too.
+# folders of 42_EXAM, its exam_01 to exam_04; rank02 has 57 subjects where
+# the exam_02 of 42_EXAM had 49; then the Python ranks 03 to 06.
 REAL_LEVELS = {
 	"piscine_01": {
 		1: "aff_a ft_countdown ft_print_numbers",
@@ -212,7 +211,7 @@ THEME_OF = {
 	"tiny_interpreter": "brainfuck",
 	"memory_dump": "print_memory",
 	"longest_part": "biggest_pal",
-	# The Python ranks of 42exam.net.
+	# The Python ranks.
 	"bracket_balance": "py_bracket_validator",
 	"multi_key_sort": "py_cryptic_sorter",
 	"palindrome_check": "py_echo_validator",
@@ -253,7 +252,7 @@ THEME_OF = {
 }
 
 class TestRealLevels(unittest.TestCase):
-	"""themes.json follows the levels of the real subjects (42_EXAM, 42exam.net)."""
+	"""themes.json follows the levels of the real subjects."""
 
 	def test_each_theme_is_the_style_of_one_real_subject(self):
 		"""One real subject per theme: a level offers as many styles as real subjects."""

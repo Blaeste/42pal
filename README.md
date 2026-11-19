@@ -207,8 +207,8 @@ is given.
 
 ## What the catalog has today
 
-Nine exams: the piscine ones like in 42_EXAM, the ranks like on
-[42exam.net](https://42exam.net/). A student chooses one of the five ranks.
+Nine exams: the four piscine exams, and the five ranks of the cursus. A
+student chooses one of the five ranks.
 
 | Exam | Language | Levels | Time | Levels that can be played today |
 |---|---|---|---|---|
@@ -355,10 +355,9 @@ written for 42pal: no real exam subject is in this repository. Each theme
 of [themes.json](themes.json) is the style of one real exam subject, at the
 levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
-one of the subjects of the level. The levels of the ranks follow the lists
-of [42exam.net](https://42exam.net/) (57 subjects for the Exam Rank 02,
-then the Python ranks). All 77 C styles and all 37 Python styles have an
-exercise.
+one of the subjects of the level. The levels of the ranks follow the real
+exams (57 subjects for the Exam Rank 02, then the Python ranks). All 77 C
+styles and all 37 Python styles have an exercise.
 
 ## Report a problem
 

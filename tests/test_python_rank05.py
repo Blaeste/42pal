@@ -1,4 +1,4 @@
-"""Tests of the Python models of the rank 05: one per style of 42exam.net.
+"""Tests of the Python models of the rank 05: one per style of the real exam.
 
 Each test calls the oracle of a variant on values chosen by hand; the
 expected results are worked out by hand, never by the oracle.

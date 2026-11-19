@@ -55,7 +55,7 @@ class TestRealExams(unittest.TestCase):
 		self.assertEqual(exam.retry["hard"], RetryPolicy((0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59)))
 
 	def test_the_python_ranks_have_their_levels_playable(self):
-		"""Like 42exam.net: in Python, run with python3, every level playable."""
+		"""Like the real exams: in Python, run with python3, every level playable."""
 		for exam_id, levels in {"rank03": 6, "rank04": 4, "rank05": 3, "rank06": 2}.items():
 			with self.subTest(exam_id):
 				exam = load_exam(exam_id)

@@ -15,7 +15,7 @@ from pal42.catalog import load_catalog
 from pal42.variant import Variant
 
 # The names of the real subjects of the piscine exams and of Exam Rank 02,
-# then those of the Python ranks of 42exam.net and of their functions.
+# then those of the Python ranks and of their functions.
 REAL_SUBJECTS = set("""
 	add_prime_sum aff_a aff_first_param aff_last_param aff_z alpha_mirror
 	biggest_pal brackets brainfuck camel_to_snake check_mate cycle_detector
