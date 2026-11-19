@@ -78,7 +78,8 @@ def duration(seconds):
 
 def help_table(commands):
 	"""The table of the examshell commands, from {command: what it does}."""
-	table = Table(title="Commands", show_header=False, box=None)
+	table = Table(title="Commands", show_header=False, box=None,
+		caption="Something wrong? Run ./42pal --report and open an issue on GitHub.")
 	for command, meaning in commands.items():
 		table.add_row(f"[bold]{command}[/]", meaning)
 	return table

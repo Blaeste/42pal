@@ -353,6 +353,20 @@ of [42exam.net](https://42exam.net/) (57 subjects for the Exam Rank 02,
 then the Python ranks). All 77 C styles and all 37 Python styles have an
 exercise.
 
+## Report a problem
+
+A crash, a grading that looks wrong, a subject that is unclear? Open an
+issue on GitHub (**Issues**, then **New issue**: Bug or Subject), and paste
+what this prints in it:
+
+```sh
+./42pal --report
+```
+
+It gives the version of 42pal, Python, the system, the tools and the exam
+in progress: nothing personal, no code. The help of the examshell (`?`)
+says it too.
+
 ## For contributors
 
 Clone the repository: the archives of the releases leave out the tests,

@@ -7,6 +7,7 @@
 /docs/plans/ export-ignore
 /.gitignore export-ignore
 /.gitattributes export-ignore
+/.github/ export-ignore
 
 # The reference solutions, used by ./42pal check-catalog only: a ref.c or
 # ref.py per exercise, and the header a student hands in for list_drop.

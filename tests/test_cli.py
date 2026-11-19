@@ -137,6 +137,12 @@ def output(shell):
 	"""Everything the shell has printed."""
 	return shell.console.file.getvalue()
 
+class TestHelpTable(unittest.TestCase):
+	def test_the_help_says_how_to_report_a_problem(self):
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		console.print(display.help_table({"grademe": "grade your work"}))
+		self.assertIn("./42pal --report", console.file.getvalue())
+
 class TestPoints(unittest.TestCase):
 	"""display.points: the points of a level and the grade, as a student reads them."""
 
