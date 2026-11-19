@@ -36,8 +36,10 @@ from textual.widgets.option_list import Option
 from pal42 import cheat
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
-from pal42.cli.shell import BACK, COMMANDS, PRACTICE, RETRY_OF_MODE, SHORTCUTS, Shell
+from pal42.cli.shell import BACK, COMMANDS, PRACTICE, PROGRESS, RETRY_OF_MODE, SHORTCUTS, Shell
 from pal42.exam import AUDIENCES
+from pal42.progress import exam_rows, summary, weak_themes
+from pal42.session import SessionStore
 from pal42.update import apply_update, restart
 
 LOGO = [
@@ -250,9 +252,10 @@ class MenuScreen(IntroScreen):
 		("k", "move(-1)", "Up"),
 	]
 
-	def __init__(self, title, items, first, highlight=0, last=None):
+	def __init__(self, title, items, first, highlight=0, last=None, subtitle=TAGLINE):
 		super().__init__()
 		self.title = title
+		self.subtitle = subtitle
 		self.items = list(items)
 		self.first = first
 		self.highlight = highlight
@@ -263,7 +266,7 @@ class MenuScreen(IntroScreen):
 	def compose(self) -> ComposeResult:
 		with Vertical(classes="root"):
 			yield Logo(classes="logo")
-			yield Static(TAGLINE, classes="tagline")
+			yield Static(self.subtitle, classes="tagline")
 			with Vertical(classes="card"):
 				options = [Option(option_label(title, meta), id=str(index))
 					for index, (_, title, meta, _) in enumerate(self.items)]
@@ -677,9 +680,25 @@ class Pal42App(App):
 		shown = target if WEB_ADDRESS.match(target) else display.short_path(target)
 		self.notify(f"Opening {shown}", timeout=3)
 
-	async def ask(self, title, items, first, highlight=0, last=None):
+	async def ask(self, title, items, first, highlight=0, last=None, subtitle=TAGLINE):
 		"""Show a menu; return the value of the item chosen, or BACK."""
-		return await self.push_screen(MenuScreen(title, items, first, highlight, last), wait_for_dismiss=True)
+		return await self.push_screen(MenuScreen(title, items, first, highlight, last, subtitle),
+			wait_for_dismiss=True)
+
+	async def ask_progress(self):
+		"""The progress: the summary under the logo, the weak themes as choices; the theme, or None."""
+		store = self.shell.store
+		history, grades = store.history(), store.grades()
+		_, themes = self.shell._catalog()
+		exams = ", ".join(f"{row.title} {display.points(row.best)}/100" for row in exam_rows(history))
+		items = [(row.theme, row.theme, display.theme_score(row),
+			(themes[row.theme].skill if row.theme in themes else "") + ". Practise it now.")
+			for row in weak_themes(grades) if row.theme in themes]
+		if not items:
+			items = [("none", "No weak theme", "every theme passed", "Nothing to practise again for now.")]
+		value = await self.ask("Progress", items, first=False, subtitle=summary(history, grades),
+			last=("Back", f"Best grades: {exams}." if exams else "Back to the menu before."))
+		return None if value in (BACK, "none") else value
 
 	@work
 	async def cheat_flow(self, screen):
@@ -744,9 +763,12 @@ class Pal42App(App):
 				await self.run_session()
 				return
 		start = await self.choose_start()
-		while start == PRACTICE:
+		while start in (PRACTICE, PROGRESS):
 			practice = self.practice_shell()
-			theme = await self.choose_practice_theme(practice, first=False)
+			if start == PROGRESS:
+				theme = await self.ask_progress()
+			else:
+				theme = await self.choose_practice_theme(practice, first=False)
 			if theme is not None:
 				# The practice shell takes over: the session screen and the end use it.
 				self.shell, self.practice = practice, True
@@ -766,7 +788,7 @@ class Pal42App(App):
 		shell = self.shell
 		catalog, themes = shell._catalog()
 		return ScreenPracticeShell(shell.console, None, shell.workspace, rng=shell.rng,
-			catalog=catalog, themes=themes, sleep=shell.sleep)
+			catalog=catalog, themes=themes, sleep=shell.sleep, store=shell.store)
 
 	async def offer_update(self):
 		"""Offer the newer 42pal found at launch; return True when the app is leaving.
@@ -830,8 +852,8 @@ class Pal42App(App):
 		shown = []
 		while len(chosen) < len(steps):
 			answer, asked = await steps[len(chosen)](chosen, not any(shown))
-			if answer == PRACTICE:
-				return PRACTICE
+			if answer in (PRACTICE, PROGRESS):
+				return answer
 			if answer is BACK:
 				if not any(shown):
 					return None
@@ -858,6 +880,9 @@ class Pal42App(App):
 		if self.shell._can_practise():
 			items.append((PRACTICE, display.PRACTICE_TEXT, display.PRACTICE_SUMMARY,
 				"Subjects of one theme, one after the other: no timer, no wait."))
+		if self.shell.store and self.shell.store.grades():
+			items.append((PROGRESS, display.PROGRESS_TEXT, display.PROGRESS_SUMMARY,
+				"How your exams went, and the themes that fail the most, to practise them."))
 		if len(items) == 1:
 			return items[0][0], False
 		return await self.ask(display.FIRST_MENU_TITLE, items, first), True
@@ -969,7 +994,7 @@ def run_practice(workspace, theme=None):
 
 	A theme with no exercise is said before the screen opens: exit code 1.
 	"""
-	shell = ScreenPracticeShell(capture_console(), None, workspace)
+	shell = ScreenPracticeShell(capture_console(), None, workspace, store=SessionStore())
 	choices = shell.practisable_themes()
 	if theme is not None and theme not in choices:
 		Console().print(f"No exercise to practise '{escape(theme)}' yet. Themes: {', '.join(choices)}")

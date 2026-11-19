@@ -562,3 +562,29 @@ class TestReportScreen(FullScreenTest):
 			self.assertIn("Report written", log_text(app.screen))
 			self.assertEqual(len(copied), 1)
 			self.assertTrue(copied[0].startswith("# 42pal report"))
+
+
+class TestProgressScreen(FullScreenTest):
+	"""Progress in the first menu of the full screen: the weak themes, then practice on one."""
+
+	@screen_test
+	async def test_progress_then_a_weak_theme_to_practise(self):
+		for passed in (False, True, False):
+			self.store.add_grade({"variant": "word_pick#2", "themes": ["find_word"], "passed": passed,
+				"source": "rank02"})
+		app = self.exam_app(catalog=None, themes=None)
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			self.assertEqual(app.screen.title, "What do you want to do?")
+			await pilot.press("down", "down", "down", "enter")
+			await pilot.pause()
+			self.assertEqual(app.screen.title, "Progress")
+			self.assertIn("3 grademe · 1 OK (33%)", str(app.screen.query_one(".tagline").render()))
+			await pilot.press("enter")
+			for _ in range(50):
+				await pilot.pause(0.02)
+				if isinstance(app.screen, SessionScreen):
+					break
+			self.assertIsInstance(app.screen, SessionScreen)
+			self.assertTrue(app.practice)
+			self.assertEqual(app.shell.theme, "find_word")

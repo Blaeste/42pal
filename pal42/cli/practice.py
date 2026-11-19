@@ -11,6 +11,7 @@ from rich.markup import escape
 
 from pal42.cli import display
 from pal42.cli.shell import BACK, STATE_DIR, Shell, terminal
+from pal42.session import SessionStore
 from pal42.cli.workspace import Workspace
 from pal42.practice import draw_practice
 
@@ -30,9 +31,10 @@ class PracticeShell(Shell):
 	"""Practising one theme: the grading and display of the examshell, no exam."""
 
 	def __init__(self, console, ask, workspace=None, rng=None, catalog=None, themes=None,
-			sleep=time.sleep, language=None):
+			sleep=time.sleep, language=None, store=None):
+		# store: where each grademe is kept for the progress (nothing is resumed).
 		super().__init__(console, ask, None, workspace, rng or random.Random(),
-			sleep=sleep, catalog=catalog, themes=themes)
+			sleep=sleep, catalog=catalog, themes=themes, store=store)
 		# None: asked in a menu when the catalog has more than one language.
 		self.language = language
 		self.theme = None
@@ -203,7 +205,7 @@ def main(theme=None, full_screen=False):
 		return run_practice(workspace, theme)
 	console, ask, _ = terminal(PRACTICE_COMMANDS)
 	try:
-		return PracticeShell(console, ask, workspace).run(theme)
+		return PracticeShell(console, ask, workspace, store=SessionStore()).run(theme)
 	except KeyboardInterrupt:
 		console.print("\nPractice stopped (Ctrl-C).")
 		return 130

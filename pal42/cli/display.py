@@ -272,8 +272,12 @@ FIRST_MENU_TITLE = "What do you want to do?"
 PRACTICE_TEXT = "Practice"
 PRACTICE_SUMMARY = "one theme, no timer"
 
-def audience_menu(exams_by_audience, first=True, practice=False):
-	"""The first menu: the exams of the piscine or of the students, then practice."""
+# The choice of the first menu that shows the progress.
+PROGRESS_TEXT = "Progress"
+PROGRESS_SUMMARY = "your exams and weak themes"
+
+def audience_menu(exams_by_audience, first=True, practice=False, progress=False):
+	"""The first menu: the exams of the piscine or of the students, then practice and progress."""
 	lines = [FIRST_MENU_TITLE]
 	for number, (audience, exams) in enumerate(exams_by_audience.items(), start=1):
 		leads_to = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
@@ -282,7 +286,27 @@ def audience_menu(exams_by_audience, first=True, practice=False):
 	if practice:
 		count += 1
 		lines.append(f"  {count}. {PRACTICE_TEXT:22}{PRACTICE_SUMMARY}")
+	if progress:
+		count += 1
+		lines.append(f"  {count}. {PROGRESS_TEXT:22}{PROGRESS_SUMMARY}")
 	return lines + [last_choice(count + 1, first)]
+
+def progress_summary(text):
+	"""The first line of the progress."""
+	return f"[bold]Progress[/] · {escape(text)}"
+
+def exam_progress_table(rows):
+	"""The exams taken: how many times, passed, and the best grade."""
+	table = Table(show_header=True, box=None, header_style="dim")
+	for column in ("Exam", "Taken", "Passed", "Best"):
+		table.add_column(column)
+	for row in rows:
+		table.add_row(escape(row.title), str(row.tries), str(row.passed), f"{points(row.best)}/100")
+	return table
+
+def theme_score(row):
+	"""How a theme went: 1 OK out of 3 grademe."""
+	return f"{row.oks} OK out of {row.tries} grademe"
 
 def exam_menu(exams, first=False):
 	"""The menu of the exams: each title with its levels and duration."""

@@ -179,7 +179,11 @@ levels (25 points at rank 02), for a grade out of 100.
   You are warned once, 10 minutes before the end.
 - Closed the terminal, or pressed Ctrl-C? Run `./42pal` again: it offers to
   resume your exam, with the same subject; the time kept running.
-- Every finished exam is kept in `~/.42pal/history.json`.
+- Every finished exam is kept in `~/.42pal/history.json`, and every
+  `grademe` (its subject, its theme, OK or KO) in `~/.42pal/grades.json`.
+  Once there is one, the first menu offers **Progress**: how many exams you
+  took, your best grades, and the themes that fail the most; pick one to
+  practise it at once.
 - `~/42pal_exam/rendu/` is also a git repository: `git add`, `git commit` and
   `git push` work like at the exam, but grademe grades your files whether
   they are committed or not.

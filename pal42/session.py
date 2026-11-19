@@ -12,6 +12,9 @@ from pathlib import Path
 # Hidden, apart from ~/42pal_exam/ which holds what the student works on.
 STATE_DIR = Path.home() / ".42pal"
 
+# The grademe kept in grades.json: enough for the progress, never a huge file.
+MAX_GRADES = 5000
+
 @dataclass
 class Session:
 	"""An exam in progress, as saved in session.json.
@@ -42,6 +45,7 @@ class SessionStore:
 		self.folder = Path(folder)
 		self.session_file = self.folder / "session.json"
 		self.history_file = self.folder / "history.json"
+		self.grades_file = self.folder / "grades.json"
 
 	def save(self, session):
 		"""Write `session`, replacing the one saved before."""
@@ -76,3 +80,17 @@ class SessionStore:
 		self.folder.mkdir(parents=True, exist_ok=True)
 		entries = self.history() + [entry]
 		self.history_file.write_text(json.dumps(entries, indent="\t"), encoding="utf-8")
+
+	def grades(self):
+		"""Return each grademe kept, oldest first ([] if none, or if broken)."""
+		try:
+			entries = json.loads(self.grades_file.read_text(encoding="utf-8"))
+		except (OSError, ValueError):
+			return []
+		return entries if isinstance(entries, list) else []
+
+	def add_grade(self, entry):
+		"""Keep a grademe (a dict: the subject, its themes, passed...), the last MAX_GRADES only."""
+		self.folder.mkdir(parents=True, exist_ok=True)
+		entries = (self.grades() + [entry])[-MAX_GRADES:]
+		self.grades_file.write_text(json.dumps(entries, indent="\t"), encoding="utf-8")

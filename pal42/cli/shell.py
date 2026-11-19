@@ -23,6 +23,7 @@ from pal42.exam import AUDIENCES, ExamError, list_exams, load_exam
 from pal42.grader import grade
 from pal42.retry import RetryPolicy
 from pal42.runners import runner_for
+from pal42.progress import exam_rows, summary, weak_themes
 from pal42.report import full_report
 from pal42.session import STATE_DIR, Session, SessionStore
 from pal42.themes import load_themes
@@ -69,8 +70,9 @@ complete_command = make_completer(COMMANDS)
 # or quit when it is the first menu shown.
 BACK = object()
 
-# The choice of the first menu that leads to practice instead of an exam.
+# The choices of the first menu that lead to practice, or to the progress, instead of an exam.
 PRACTICE = "practice"
+PROGRESS = "progress"
 
 class Shell:
 	"""One exam session in the terminal.
@@ -143,8 +145,9 @@ class Shell:
 				return
 			if not self.resume():
 				start = self.choose_start()
-				while start == PRACTICE:
-					if self.practise():
+				while start in (PRACTICE, PROGRESS):
+					theme = self.show_progress() if start == PROGRESS else None
+					if (start == PRACTICE or theme is not None) and self.practise(theme):
 						return
 					start = self.choose_start()
 				if start is None:
@@ -278,8 +281,8 @@ class Shell:
 					chosen.pop()
 				chosen.pop()
 				continue
-			if answer == PRACTICE:
-				return PRACTICE
+			if answer in (PRACTICE, PROGRESS):
+				return answer
 			chosen.append(answer)
 			shown.append(self.menus_shown > menus_before)
 		_, exam, mode, level = chosen
@@ -296,9 +299,11 @@ class Shell:
 		by_audience = {audience: by_audience[audience] for audience in AUDIENCES
 			if audience in by_audience}
 		choices = list(by_audience) + ([PRACTICE] if self._can_practise() else [])
+		choices += [PROGRESS] if self.store and self.store.grades() else []
 		if len(choices) == 1:
 			return choices[0]
-		self._print_lines(display.audience_menu(by_audience, first, practice=PRACTICE in choices))
+		self._print_lines(display.audience_menu(by_audience, first, practice=PRACTICE in choices,
+			progress=PROGRESS in choices))
 		last = len(choices) + 1
 		number = self._ask_choice("Your choice:", range(1, last + 1))
 		self.console.print()
@@ -308,18 +313,39 @@ class Shell:
 		"""Practice is offered when the catalog has exercises."""
 		return bool(self._catalog()[0].exercises)
 
-	def practise(self):
+	def show_progress(self):
+		"""The progress: a summary, the exams, then the weak themes; return the one to practise, or None.
+
+		None: Back, to the first menu.
+		"""
+		history, grades = self.store.history(), self.store.grades()
+		self.console.print(display.progress_summary(summary(history, grades)))
+		rows = exam_rows(history)
+		if rows:
+			self.console.print(display.exam_progress_table(rows))
+		weak = weak_themes(grades)
+		_, themes = self._catalog()
+		items = [(row.theme, row.theme, display.theme_score(row), themes[row.theme].skill if row.theme in themes else "")
+			for row in weak if row.theme in themes]
+		if not items:
+			self.console.print("No weak theme: every theme you met passed its last grademe.")
+			return None
+		value = self._numbered_menu(("Practise a weak theme:", items), first=False)
+		return None if value is BACK else value
+
+	def practise(self, theme=None):
 		"""Practice, chosen in the first menu: True once it is over, False after Back.
 
-		The practice shell takes over with the same terminal and workspace.
+		The practice shell takes over with the same terminal and workspace;
+		with a theme (from the progress), it starts on that theme at once.
 		"""
 		# Imported here: pal42.cli.practice imports this module.
 		from pal42.cli.practice import PRACTICE_COMMANDS, PracticeShell
 		catalog, themes = self._catalog()
 		practice = PracticeShell(self.console, self.ask, self.workspace, rng=self.rng,
-			catalog=catalog, themes=themes, sleep=self.sleep)
+			catalog=catalog, themes=themes, sleep=self.sleep, store=self.store)
 		complete_with(PRACTICE_COMMANDS)
-		if practice.run(first=False) is BACK:
+		if practice.run(theme, first=False) is BACK:
 			complete_with(COMMANDS)
 			return False
 		return True
@@ -544,10 +570,27 @@ class Shell:
 		log_text = result.trace or f"OK: {result.tests_passed}/{result.tests_total} tests passed\n"
 		log = self.workspace.write_trace(self.attempts, self.variant.name, log_text)
 		self.last_trace = log
+		self._keep_grade(result.passed)
 		self.console.print(display.grade_result(result, log))
 		if not result.passed:
 			self.console.print(display.trace_panel(result.trace))
 		return result
+
+	def _keep_grade(self, passed):
+		"""Keep this grademe in grades.json, for the progress: the subject, its themes, OK or KO."""
+		if not self.store:
+			return
+		exo = self.variant.exercise
+		self.store.add_grade({
+			"when": datetime.fromtimestamp(self.clock()).isoformat(timespec="seconds"),
+			"variant": self.variant.id,
+			"exercise": exo.name,
+			"themes": list(exo.themes),
+			"language": exo.language,
+			"passed": passed,
+			"source": self.exam.id if self.exam else "practice",
+			**({"cheat": True} if self.cheated else {}),
+		})
 
 	def _status(self, text):
 		"""The spinner shown while grading: rich shows it only in a real terminal.
@@ -667,7 +710,7 @@ class Shell:
 			return False
 		current, before = menu.first_menu(self), []
 		while True:
-			value = self._cheat_choice(current, first=not before)
+			value = self._numbered_menu(current, first=not before)
 			if value is BACK:
 				if not before:
 					return False
@@ -681,8 +724,8 @@ class Shell:
 			before.append(current)
 			current = step.menu
 
-	def _cheat_choice(self, menu, first):
-		"""Show a menu of the cheat menu as a numbered list; return the value picked, or BACK."""
+	def _numbered_menu(self, menu, first):
+		"""Show a menu (of the cheat menu, of the progress) as a numbered list; return the value picked, or BACK."""
 		title, items = menu
 		width = max(len(label) for _, label, _, _ in items) + 3
 		lines = [title, *(f"  {number}. {label:{width}}{summary}"
