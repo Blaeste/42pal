@@ -5,4 +5,4 @@ are in charge of all the display.
 """
 
 # Single source of truth for the version, shown by `42pal --version`.
-__version__ = "0.1.0"
+__version__ = "1.0.0"

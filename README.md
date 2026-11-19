@@ -385,3 +385,10 @@ under its own name.
 
 The plan of the project, in French, is in
 [docs/plans/42pal.md](docs/plans/42pal.md).
+
+## License
+
+42pal has its own license, in [LICENSE](LICENSE): anyone may use it for
+free and write new exercises for it, but its code may not be changed nor
+reused elsewhere; copies are shared unchanged. The libraries in `vendor/`
+keep their own licenses.
