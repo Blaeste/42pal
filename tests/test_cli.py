@@ -199,8 +199,10 @@ class TestShell(unittest.TestCase):
 		self.assertIn("Exam mode starts at level 1, like the real exam.", output(shell))
 
 	def test_back_goes_to_the_menu_before_and_skips_the_menus_not_shown(self):
-		"""Back from the exams, then from the mode of the rank 02 (taken without a menu)."""
-		answers = ("", "pw", "1", "5", "2", "3", "1", "2", "", "", "finish")
+		"""Back from the piscine exams, back from the student exams, then a piscine exam."""
+		# Back is the last choice: after the exams of the students (the ranks).
+		ranks = [exam for exam in make_shell(Script(), self.root)._exams() if exam.audience == "student"]
+		answers = ("", "pw", "1", "5", "2", str(len(ranks) + 1), "1", "2", "", "", "finish")
 		shell = make_shell(Script(*answers), self.root)
 		shell.run()
 		self.assertEqual((shell.exam.id, shell.mode, shell.level), ("piscine_02", "revision", 1))

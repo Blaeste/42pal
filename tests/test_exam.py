@@ -54,16 +54,18 @@ class TestRealExams(unittest.TestCase):
 		# hard is 42_EXAM's own: a Fibonacci-like list, from half a minute.
 		self.assertEqual(exam.retry["hard"], RetryPolicy((0.5, 2.5, 3, 5.5, 8.5, 14, 22.5, 36.5, 59)))
 
-	def test_the_rank_03_is_in_python_with_its_6_levels_playable(self):
-		"""Like 42exam.net: 6 levels, Python, run with python3."""
-		exam = load_exam("rank03")
-		self.assertEqual((exam.language, exam.compile_command), ("python", ("python3",)))
-		self.assertEqual(exam.playable_levels, [1, 2, 3, 4, 5, 6])
+	def test_the_python_ranks_have_their_levels_playable(self):
+		"""Like 42exam.net: in Python, run with python3, every level playable."""
+		for exam_id, levels in {"rank03": 6, "rank04": 4}.items():
+			with self.subTest(exam_id):
+				exam = load_exam(exam_id)
+				self.assertEqual((exam.language, exam.compile_command), ("python", ("python3",)))
+				self.assertEqual(exam.playable_levels, list(range(1, levels + 1)))
 
 	def test_every_exam_file_loads(self):
 		"""Each file of exams/ is a valid exam with at least one playable level."""
 		self.assertEqual(list_exams(),
-			["piscine_01", "piscine_02", "piscine_03", "piscine_final", "rank02", "rank03"])
+			["piscine_01", "piscine_02", "piscine_03", "piscine_final", "rank02", "rank03", "rank04"])
 		for exam_id in list_exams():
 			with self.subTest(exam_id):
 				self.assertTrue(load_exam(exam_id).playable_levels)
@@ -143,6 +145,7 @@ class TestAudience(unittest.TestCase):
 		self.assertEqual(audiences, {
 			"piscine_01": "piscine", "piscine_02": "piscine", "piscine_03": "piscine",
 			"piscine_final": "piscine", "rank02": "student", "rank03": "student",
+			"rank04": "student",
 		})
 
 class TestDifficulty(unittest.TestCase):
