@@ -637,6 +637,15 @@ class TestCheckCatalog(unittest.TestCase):
 		self.assertIn("= Test 1", text)
 		self.assertIn("Catalog KO", text)
 
+	def test_no_reference_at_all_says_a_git_clone_is_needed(self):
+		"""A release archive leaves the ref.c out: one clear line, not one error per exercise."""
+		with tempfile.TemporaryDirectory() as folder:
+			catalog = Catalog({"echo_first": ECHO.exercise}, [], {"echo_first": Path(folder)})
+			code, text = self.run_check(catalog)
+		self.assertEqual(code, 1)
+		self.assertIn("git clone", text)
+		self.assertNotIn("no ref.c", text)
+
 	def test_the_variants_of_an_exercise_are_graded_at_the_same_time(self):
 		"""Two variants that wait for each other: graded one after the other, they block."""
 		meeting = threading.Barrier(2, timeout=5)
@@ -652,10 +661,12 @@ class TestCheckCatalog(unittest.TestCase):
 		self.assertIn("2/2 variants OK", text)
 
 	def test_missing_ref_c_and_catalog_warnings_fail(self):
-		"""No ref.c, or a folder skipped by the catalog: both are errors here."""
-		with tempfile.TemporaryDirectory() as folder:
-			catalog = Catalog({"lonely": make_exercise(name="lonely")},
-				["c/empty: no exercise.py, folder skipped"], {"lonely": Path(folder)})
+		"""No ref.c for one exercise, or a folder skipped by the catalog: both are errors."""
+		with tempfile.TemporaryDirectory() as lonely, tempfile.TemporaryDirectory() as echo:
+			(Path(echo) / "ref.c").write_text(ECHO_OK, encoding="utf-8")
+			catalog = Catalog({"lonely": make_exercise(name="lonely"), "echo_first": ECHO.exercise},
+				["c/empty: no exercise.py, folder skipped"],
+				{"lonely": Path(lonely), "echo_first": Path(echo)})
 			code, text = self.run_check(catalog)
 		self.assertEqual(code, 1)
 		self.assertIn("lonely: no ref.c", text)

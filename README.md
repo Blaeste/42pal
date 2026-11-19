@@ -25,6 +25,11 @@ cd 42pal
 ./42pal
 ```
 
+Or download the archive of the latest release (**Releases** on the page of
+the repository), unpack it and run `./42pal` in its folder. It holds only
+what runs 42pal: no tests, no reference solutions. Updates come through
+git: with the archive, download the next release instead.
+
 When a new version is pushed, `./42pal` says so after the login and offers
 to update: yes runs `git pull`, then 42pal starts again on the new version.
 It never asks for a password: with no network, or a remote that needs one,
@@ -349,6 +354,9 @@ then the Python ranks). All 77 C styles and all 37 Python styles have an
 exercise.
 
 ## For contributors
+
+Clone the repository: the archives of the releases leave out the tests,
+the plan and the reference solutions (see [.gitattributes](.gitattributes)).
 
 Run the tests (Python's `unittest`, nothing to install):
 

@@ -28,9 +28,15 @@ def check_catalog(console=None, catalog=None):
 	for warning in catalog.warnings:
 		console.print(f"[bold red]✗[/] {escape(warning)}")
 		ok = False
+	refs = {name: reference_path(exo, catalog.folders[name]) for name, exo in catalog.exercises.items()}
+	if refs and not any(ref.is_file() for ref in refs.values()):
+		# The archive of a release leaves the reference solutions out.
+		console.print("[bold red]✗[/] No reference solution here: check-catalog needs a git clone"
+			" of 42pal (the archive of a release leaves them out).")
+		return 1
 	variants_checked = 0
 	for name in sorted(catalog.exercises):
-		ref = reference_path(catalog.exercises[name], catalog.folders[name])
+		ref = refs[name]
 		if not ref.is_file():
 			console.print(f"[bold red]✗[/] {escape(name)}: no {ref.name}")
 			ok = False
