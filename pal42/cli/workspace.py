@@ -29,6 +29,8 @@ class Workspace:
 		self.subjects = self.root / "subjects"
 		self.rendu = self.root / "rendu"
 		self.traces = self.root / "traces"
+		# The reports written by the report command, to attach to an issue.
+		self.reports = self.root / "reports"
 
 	def give_subject(self, variant):
 		"""Write the subject of `variant`, prepare its rendu folder, return the subject.

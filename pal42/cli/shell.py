@@ -23,6 +23,7 @@ from pal42.exam import AUDIENCES, ExamError, list_exams, load_exam
 from pal42.grader import grade
 from pal42.retry import RetryPolicy
 from pal42.runners import runner_for
+from pal42.report import full_report
 from pal42.session import STATE_DIR, Session, SessionStore
 from pal42.themes import load_themes
 from pal42.update import apply_update, restart
@@ -31,6 +32,7 @@ from pal42.update import apply_update, restart
 COMMANDS = {
 	"status": "where you are: exam, level, subject, time",
 	"grademe": "grade your work",
+	"report": "write a report for an issue: subject, your code, last trace",
 	"finish": "end the exam",
 	"help": "show this help",
 }
@@ -129,6 +131,9 @@ class Shell:
 		self.warned = False
 		# True once the cheat menu was used: the history says so.
 		self.cheated = False
+		# The last trace written by grademe, and the last report written.
+		self.last_trace = None
+		self.last_report = None
 
 	def run(self):
 		"""The whole session: login, exam (or the saved one), then the commands."""
@@ -450,6 +455,8 @@ class Shell:
 		elif command == "grademe":
 			if self.grademe():
 				return True
+		elif command == "report":
+			self.write_report()
 		elif command == "cheat":
 			# Hidden: in no help nor completion, for the owner of 42pal only.
 			if self.cheat():
@@ -536,6 +543,7 @@ class Shell:
 				self.sleep(left)
 		log_text = result.trace or f"OK: {result.tests_passed}/{result.tests_total} tests passed\n"
 		log = self.workspace.write_trace(self.attempts, self.variant.name, log_text)
+		self.last_trace = log
 		self.console.print(display.grade_result(result, log))
 		if not result.passed:
 			self.console.print(display.trace_panel(result.trace))
@@ -622,6 +630,30 @@ class Shell:
 		if self.next_grademe_at is None:
 			return 0
 		return max(0, self.next_grademe_at - self.clock())
+
+	def write_report(self):
+		"""Write a report for an issue in reports/: the system, the subject, the code, the last trace.
+
+		Return its path (kept in last_report).
+		"""
+		variant = self.variant
+		subject = self.workspace.subjects / variant.name / "subject.en.txt"
+		files = {}
+		for name in variant.expected_files:
+			path = self.workspace.rendu / variant.name / name
+			files[name] = path.read_text(encoding="utf-8", errors="replace") if path.is_file() else None
+		trace = None
+		if self.last_trace and self.last_trace.name.endswith(f"_{variant.name}.trace") and self.last_trace.is_file():
+			trace = self.last_trace.read_text(encoding="utf-8", errors="replace")
+		text = full_report(f"{variant.id} ({variant.name})",
+			subject.read_text(encoding="utf-8") if subject.is_file() else "", files, trace,
+			variant.exercise.language, store=self.store)
+		stamp = datetime.fromtimestamp(self.clock()).strftime("%Y%m%d-%H%M%S")
+		self.workspace.reports.mkdir(parents=True, exist_ok=True)
+		self.last_report = self.workspace.reports / f"{stamp}_{variant.name}.md"
+		self.last_report.write_text(text, encoding="utf-8")
+		self.console.print(display.report_written(self.last_report))
+		return self.last_report
 
 	def cheat(self):
 		"""The cheat menu: the passphrase, then the menus of the pack; True if the exam is over.

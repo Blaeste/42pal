@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 from pal42 import __version__
-from pal42.report import report, report_text
+from pal42.report import full_report, report, report_text
 from pal42.session import Session, SessionStore
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -61,3 +61,30 @@ class TestReport(unittest.TestCase):
 			cwd=ROOT)
 		self.assertEqual(result.returncode, 0, result.stderr)
 		self.assertIn(f"version     {__version__}", result.stdout)
+
+class TestFullReport(unittest.TestCase):
+	"""full_report: the report of an issue about one subject, with the code and the last trace."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.store = SessionStore(Path(self.tmp.name) / "state")
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def test_the_system_the_subject_the_code_and_the_trace(self):
+		text = full_report("shift_letters#5 (forward_shift_3)", "Assignment name  : forward_shift_3\n",
+			{"forward_shift_3.c": "int\tmain(void)\n{\n}\n", "other.h": None}, "= Test 1 ===\nDiff KO\n", "c",
+			ROOT, self.store)
+		self.assertTrue(text.startswith("# 42pal report\n"))
+		self.assertIn(f"version     {__version__}", text)
+		self.assertIn("## Subject: shift_letters#5 (forward_shift_3)", text)
+		self.assertIn("```text\nAssignment name  : forward_shift_3\n```", text)
+		self.assertIn("### forward_shift_3.c\n\n```c\nint\tmain(void)\n{\n}\n```", text)
+		self.assertIn("### other.h\n\nmissing", text)
+		self.assertIn("## Last trace\n\n```text\n= Test 1 ===\nDiff KO\n```", text)
+
+	def test_no_trace_yet(self):
+		text = full_report("x#1 (x)", "s", {"x.py": "pass\n"}, None, "python", ROOT, self.store)
+		self.assertIn("```python\npass\n```", text)
+		self.assertIn("## Last trace\n\nno grademe yet", text)

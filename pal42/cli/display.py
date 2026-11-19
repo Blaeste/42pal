@@ -76,6 +76,12 @@ def duration(seconds):
 	"""Write a number of seconds as H:MM:SS, like 0:10:00."""
 	return str(timedelta(seconds=int(seconds)))
 
+def report_written(path):
+	"""Said after the report command: where the report is, and what to do with it."""
+	return (f"Report written: {path_link(path)}\n"
+		"Attach it to an issue on GitHub (Issues, then New issue), or paste it there."
+		" It holds your code: share it only if you want to.")
+
 def help_table(commands):
 	"""The table of the examshell commands, from {command: what it does}."""
 	table = Table(title="Commands", show_header=False, box=None,

@@ -545,3 +545,20 @@ class TestCheatScreens(FullScreenTest):
 			await self.wait_for(pilot, lambda: app.screen is session)
 			self.assertIn("Wrong passphrase.", log_text(session))
 			self.assertFalse(app.shell.cheated)
+
+class TestReportScreen(FullScreenTest):
+	"""report in the full screen: the file is written, and the report goes to the clipboard."""
+
+	@screen_test
+	async def test_report_writes_the_file_and_copies_it(self):
+		app = self.exam_app()
+		copied = []
+		app.copy_to_clipboard = copied.append
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login_to_exams(pilot)
+			await pilot.press("enter", "enter")
+			await pilot.pause()
+			await self.type(pilot, "report")
+			self.assertIn("Report written", log_text(app.screen))
+			self.assertEqual(len(copied), 1)
+			self.assertTrue(copied[0].startswith("# 42pal report"))

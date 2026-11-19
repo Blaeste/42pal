@@ -369,6 +369,12 @@ It gives the version of 42pal, Python, the system, the tools and the exam
 in progress: nothing personal, no code. The help of the examshell (`?`)
 says it too.
 
+For a problem with one subject, type `report` at the `examshell>` (or
+`practice>`) prompt instead: it writes `~/42pal_exam/reports/<date>_<name>.md`
+with the same lines, the subject, your code and the last trace, ready to
+attach to the issue (in full screen, it is copied to the clipboard too). It
+holds your code: share it only if you want to.
+
 ## For contributors
 
 Clone the repository: the archives of the releases leave out the tests,

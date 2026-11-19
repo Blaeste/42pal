@@ -18,6 +18,7 @@ from pal42.practice import draw_practice
 PRACTICE_COMMANDS = {
 	"grademe": "grade your work",
 	"next": "another subject of the same theme",
+	"report": "write a report for an issue: subject, your code, last trace",
 	"finish": "stop practising",
 	"help": "show this help",
 }
@@ -178,6 +179,8 @@ class PracticeShell(Shell):
 			self.console.print(display.help_table(PRACTICE_COMMANDS))
 		elif command == "next":
 			self.next_subject()
+		elif command == "report":
+			self.write_report()
 		elif command == "grademe":
 			# None: the default command of the language (cc -Wall -Wextra -Werror, python3).
 			if self._grade_and_show(None).passed:

@@ -87,3 +87,21 @@ def report_text(root=ROOT, store=None):
 	lines = report(root, store)
 	return "42pal report (paste it in your issue)\n" + "".join(
 		f"{label:12}{value}\n" for label, value in lines)
+
+def full_report(subject_id, subject, files, trace, language, root=ROOT, store=None):
+	"""The report of an issue about one subject, in Markdown, ready to attach or paste.
+
+	The report above, then the subject, the student's files ({name: text, or
+	None when the file is missing}) and the last trace (None before the first
+	grademe). language names the code blocks ("c", "python"). Unlike the
+	report above, it holds the student's code: the student shares it or not.
+	"""
+	system = report_text(root, store).split("\n", 1)[1].rstrip("\n")
+	parts = ["# 42pal report", "", "## System", "", "```text", system, "```", "",
+		f"## Subject: {subject_id}", "", "```text", subject.rstrip("\n"), "```", "", "## Code", ""]
+	for name, text in files.items():
+		parts += [f"### {name}", ""]
+		parts += ["missing", ""] if text is None else [f"```{language}", text.rstrip("\n"), "```", ""]
+	parts += ["## Last trace", ""]
+	parts += ["no grademe yet"] if trace is None else ["```text", trace.rstrip("\n"), "```"]
+	return "\n".join(parts) + "\n"

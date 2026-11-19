@@ -582,7 +582,11 @@ class SessionScreen(Screen):
 			# Hidden: the menus of the cheat menu are screens of the app.
 			self.app.cheat_flow(self)
 		else:
+			before = self.shell.last_report
 			self.finish_command(*self.capture(command))
+			# A new report goes to the clipboard too, ready to paste in an issue.
+			if self.shell.last_report is not None and self.shell.last_report != before:
+				self.app.copy_to_clipboard(self.shell.last_report.read_text(encoding="utf-8"))
 
 	@work(thread=True, exclusive=True)
 	def grade_in_background(self, command):

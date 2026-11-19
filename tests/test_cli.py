@@ -137,6 +137,39 @@ def output(shell):
 	"""Everything the shell has printed."""
 	return shell.console.file.getvalue()
 
+class TestReportCommand(unittest.TestCase):
+	"""report in the examshell: a file with the system, the subject, the code and the last trace."""
+
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.root = Path(self.tmp.name) / "42pal_exam"
+
+	def tearDown(self):
+		self.tmp.cleanup()
+
+	def test_report_writes_a_file_to_attach_to_an_issue(self):
+		shell = make_shell(Script(), self.root)
+		shell.start(load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES), 2)
+		rendu = self.root / "rendu" / shell.variant.name
+		rendu.mkdir(parents=True, exist_ok=True)
+		(rendu / "echo_first.c").write_text("int\tmain(void)\n{\n\treturn (1);\n}\n", encoding="utf-8")
+		shell.handle("grademe")
+		shell.handle("report")
+		reports = list((self.root / "reports").glob("*_echo_first.md"))
+		self.assertEqual(len(reports), 1)
+		text = reports[0].read_text(encoding="utf-8")
+		self.assertIn(f"## Subject: {shell.variant.id} (echo_first)", text)
+		self.assertIn("return (1);", text)
+		self.assertIn("Diff KO", text)
+		self.assertIn("Report written", output(shell))
+		self.assertEqual(shell.last_report, reports[0])
+
+	def test_report_is_in_the_help(self):
+		shell = make_shell(Script(), self.root)
+		shell.start(load_exam("rank02", catalog=ECHO_CATALOG, themes=ECHO_THEMES), 2)
+		shell.handle("help")
+		self.assertIn("report", output(shell))
+
 class TestHelpTable(unittest.TestCase):
 	def test_the_help_says_how_to_report_a_problem(self):
 		console = Console(file=io.StringIO(), width=100, color_system=None)
@@ -989,7 +1022,7 @@ class TestCompletion(unittest.TestCase):
 		while (command := complete_command("", state)) is not None:
 			found.append(command)
 			state += 1
-		self.assertCountEqual(found, ["status", "grademe", "finish", "help"])
+		self.assertCountEqual(found, ["status", "grademe", "report", "finish", "help"])
 
 class TestPractice(unittest.TestCase):
 	"""./42pal practice: subjects of one theme, no timer, no wait."""
