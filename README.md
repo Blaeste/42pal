@@ -158,13 +158,16 @@ is given.
 
 ## What the catalog has today
 
-Six exams: the piscine ones like in 42_EXAM, the ranks like on
-[42exam.net](https://42exam.net/). A student chooses between the two ranks.
+Nine exams: the piscine ones like in 42_EXAM, the ranks like on
+[42exam.net](https://42exam.net/). A student chooses one of the five ranks.
 
 | Exam | Language | Levels | Time | Levels that can be played today |
 |---|---|---|---|---|
 | Exam Rank 02 | C | 4 (25 points each) | 3 h | 1, 2, 3, 4 |
 | Exam Rank 03 | Python | 6 (16.67 points each) | 3 h | 1 to 6 |
+| Exam Rank 04 | Python | 4 (25 points each) | 3 h | 1 to 4 |
+| Exam Rank 05 | Python | 3 (33.33 points each) | 3 h | 1 to 3 |
+| Exam Rank 06 | Python | 2 (50 points each) | 3 h | 1, 2 |
 | Piscine Exam 01 | C | 8 (12.5 points each) | 4 h | 1 to 8 |
 | Piscine Exam 02 | C | 8 (12.5 points each) | 4 h | 1 to 8 |
 | Piscine Exam 03 | C | 4 (25 points each) | 4 h | 1 to 4 |
@@ -173,7 +176,8 @@ Six exams: the piscine ones like in 42_EXAM, the ranks like on
 In Python, the student hands in a `.py` file with the function the subject
 asks for: a test main imports it, calls it and compares what it returns
 with the expected value. The subject says which modules may be imported
-(usually none) and which calls are forbidden (like `sorted()`).
+(usually none) and which calls are forbidden (like `sorted()`). For a class,
+the test main builds the object and calls its methods one after the other.
 
 | Exercise | Kind | Theme | Variants |
 |---|---|---|---|
@@ -255,24 +259,47 @@ with the expected value. The subject says which modules may be imported
 | `flag_mask` | program | option_flags | 6 |
 | `expr_eval` | program | postfix_calc | 3 |
 
-The Python exercises of the Exam Rank 03, all functions:
+The Python exercises of the ranks 03 to 06:
 
-| Exercise | Theme | Variants |
-|---|---|---|
-| `nest_check` | bracket_balance | 6 |
-| `key_sort` | multi_key_sort | 3 |
-| `mirror_word` | palindrome_check | 3 |
-| `grid_turn` | matrix_flip | 4 |
-| `trace_letters` | subsequence_check | 3 |
-| `char_mix` | shared_chars | 3 |
-| `base_shift` | base_convert | 3 |
-| `digit_steps` | digit_pairs | 4 |
-| `letter_bag` | same_letters | 3 |
-| `merge_twist` | sorted_merge | 3 |
-| `char_balance` | char_multiset | 3 |
-| `case_wave` | case_alternate | 3 |
-| `shift_list` | list_rotate | 3 |
-| `key_shift` | letter_shift | 3 |
+| Exercise | Kind | Theme | Variants |
+|---|---|---|---|
+| `nest_check` | function, rank 03 | bracket_balance | 6 |
+| `key_sort` | function, rank 03 | multi_key_sort | 3 |
+| `mirror_word` | function, rank 03 | palindrome_check | 3 |
+| `grid_turn` | function, rank 03 | matrix_flip | 4 |
+| `trace_letters` | function, rank 03 | subsequence_check | 3 |
+| `char_mix` | function, rank 03 | shared_chars | 3 |
+| `base_shift` | function, rank 03 | base_convert | 3 |
+| `digit_steps` | function, rank 03 | digit_pairs | 4 |
+| `letter_bag` | function, rank 03 | same_letters | 3 |
+| `merge_twist` | function, rank 03 | sorted_merge | 3 |
+| `char_balance` | function, rank 03 | char_multiset | 3 |
+| `case_wave` | function, rank 03 | case_alternate | 3 |
+| `shift_list` | function, rank 03 | list_rotate | 3 |
+| `key_shift` | function, rank 03 | letter_shift | 3 |
+| `turn_find` | function, rank 04 | rotation_check | 3 |
+| `star_chart` | function, rank 04 | grid_plot | 3 |
+| `common_sorted` | function, rank 04 | sorted_intersection | 3 |
+| `merge_many` | function, rank 04 | k_way_merge | 3 |
+| `mirror_parts` | function, rank 04 | palindrome_cuts | 3 |
+| `need_order` | function, rank 04 | dependency_order | 3 |
+| `window_stat` | function, rank 04 | window_max | 4 |
+| `run_pack` | function, rank 05 | run_length | 3 |
+| `path_fill` | function, rank 05 | spiral_fill | 3 |
+| `slot_share` | function, rank 05 | interval_rooms | 3 |
+| `loop_seek` | function, rank 05 | graph_cycle | 3 |
+| `zone_count` | function, rank 05 | grid_regions | 4 |
+| `grid_seek` | function, rank 05 | grid_word_search | 3 |
+| `word_chain` | function, rank 05 | word_steps | 3 |
+| `word_tree` | class, rank 06 | prefix_tree | 3 |
+| `string_pack` | function, rank 06 | string_packing | 3 |
+| `task_plan` | function, rank 06 | task_schedule | 3 |
+| `edge_spare` | function, rank 06 | extra_edge | 3 |
+| `word_complete` | function, rank 06 | prefix_complete | 3 |
+| `set_groups` | class, rank 06 | disjoint_sets | 3 |
+| `value_keeper` | class, rank 06 | lru_cache | 3 |
+| `top_heap` | class, rank 06 | binary_heap | 3 |
+| `cut_find` | function, rank 06 | graph_bridges | 2 |
 
 The subjects are
 written for 42pal: no real exam subject is in this repository. Each theme
@@ -281,9 +308,8 @@ levels where 42_EXAM places it, and a test checks it. A level draws one of
 its styles, then one exercise of that style: like the real exam, which draws
 one of the subjects of the level. The levels of the ranks follow the lists
 of [42exam.net](https://42exam.net/) (57 subjects for the Exam Rank 02,
-then the Python ranks). All 77 C styles have an exercise, and the 14
-Python styles of the Exam Rank 03; the Python ranks 04 to 06 (23 styles)
-come next.
+then the Python ranks). All 77 C styles and all 37 Python styles have an
+exercise.
 
 ## For contributors
 
