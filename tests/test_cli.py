@@ -137,6 +137,18 @@ def output(shell):
 	"""Everything the shell has printed."""
 	return shell.console.file.getvalue()
 
+class TestPoints(unittest.TestCase):
+	"""display.points: the points of a level and the grade, as a student reads them."""
+
+	def test_two_decimals_at_most_and_no_useless_zero(self):
+		"""6 levels make 16.67 points each, not 16.6667; 25 stays 25, 12.5 stays 12.5."""
+		self.assertEqual(display.points(100 / 6), "16.67")
+		self.assertEqual(display.points(100 / 3), "33.33")
+		self.assertEqual(display.points(100 / 6 * 6), "100")
+		self.assertEqual(display.points(25.0), "25")
+		self.assertEqual(display.points(12.5), "12.5")
+		self.assertEqual(display.points(0), "0")
+
 class TestShell(unittest.TestCase):
 	"""The examshell, driven by a Script."""
 

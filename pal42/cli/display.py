@@ -228,8 +228,8 @@ def update_failed(why):
 	return f"[yellow]The update failed: {escape(why)}[/] Nothing was changed; 42pal goes on."
 
 def points(value):
-	"""Write points without a useless .0: 25, but 12.5."""
-	return f"{value:g}"
+	"""Write points with 2 decimals at most and no useless zero: 25, 12.5, 16.67."""
+	return f"{round(value, 2):g}"
 
 # The menus before the exam. Their lines stay under 80 characters.
 
