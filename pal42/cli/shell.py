@@ -15,6 +15,7 @@ from datetime import datetime
 from rich.console import Console
 from rich.markup import escape
 
+from pal42 import cheat
 from pal42.catalog import load_catalog
 from pal42.cli import display
 from pal42.cli.workspace import Workspace
@@ -104,6 +105,8 @@ class Shell:
 		self.update_check = None
 		self.updater = apply_update
 		self.restart = False
+		# The encrypted cheat menu: cheat.PACK unless a test gives its own.
+		self.cheat_pack = None
 
 	def _reset(self):
 		"""No exam in progress: the state before an exam starts."""
@@ -124,6 +127,8 @@ class Shell:
 		self.oks = 0
 		# True once the "less than 10 minutes" warning has been given.
 		self.warned = False
+		# True once the cheat menu was used: the history says so.
+		self.cheated = False
 
 	def run(self):
 		"""The whole session: login, exam (or the saved one), then the commands."""
@@ -228,6 +233,7 @@ class Shell:
 		self.passed_levels = list(session.passed_levels)
 		self.next_grademe_at = session.next_grademe_at
 		self.warned = session.warned
+		self.cheated = session.cheat
 
 	def _forget(self, end):
 		"""Keep the restored exam in the history as `end`, then start afresh."""
@@ -444,6 +450,10 @@ class Shell:
 		elif command == "grademe":
 			if self.grademe():
 				return True
+		elif command == "cheat":
+			# Hidden: in no help nor completion, for the owner of 42pal only.
+			if self.cheat():
+				return True
 		elif command:
 			# escape: what the student typed must not be read as rich markup.
 			self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
@@ -475,6 +485,13 @@ class Shell:
 			self.next_grademe_at = self.clock() + wait
 			self.console.print(display.next_grademe(wait, self.retry.wait_after(self.failures + 1)))
 			return False
+		return self._level_passed()
+
+	def _level_passed(self):
+		"""The current level is passed: its points, then the next level or the end.
+
+		Return True when the exam is over.
+		"""
 		# Passed: the next subject starts with no failure and no wait.
 		self.failures = 0
 		self.next_grademe_at = None
@@ -564,6 +581,7 @@ class Shell:
 			"seconds": round(elapsed),
 			"mode": self.mode,
 			"end": end,
+			**({"cheat": True} if self.cheated else {}),
 		}
 
 	def _save(self):
@@ -572,7 +590,7 @@ class Shell:
 			self.store.save(Session(
 				self.exam.id, self.level, self.variant.id, self.started_at,
 				self.mode, self.attempts, self.oks, self.failures,
-				self.passed_levels, self.next_grademe_at, self.warned,
+				self.passed_levels, self.next_grademe_at, self.warned, self.cheated,
 			))
 
 	def _catalog(self):
@@ -604,6 +622,45 @@ class Shell:
 		if self.next_grademe_at is None:
 			return 0
 		return max(0, self.next_grademe_at - self.clock())
+
+	def cheat(self):
+		"""The cheat menu: the passphrase, then the menus of the pack; True if the exam is over.
+
+		Back in a menu goes to the menu before; in the first one, back to the
+		exam. A choice that opens no menu goes back to the exam too.
+		"""
+		menu = cheat.unlock(self.ask_password("Passphrase: "), self.cheat_pack)
+		if menu is None:
+			self.console.print("Wrong passphrase.")
+			return False
+		current, before = menu.first_menu(self), []
+		while True:
+			value = self._cheat_choice(current, first=not before)
+			if value is BACK:
+				if not before:
+					return False
+				current = before.pop()
+				continue
+			step = menu.choose(self, value)
+			if step.text:
+				self.console.print(step.text)
+			if step.over or not step.menu:
+				return step.over
+			before.append(current)
+			current = step.menu
+
+	def _cheat_choice(self, menu, first):
+		"""Show a menu of the cheat menu as a numbered list; return the value picked, or BACK."""
+		title, items = menu
+		width = max(len(label) for _, label, _, _ in items) + 3
+		lines = [title, *(f"  {number}. {label:{width}}{summary}"
+			for number, (_, label, summary, _) in enumerate(items, start=1))]
+		last = len(items) + 1
+		lines.append(f"  {last}. {'Back to the exam' if first else 'Back (previous menu)'}")
+		self._print_lines(lines)
+		number = self._ask_choice("Your choice:", range(1, last + 1))
+		self.console.print()
+		return BACK if number == last else items[number - 1][0]
 
 	def _ask_choice(self, prompt, allowed, default=None):
 		"""Ask until the answer is one of the numbers of `allowed`; return it."""

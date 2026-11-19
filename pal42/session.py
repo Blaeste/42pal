@@ -32,6 +32,8 @@ class Session:
 	passed_levels: list = field(default_factory=list)
 	next_grademe_at: float | None = None
 	warned: bool = False
+	# True once the cheat menu was used during this exam.
+	cheat: bool = False
 
 class SessionStore:
 	"""session.json and history.json, in `folder` (~/.42pal by default)."""

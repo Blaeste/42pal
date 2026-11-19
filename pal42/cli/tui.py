@@ -33,6 +33,7 @@ from textual.suggester import SuggestFromList
 from textual.widgets import Input, OptionList, RichLog, Static
 from textual.widgets.option_list import Option
 
+from pal42 import cheat
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
 from pal42.cli.shell import BACK, COMMANDS, PRACTICE, RETRY_OF_MODE, SHORTCUTS, Shell
@@ -209,6 +210,30 @@ class LoginScreen(IntroScreen):
 		event.input.value = ""
 		self.dismiss(self.query_one("#login", Input).value.strip() or self.user)
 
+class PassphraseScreen(Screen):
+	"""The passphrase of the cheat menu, hidden as it is typed; dismissed with it ("" for Esc)."""
+
+	BINDINGS = [("escape", "cancel", "Back")]
+
+	def compose(self) -> ComposeResult:
+		with Vertical(classes="root"):
+			with Vertical(classes="card"):
+				yield Static("passphrase", classes="field-label")
+				yield Input(password=True, id="passphrase")
+			yield Static(hints([("⏎", "unlock"), ("esc", "back")]), classes="hints")
+
+	def on_mount(self):
+		self.query_one(".card").border_title = " Cheat "
+		self.query_one("#passphrase", Input).focus()
+
+	def on_input_submitted(self, event):
+		passphrase = event.value
+		event.input.value = ""
+		self.dismiss(passphrase)
+
+	def action_cancel(self):
+		self.dismiss("")
+
 class MenuScreen(IntroScreen):
 	"""A menu: a choice per item, then Back (or Quit in the first menu).
 
@@ -225,13 +250,15 @@ class MenuScreen(IntroScreen):
 		("k", "move(-1)", "Up"),
 	]
 
-	def __init__(self, title, items, first, highlight=0):
+	def __init__(self, title, items, first, highlight=0, last=None):
 		super().__init__()
 		self.title = title
 		self.items = list(items)
 		self.first = first
 		self.highlight = highlight
-		self.last_details = "Quit 42pal." if first else "Back to the menu before."
+		# last: (label, details) of the last choice, instead of Quit or Back.
+		self.last_label, self.last_details = last or (
+			("Quit", "Quit 42pal.") if first else ("Back", "Back to the menu before."))
 
 	def compose(self) -> ComposeResult:
 		with Vertical(classes="root"):
@@ -241,11 +268,12 @@ class MenuScreen(IntroScreen):
 				options = [Option(option_label(title, meta), id=str(index))
 					for index, (_, title, meta, _) in enumerate(self.items)]
 				options.append(None)
-				options.append(Option(Text("Quit" if self.first else "Back", style="dim"), id="back"))
+				options.append(Option(Text(self.last_label, style="dim"), id="back"))
 				yield OptionList(*options)
 			yield Static(classes="details")
+			# Esc chooses the last choice: it quits only when that choice is Quit.
 			yield Static(hints([("↑↓ jk", "move"), ("⏎", "choose"),
-				("esc", "quit" if self.first else "back"), ("q", "quit")]), classes="hints")
+				("esc", "quit" if self.last_label == "Quit" else "back"), ("q", "quit")]), classes="hints")
 
 	def on_mount(self):
 		self.query_one(".card").border_title = f" {self.title} "
@@ -550,6 +578,9 @@ class SessionScreen(Screen):
 			self.busy = True
 			event.input.disabled = True
 			self.grade_in_background(command)
+		elif command == "cheat" and not self.practice:
+			# Hidden: the menus of the cheat menu are screens of the app.
+			self.app.cheat_flow(self)
 		else:
 			self.finish_command(*self.capture(command))
 
@@ -642,9 +673,48 @@ class Pal42App(App):
 		shown = target if WEB_ADDRESS.match(target) else display.short_path(target)
 		self.notify(f"Opening {shown}", timeout=3)
 
-	async def ask(self, title, items, first, highlight=0):
+	async def ask(self, title, items, first, highlight=0, last=None):
 		"""Show a menu; return the value of the item chosen, or BACK."""
-		return await self.push_screen(MenuScreen(title, items, first, highlight), wait_for_dismiss=True)
+		return await self.push_screen(MenuScreen(title, items, first, highlight, last), wait_for_dismiss=True)
+
+	@work
+	async def cheat_flow(self, screen):
+		"""The cheat menu, from the session screen: the passphrase, then the menus of the pack.
+
+		Back in a menu goes to the menu before; in the first one, back to the
+		exam. What the choices print goes to the log of the session screen.
+		"""
+		shell = screen.shell
+		passphrase = await self.push_screen(PassphraseScreen(), wait_for_dismiss=True)
+		# PBKDF2 is slow on purpose: not in the loop of the screens.
+		menu = await asyncio.to_thread(cheat.unlock, passphrase, shell.cheat_pack) if passphrase else None
+		if menu is None:
+			screen.finish_command(False, "Wrong passphrase.\n" if passphrase else "")
+			return
+		current, before, printed = menu.first_menu(shell), [], ""
+		while True:
+			title, items = current
+			last = ("Back to the exam", "Close the cheat menu.") if not before else None
+			value = await self.ask(title, items, first=not before, last=last)
+			if value is BACK:
+				if not before:
+					break
+				current = before.pop()
+				continue
+			screen.fit_console()
+			shell.console.begin_capture()
+			try:
+				step = menu.choose(shell, value)
+				if step.text:
+					shell.console.print(step.text)
+			finally:
+				printed += shell.console.end_capture()
+			if step.over or not step.menu:
+				screen.finish_command(step.over, printed)
+				return
+			before.append(current)
+			current = step.menu
+		screen.finish_command(False, printed)
 
 	def run_quietly(self, action):
 		"""Run action() in the shell; what it printed is shown as a notification."""

@@ -493,3 +493,55 @@ class TestLogLinks(unittest.TestCase):
 			await pilot.click("#log", offset=(10, 0))
 			await pilot.pause()
 		self.assertEqual(app.opened, ["/tmp/t/01.trace"])
+
+class TestCheatScreens(FullScreenTest):
+	"""cheat in the full screen: the passphrase in a card, then the menus of the pack."""
+
+	async def start_session(self, pilot):
+		await self.login_to_exams(pilot)
+		await pilot.press("enter", "enter")
+		await pilot.pause()
+
+	def sealed_app(self):
+		from pal42 import cheat
+		from tests.test_cheat import MENU
+		app = self.exam_app()
+		pack = Path(self.root).parent / "cheat.pack"
+		pack.write_bytes(cheat.seal(MENU, "pw", iterations=1000))
+		app.shell.cheat_pack = pack
+		return app
+
+	async def wait_for(self, pilot, condition):
+		for _ in range(100):
+			await pilot.pause(0.02)
+			if condition():
+				return
+
+	@screen_test
+	async def test_the_passphrase_then_a_choice_then_back_to_the_exam(self):
+		app = self.sealed_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.start_session(pilot)
+			session = app.screen
+			await self.type(pilot, "cheat")
+			self.assertEqual(app.screen.query_one(".card").border_title, " Cheat ")
+			await self.type(pilot, "pw")
+			await self.wait_for(pilot, lambda: app.screen.title == "Made-up menu")
+			self.assertEqual(app.screen.title, "Made-up menu")
+			await pilot.press("enter")
+			await self.wait_for(pilot, lambda: app.screen is session)
+			self.assertIs(app.screen, session)
+			self.assertIn("hello from hello", log_text(session))
+			self.assertTrue(app.shell.cheated)
+
+	@screen_test
+	async def test_a_wrong_passphrase_goes_back_to_the_exam(self):
+		app = self.sealed_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.start_session(pilot)
+			session = app.screen
+			await self.type(pilot, "cheat")
+			await self.type(pilot, "nope")
+			await self.wait_for(pilot, lambda: app.screen is session)
+			self.assertIn("Wrong passphrase.", log_text(session))
+			self.assertFalse(app.shell.cheated)
