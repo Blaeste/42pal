@@ -62,6 +62,9 @@ int	main(int ac, char **av)
 #endif
 		i++;
 	}
+#if defined(MOVE_SWAP_ENDS) || defined(MOVE_FIRST_TWO_LAST)
+	(void)chosen;
+#endif
 	i = -1;
 	while (++i < count)
 	{

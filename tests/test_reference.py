@@ -3,6 +3,7 @@
 Run all the tests from the project root with: python3 -m unittest -v
 """
 
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -17,7 +18,7 @@ CATALOG = load_catalog()
 # ref.c and its -D flags are for C; a ref.py needs no flag.
 C_EXERCISES = {name: exo for name, exo in CATALOG.exercises.items() if exo.language == "c"}
 
-def compile_reference(name, params, work, flags=None):
+def compile_reference(name, params, work, flags=None, command=DEFAULT_COMMAND):
 	"""Compile the ref.c of exercise `name` for `params`; return the CompileResult.
 
 	The other expected files (a header) are taken next to ref.c, like
@@ -35,7 +36,7 @@ def compile_reference(name, params, work, flags=None):
 	if variant.exercise.kind == "function":
 		extra.append(Path(work) / "main_42pal.c")
 		extra[-1].write_text(variant.harness, encoding="utf-8")
-	command = DEFAULT_COMMAND + (variant.defines if flags is None else flags)
+	command = command + (variant.defines if flags is None else flags)
 	# ref.c, with the header the student hands in too, if any, next to it.
 	sources = list(reference_files(variant, CATALOG.folders[name] / "ref.c").values())
 	return CRunner(command).compile(sources, work, variant.name, extra=extra)
@@ -49,6 +50,17 @@ class TestReferences(unittest.TestCase):
 			for params in exo.combinations():
 				with self.subTest(f"{name} {params}"), tempfile.TemporaryDirectory() as work:
 					result = compile_reference(name, params, work)
+					self.assertTrue(result.ok, result.output)
+
+	@unittest.skipUnless(shutil.which("gcc"), "gcc is not installed")
+	def test_ref_c_compiles_with_gcc_too(self):
+		"""gcc warns about a variable set but never used, like a recent clang: none either."""
+		command = ("gcc", "-Wall", "-Wextra", "-Werror")
+		for name, exo in C_EXERCISES.items():
+			for params in exo.combinations():
+				with self.subTest(f"{name} {params}"), tempfile.TemporaryDirectory() as work:
+					variant = Variant(exo, 0, params)
+					result = compile_reference(name, params, work, flags=variant.defines, command=command)
 					self.assertTrue(result.ok, result.output)
 
 	def test_ref_c_refuses_to_compile_without_its_flags(self):

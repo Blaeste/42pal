@@ -42,6 +42,7 @@ int	FT_NAME(unsigned int n)
 		return (0);
 	bits = width(n);
 	(void)i;
+	(void)bits;
 #if defined(PROPERTY_POWER_OF_4)
 	return ((n & (n - 1)) == 0 && (bits - 1) % 2 == 0);
 #elif defined(PROPERTY_ALL_ONES)

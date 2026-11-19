@@ -38,6 +38,7 @@ int	main(int ac, char **av)
 		i = -1;
 		while (av[1][++i])
 			total += found(av[1][i], av[2][0]);
+		(void)total;
 		count = 0;
 		i = -1;
 		while (av[1][++i])

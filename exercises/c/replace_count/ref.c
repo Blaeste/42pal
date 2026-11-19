@@ -50,6 +50,7 @@ int	FT_NAME(char *str, char from, char to)
 		place = i > 0 && str[i + 1] != '\0';
 #endif
 		before = str[i];
+		(void)before;
 		if (str[i] == from && place)
 		{
 			str[i] = to;

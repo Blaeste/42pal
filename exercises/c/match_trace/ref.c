@@ -51,6 +51,7 @@ int	main(int ac, char **av)
 		}
 #if defined(WHAT_PREFIX)
 		(void)c;
+		(void)used;
 		write(1, av[1], made);
 #else
 		i = 0;
