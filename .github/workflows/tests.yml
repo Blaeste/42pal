@@ -35,8 +35,13 @@ jobs:
           echo "exercises=$scope" >> "$GITHUB_OUTPUT"
       - name: clang as cc, and valgrind, like on the campus machines
         run: |
-          sudo apt-get update
-          sudo apt-get install -y clang valgrind
+          # The mirrors of Ubuntu fail now and then: up to 3 tries.
+          for attempt in 1 2 3; do
+            sudo apt-get update -q && sudo apt-get install -y -q clang valgrind && break
+            echo "apt-get failed (try $attempt), again in 15 s"
+            sleep 15
+          done
+          command -v clang valgrind
           mkdir -p "$HOME/bin"
           ln -s "$(command -v clang)" "$HOME/bin/cc"
           echo "$HOME/bin" >> "$GITHUB_PATH"
