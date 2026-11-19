@@ -2,11 +2,13 @@
 # supports and a recent one. Only what changed is checked, with what it can
 # break (tools/ci_scope.py): a change to the docs alone starts nothing, a
 # change to some exercises checks those exercises, and a change to the core
-# checks every exercise.
+# checks every exercise. Pushing a tag starts nothing: its commit was
+# tested when it was pushed to a branch.
 name: tests
 
 on:
   push:
+    branches: ["**"]
     paths-ignore: ["**.md", "docs/**", "LICENSE", ".github/ISSUE_TEMPLATE/**"]
   pull_request:
     paths-ignore: ["**.md", "docs/**", "LICENSE", ".github/ISSUE_TEMPLATE/**"]
