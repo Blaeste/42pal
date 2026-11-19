@@ -106,13 +106,34 @@ alive, with the number of the test being run.
 
 ### What grademe checks
 
-Your files are compiled with `cc -Wall -Wextra -Werror`, then:
+In C, your files are compiled with `cc -Wall -Wextra -Werror`, then:
 
 - the files the subject expects must be there;
 - no forbidden function may be used (only those in "Allowed functions");
 - each test must not crash nor run more than 5 seconds, and must print
   exactly what is expected;
 - for some exercises, `valgrind` must find no leak.
+
+In Python, the syntax of your file is checked first (`python3 -m
+py_compile`), then:
+
+- no module may be imported but those in "Allowed imports", and no call
+  listed in "Forbidden" may be made (read in your code, comments and strings
+  left out);
+- each test calls your function (or the methods of your class) and must
+  not raise nor run more than 5 seconds; what it returns must be exactly
+  the expected value. The trace shows the call and both values:
+
+```
+= Test 2 =======================================================================
+$> sort_by_digits(['a1', 'b22', 'c'])
+--- student
++++ moulinette
+-['a1', 'b22', 'c']$
++['b22', 'a1', 'c']$
+
+Diff KO
+```
 
 **OK**: you go to the next level, with a new subject. **KO**: the trace is
 shown in the terminal and written in `traces/` (the path can be clicked).
