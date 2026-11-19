@@ -24,5 +24,12 @@ class TestScope(unittest.TestCase):
 			with self.subTest(changed):
 				self.assertEqual(SCOPE(["exercises/c/word_each/ref.c", changed]), "all")
 
+	def test_the_interface_changes_no_grading(self):
+		"""The screens, the report, the progress...: their own tests run, not every exercise again."""
+		self.assertEqual(SCOPE(["pal42/cli/tui.py", "pal42/cli/tui.tcss", "pal42/report.py", "pal42/progress.py",
+			"pal42/session.py", "pal42/update.py", "pal42/cheat.py", "pal42/cheat.pack"]), "none")
+		self.assertEqual(SCOPE(["pal42/cli/check.py"]), "all")
+		self.assertEqual(SCOPE(["pal42/cli/display.py", "exercises/c/word_each/ref.c"]), "word_each")
+
 	def test_other_tests_change_nothing_to_check(self):
 		self.assertEqual(SCOPE(["tests/test_cli.py"]), "none")
