@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui\n$rule.\n\nChaque caractère compte, les espaces aussi, et la casse compte (a et A sont deux\ncaractères).\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"changes": "prend deux chaînes, s1 et s2, et renvoie le plus petit\nnombre de caractères de s1 à remplacer par d'autres caractères pour que s1\ncontienne les mêmes caractères que s2, autant de fois chacun, dans n'importe quel ordre ; ou\n-1 si les deux chaînes n'ont pas la même longueur",
+			"first_extra": "prend deux chaînes, s1 et s2, et renvoie le premier\ncaractère de s1 qui apparaît plus de fois dans s1 que dans s2 ; ou une chaîne\nvide s'il n'y en a pas",
+			"window": "prend deux chaînes, small et big. Une partie de big\nfait autant de caractères que small, voisins dans big. La\nfonction renvoie l'indice de la première partie de big qui contient les mêmes\ncaractères que small, autant de fois chacun, dans n'importe quel ordre ; -1 s'il n'y en a\npas, et 0 pour un small vide"
+		}
+	}
+}

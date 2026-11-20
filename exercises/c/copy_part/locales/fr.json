@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui copie dans dst\n$how,\nsuivis d'un '\\0', et renvoie dst. n vaut 0 ou plus, et dst est assez\ngrand.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *dst, char *src, int n);\n\nDans les exemples, la ligne sous un appel montre dst après l'appel.",
+	"texts": {
+		"how": {
+			"first_n": "les n premiers caractères de src (tous si src en a moins)",
+			"last_n": "les n derniers caractères de src (tous si src en a moins)",
+			"from_n": "les caractères de src après ses n premiers (rien si src a n\ncaractères ou moins)"
+		}
+	}
+}

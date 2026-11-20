@@ -507,7 +507,9 @@ class SessionScreen(Screen):
 			return
 		self.shown_variant = variant.id
 		workspace = self.shell.workspace
-		subject = workspace.subjects / variant.name / "subject.en.txt"
+		subject = workspace.subject_file(variant)
+		if not subject.is_file():
+			subject = workspace.subjects / variant.name / "subject.en.txt"
 		rendu = workspace.rendu / variant.name
 		# The paths open with a click: the subject in an editor, the rendu in
 		# the file manager. One Text: textual can only select in a single text,

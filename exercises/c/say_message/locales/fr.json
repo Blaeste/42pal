@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui affiche le message\n$message\n$case,\nsuivi d'un retour à la ligne.\n\nLe programme ignore ses arguments.",
+	"texts": {
+		"message": {
+			"good_morning": "Good morning!",
+			"forty_two": "42 is the answer.",
+			"see_you": "See you soon!"
+		},
+		"case": {
+			"as_is": "écrit exactement comme ceci",
+			"upper": "avec ses lettres minuscules changées en majuscules"
+		}
+	}
+}

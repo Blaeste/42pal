@@ -1,0 +1,9 @@
+{
+	"subject": "Écrire une fonction qui prend un graphe non orienté sous forme de dict : chaque clé est un\nnœud (un int) et sa valeur la liste des nœuds auxquels il est relié ; chaque\narête est listée dans les deux sens, et aucun nœud n'est relié à lui-même. Les nœuds reliés par\ndes arêtes, directement ou non, sont dans le même groupe, et un nœud sans arête est un\ngroupe à lui seul. La fonction renvoie\n$rule.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"points": "les nœuds dont le retrait, avec leurs arêtes, laisse le\ngraphe en plus de groupes qu'avant, triés dans l'ordre croissant",
+			"groups": "un dict qui donne, pour chaque nœud dans l'ordre\ncroissant, le nombre de groupes du graphe sans ce nœud et ses arêtes"
+		}
+	}
+}

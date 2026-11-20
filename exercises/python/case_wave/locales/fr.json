@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui renvoie une copie de la chaîne text où\n$rule.\n\nLes lettres sont a à z et A à Z ; les autres caractères restent tels quels\net, sauf indication contraire, ne sont pas comptés.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"words": "dans chaque mot, les lettres alternent majuscule et minuscule, en commençant par\nune majuscule : la première lettre de chaque mot est en majuscule,\nla deuxième en minuscule, et ainsi de suite. Les mots sont séparés par des espaces",
+			"pattern": "les lettres suivent le motif pattern, une chaîne de u (majuscule)\net de l (minuscule) qui n'est jamais vide. La première lettre prend la\ncasse du premier caractère du motif, la deuxième lettre la casse\ndu deuxième, et ainsi de suite, en reprenant le motif au début quand il se termine",
+			"all_chars": "le caractère à un indice pair (0, 2, 4...) est en majuscule, celui\nà un indice impair en minuscule. Chaque caractère compte dans l'indice, mais\nseules les lettres changent"
+		}
+	}
+}

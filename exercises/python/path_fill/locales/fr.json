@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui renvoie\n$rule.\nLe long de ce chemin, les cases reçoivent les nombres de 1 jusqu'au nombre de\ncases, l'un après l'autre.\n\nLa matrice est une liste de lignes, chacune une liste d'int ; une matrice sans case\nest une liste vide.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"counter": "une matrice carrée de n lignes de n int (n à partir de 0). Elle est remplie le long d'une\nspirale qui tourne dans le sens antihoraire : vers le bas de la première colonne depuis le coin\nen haut à gauche, puis vers la droite le long de la ligne du bas, puis vers le haut de la dernière colonne, puis\nvers la gauche le long de la ligne du haut, et ainsi de suite vers l'intérieur, à chaque fois jusqu'au bord ou à\nune case déjà remplie",
+			"snake": "une matrice de height lignes de width int. Elle est remplie\nligne après ligne : la première ligne de gauche à droite, la deuxième de droite à\ngauche, la troisième de gauche à droite à nouveau, et ainsi de suite",
+			"rect_spiral": "une matrice de height lignes de width int. Elle est\nremplie le long d'une spirale qui tourne dans le sens horaire : vers la droite le long de la ligne du haut depuis\nle coin en haut à gauche, puis vers le bas de la dernière colonne, puis vers la gauche le long de la\nligne du bas, puis vers le haut de la première colonne, et ainsi de suite vers l'intérieur, à chaque fois jusqu'au\nbord ou à une case déjà remplie"
+		}
+	}
+}

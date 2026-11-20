@@ -1,0 +1,10 @@
+{
+	"subject": "Une suite est un groupe du même caractère répété, voisin, aussi\nlong qu'il peut l'être : aaabcc a les suites aaa, b et cc. Écrire une fonction qui\n$rule.\n\nUne chaîne vide n'a aucune suite.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"pairs": "prend une chaîne et renvoie ses suites, dans\nl'ordre, sous forme de liste de tuples (caractère, longueur)",
+			"count_first": "prend une chaîne qui ne contient aucun chiffre et la renvoie\ncompressée : chaque suite écrite sous la forme de sa longueur, puis de son caractère, la longueur\nomise quand elle vaut 1 (aaabcc donne 3ab2c)",
+			"expand": "prend une chaîne compressée de cette façon (chaque suite écrite sous la forme de sa\nlongueur, puis de son caractère, la longueur omise quand elle vaut 1 ; une longueur\npeut avoir plusieurs chiffres) et renvoie la chaîne d'où elle vient (3ab2c\ndonne aaabcc)"
+		}
+	}
+}

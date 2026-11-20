@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une classe nommée Heap, un tas binaire gardé dans une liste Python : la valeur à\nl'indice i a ses enfants aux indices 2 * i + 1 et 2 * i + 2, et le\nsommet est à l'indice 0. Une valeur ajoutée monte depuis la fin de la liste, et la\nvaleur qui remplace le sommet descend, à chaque fois échangée avec un parent ou\nun enfant.\n\n$rule\n\nVous ne pouvez utiliser ni sorted(), ni sort(), ni min(), ni max(), ni importer quoi que ce soit.\nLes méthodes renvoient leurs résultats et n'affichent rien.\n\nVotre classe doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"max_heap": "Ses méthodes :\n- Heap() crée un tas vide dont le sommet est sa plus grande valeur ;\n- push(value) ajoute value ;\n- pop() retire la plus grande valeur et la renvoie, ou renvoie None si le\ntas est vide ;\n- peek() renvoie la plus grande valeur sans la retirer, ou None si le\ntas est vide ;\n- size() renvoie le nombre de valeurs du tas.",
+			"k_largest": "Ses méthodes :\n- Heap(k) crée un tas vide qui garde les k plus grandes valeurs ajoutées (k vaut\nau moins 1), la plus petite d'entre elles au sommet ;\n- add(value) ajoute value ;\n- kth() renvoie la k-ième plus grande valeur ajoutée jusqu'ici (une valeur ajoutée plusieurs\nfois compte à chaque fois), ou None si moins de k valeurs ont été ajoutées.",
+			"median": "Elle garde deux tas : la moitié la plus petite des valeurs, avec sa plus grande\nvaleur au sommet, et la moitié la plus grande, avec sa plus petite valeur au sommet. Ses\nméthodes :\n- Heap() crée un tas vide ;\n- add(value) ajoute value ;\n- median() renvoie la valeur au milieu de toutes les valeurs ajoutées, comme si\nelles étaient triées (pour un nombre pair de valeurs, la plus petite des deux du\nmilieu), ou None si aucune valeur n'a été ajoutée."
+		}
+	}
+}

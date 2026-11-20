@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui découpe la chaîne str en champs, à\n$separator.\n$empty.\n\nElle renvoie un tableau des champs, terminé par un pointeur NULL. Le tableau et\nchaque champ sont alloués avec malloc. Sans aucun champ, le tableau ne\ncontient que NULL.\n\nDans les exemples, chaque champ est montré entre crochets, un par ligne.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t**$assignment(char *str);",
+	"texts": {
+		"separator": {
+			"whitespace": "chaque espace, tabulation ou retour à la ligne",
+			"comma": "chaque virgule (,)",
+			"colon": "chaque deux-points (:)",
+			"semicolon": "chaque point-virgule (;)"
+		},
+		"empty": {
+			"skip": "Les champs vides (deux séparateurs à la suite, ou un à un bout) sont omis",
+			"keep": "Les champs vides (deux séparateurs à la suite, ou un à un bout) sont gardés, sous la forme \"\""
+		}
+	}
+}

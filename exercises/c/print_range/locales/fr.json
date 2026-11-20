@@ -1,0 +1,18 @@
+{
+	"subject": "Écrire une fonction qui affiche sur la sortie standard\n$chars,\n$order,\nen prenant $step.\nElle n'affiche rien d'autre : pas de retour à la ligne à la fin.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(void);",
+	"texts": {
+		"chars": {
+			"digits": "les chiffres (0 à 9)",
+			"lowercase": "les lettres minuscules (a à z)",
+			"uppercase": "les lettres majuscules (A à Z)"
+		},
+		"order": {
+			"up": "dans l'ordre croissant",
+			"down": "dans l'ordre décroissant"
+		},
+		"step": {
+			"all": "chacun d'eux",
+			"skip": "un sur deux, en commençant par le premier"
+		}
+	}
+}

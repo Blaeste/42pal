@@ -1,0 +1,9 @@
+{
+	"subject": "Écrire un programme qui affiche le caractère\n$char\nsur la sortie standard,\n$end.\n\nLe programme ignore ses arguments.",
+	"texts": {
+		"end": {
+			"bare": "sans rien après (pas de retour à la ligne)",
+			"newline": "suivi d'un retour à la ligne"
+		}
+	}
+}

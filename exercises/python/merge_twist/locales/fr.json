@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend deux listes d'int, a et b, qui peuvent être vides :\n$rule.\n\nLes listes données ne doivent pas être modifiées. Vous ne pouvez utiliser ni sorted() ni la\nméthode sort() des listes : parcourez les deux listes côte à côte.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"descending": "a et b sont triées de la plus grande à la plus petite valeur, et elle\nrenvoie une nouvelle liste de toutes leurs valeurs, triée de la même façon",
+			"unique": "a et b sont triées de la plus petite à la plus grande valeur, et elle\nrenvoie une nouvelle liste de leurs valeurs triée de la même façon, chaque valeur une fois",
+			"path": "a et b sont triées de la plus petite à la plus grande valeur. Les fusionner\nprend, à chaque étape, la plus petite des premières valeurs restantes dans a et dans b\n(celle de a quand elles sont égales). Elle renvoie une chaîne d'une lettre\npour chaque étape : a quand la valeur est prise dans a, b quand elle est prise\ndans b"
+		}
+	}
+}

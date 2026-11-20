@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui affiche\n$which,\n$case,\nsuivi d'un retour à la ligne.\n\nS'il n'y a aucun argument, il affiche seulement un retour à la ligne.",
+	"texts": {
+		"which": {
+			"first": "son premier argument",
+			"last": "son dernier argument",
+			"longest": "son plus long argument (le premier, si plusieurs sont aussi longs)",
+			"shortest": "son plus court argument (le premier, si plusieurs sont aussi courts)"
+		},
+		"case": {
+			"as_is": "tel quel",
+			"upper": "avec chaque lettre minuscule changée en majuscule"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire un programme qui affiche les nombres de 1 à\n$upto,\nun par ligne, en remplaçant les multiples de\n$pair.\n\nLe programme ignore ses arguments.",
+	"texts": {
+		"pair": {
+			"2_7": "2 par bip, les multiples de 7 par bop, et les multiples des deux par bipbop",
+			"3_4": "3 par bip, les multiples de 4 par bop, et les multiples des deux par bipbop",
+			"4_6": "4 par bip, les multiples de 6 par bop, et les multiples des deux par bipbop",
+			"5_7": "5 par bip, les multiples de 7 par bop, et les multiples des deux par bipbop"
+		}
+	}
+}

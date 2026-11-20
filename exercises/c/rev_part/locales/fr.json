@@ -1,0 +1,12 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et l'affiche, suivie d'un\nretour à la ligne, avec\n$part.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"part": {
+			"each_word": "les caractères de chaque mot dans l'ordre inverse, chaque mot restant à\nsa place (les mots sont coupés par les espaces et les tabulations, qui restent tels quels)",
+			"letters_only": "ses lettres dans l'ordre inverse, tout autre caractère restant à sa\nplace",
+			"halves": "ses deux moitiés échangées : la seconde moitié d'abord, puis la première\n(avec une longueur impaire, le caractère du milieu va avec la seconde moitié)",
+			"pairs": "chaque paire de caractères échangée : le premier avec le deuxième, le troisième\navec le quatrième et ainsi de suite (un dernier caractère seul reste à sa place)",
+			"odd_places": "les caractères aux places 0, 2, 4 et ainsi de suite dans l'ordre inverse entre\neux, les autres restant à leur place"
+		}
+	}
+}

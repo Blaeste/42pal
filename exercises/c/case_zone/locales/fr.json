@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui inverse, sur place, la casse des lettres de la chaîne\nstr qui sont\n$zone.\nUne lettre majuscule devient minuscule et une minuscule majuscule ; les\nautres caractères ne changent pas. La fonction renvoie str.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *str);\n\nDans les exemples, la ligne sous un appel montre str après l'appel.",
+	"texts": {
+		"zone": {
+			"first_half": "dans la première moitié de la chaîne : ses n / 2 premiers caractères, n étant\nsa longueur (le caractère du milieu d'une longueur impaire n'en fait pas partie)",
+			"odd_words": "dans ses mots de rang impair : le premier mot, le troisième, le cinquième, et ainsi\nde suite (un mot est un groupe de caractères qui ne sont ni des espaces ni des tabulations)",
+			"after_digit": "juste après un chiffre : la lettre qui suit chaque chiffre",
+			"in_brackets": "entre parenthèses : après chaque ( jusqu'à la ) suivante, ou jusqu'à la fin de\nla chaîne si aucune ) ne vient"
+		}
+	}
+}

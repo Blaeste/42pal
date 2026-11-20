@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui\n$rule.\n\nSeules les lettres a à z comptent, dans les deux casses (A et a sont la même\nlettre) ; tout autre caractère est ignoré.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"missing": "prend deux chaînes, have et want, et renvoie les\nlettres à ajouter à have pour qu'elle contienne chaque lettre de want au moins\nautant de fois que want : une chaîne de ces lettres en minuscule, dans\nl'ordre alphabétique, chaque lettre autant de fois qu'elle manque",
+			"groups": "prend une liste de mots et les renvoie en\ngroupes : une liste de listes, une pour chaque ensemble de mots qui contiennent les mêmes\nlettres le même nombre de fois. Les groupes viennent dans l'ordre de leur\npremier mot dans la liste donnée, et les mots d'un groupe dans cet ordre\naussi",
+			"can_write": "prend un mot et un texte, et renvoie True si\nle mot peut être écrit avec les lettres du texte, chaque lettre du\ntexte utilisée une fois au plus, et False sinon"
+		}
+	}
+}

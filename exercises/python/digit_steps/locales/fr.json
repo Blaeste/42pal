@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend une chaîne et renvoie\n$rule.\n\nDeux caractères sont voisins quand rien n'est entre eux dans la\nchaîne ; une paire de chiffres chevauche la suivante (123 contient les paires 12 et\n23).\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\ndef $assignment(text: str) -> int:",
+	"texts": {
+		"rule": {
+			"down": "le nombre de paires de chiffres voisins où le second chiffre\nvaut un de moins que le premier (1 puis 0 compte, 0 puis 9 non)",
+			"equal": "le nombre de paires de chiffres voisins qui sont le même\nchiffre (111 contient deux paires)",
+			"longest_run": "la longueur du plus long groupe de chiffres voisins où\nchaque chiffre vaut un de plus que celui d'avant (1234 est un tel groupe de\n4) ; 1 si aucun couple de chiffres ne forme une telle paire, et 0 s'il n'y a aucun chiffre",
+			"wrap_up": "le nombre de paires de chiffres voisins où le second chiffre\nvaut un de plus que le premier, 9 puis 0 comptant aussi"
+		}
+	}
+}

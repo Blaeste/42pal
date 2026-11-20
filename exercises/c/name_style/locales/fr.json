@@ -1,0 +1,19 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne, un nom écrit en\n$source,\net affiche le même nom écrit en\n$target,\nsuivi d'un retour à la ligne.\n\nLe nom est toujours bien écrit dans le premier style, avec des mots faits\nuniquement de lettres (a à z, en majuscule là où le style le demande). Une chaîne\nvide donne seulement un retour à la ligne.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"source": {
+			"snake": "snake_case (mots en minuscule, reliés par _ : big_red_box)",
+			"kebab": "kebab-case (mots en minuscule, reliés par - : big-red-box)",
+			"camel": "camelCase (mots collés, le premier en minuscule, chacun des autres\navec une majuscule au début : bigRedBox)",
+			"pascal": "PascalCase (mots collés, chacun avec une majuscule au début :\nBigRedBox)",
+			"constant": "CONSTANT_CASE (mots en majuscule, reliés par _ : BIG_RED_BOX)"
+		},
+		"target": {
+			"snake": "snake_case (mots en minuscule, reliés par _ : big_red_box)",
+			"kebab": "kebab-case (mots en minuscule, reliés par - : big-red-box)",
+			"camel": "camelCase (mots collés, le premier en minuscule, chacun des autres\navec une majuscule au début : bigRedBox)",
+			"pascal": "PascalCase (mots collés, chacun avec une majuscule au début :\nBigRedBox)",
+			"constant": "CONSTANT_CASE (mots en majuscule, reliés par _ : BIG_RED_BOX)"
+		}
+	}
+}

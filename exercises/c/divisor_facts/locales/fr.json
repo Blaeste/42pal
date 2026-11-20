@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire un programme qui prend deux nombres positifs, écrits uniquement avec des chiffres\n(7 au plus), et affiche\n$what,\nsuivi d'un retour à la ligne.\n\nSi le nombre d'arguments n'est pas 2, ou si l'un d'eux n'est pas un tel\nnombre, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"what": {
+			"common_count": "combien de diviseurs ils ont en commun",
+			"common_list": "les diviseurs qu'ils ont en commun, dans l'ordre croissant, séparés par\ndes espaces",
+			"coprime": "yes si leur seul diviseur commun est 1, no sinon",
+			"euclid_steps": "les étapes de l'algorithme d'Euclide, séparées par des espaces. Elles commencent par\nles deux nombres ; puis chaque nombre suivant est l'avant-dernier modulo\nle dernier, tant qu'il ne vaut pas 0 (48 18 donne 48 18 12 6)"
+		}
+	}
+}

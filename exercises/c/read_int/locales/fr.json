@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui renvoie l'int écrit en base 10 au début de\nla chaîne str.\n$start.\n$signs.\nLes chiffres sont lus jusqu'au premier caractère qui n'est pas un chiffre. S'il\nn'y a pas de nombre là où il doit être, la fonction renvoie 0. Le nombre\nlu est toujours entre -2147483647 et 2147483647.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(char *str);",
+	"texts": {
+		"start": {
+			"spaces": "Avant le nombre, un nombre quelconque d'espaces peut venir (espace, \\t, \\n, \\v,\n\\f et \\r)",
+			"nothing": "Le nombre commence au premier caractère : rien ne peut venir avant lui",
+			"anything": "N'importe quels caractères peuvent venir avant le nombre : le premier nombre de la\nchaîne est lu (ses signes, puis son premier chiffre)"
+		},
+		"signs": {
+			"one": "Les chiffres peuvent venir après un signe, + ou -",
+			"many": "Les chiffres peuvent venir après un nombre quelconque de + et de -, chaque - changeant le\nsigne",
+			"minus_only": "Les chiffres peuvent venir après un - ; un + n'est pas un signe"
+		}
+	}
+}

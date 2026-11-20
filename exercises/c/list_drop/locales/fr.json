@@ -1,0 +1,16 @@
+{
+	"subject": "Écrire une fonction qui prend l'adresse du premier maillon d'une liste chaînée\nd'int et retire de la liste\n$which\n$condition.\nChaque maillon retiré est libéré avec free ; les autres maillons restent dans leur ordre.\nSi aucun maillon n'est à retirer, la liste ne change pas. Si le premier maillon est\nretiré, *begin devient le nouveau premier maillon, ou NULL s'il ne reste aucun maillon.\n\nLes maillons sont du type t_node. Rendez, avec votre fonction, le header\nnode.h avec exactement ce contenu :\n\n#ifndef NODE_H\n# define NODE_H\n\ntypedef struct s_node\n{\n\tint\t\t\t\tvalue;\n\tstruct s_node\t*next;\n}\tt_node;\n\n#endif\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(t_node **begin);\n\nDans les exemples, le commentaire montre les valeurs de la liste avant l'appel,\ndepuis le premier maillon, et la ligne en dessous montre la liste après l'appel.",
+	"texts": {
+		"which": {
+			"all": "chaque maillon",
+			"first": "seulement le premier maillon",
+			"last": "seulement le dernier maillon"
+		},
+		"condition": {
+			"even": "dont la valeur est paire (0 compris)",
+			"odd": "dont la valeur est impaire",
+			"negative": "dont la valeur est négative",
+			"repeated": "dont la valeur est déjà dans un maillon avant lui"
+		}
+	}
+}

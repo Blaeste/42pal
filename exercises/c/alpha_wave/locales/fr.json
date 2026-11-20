@@ -1,0 +1,18 @@
+{
+	"subject": "Écrire un programme qui affiche les 26 lettres de l'alphabet, de a à z,\nsuivies d'un retour à la ligne. La casse des lettres change\n$wave.\n$start.\n$separator.\n\nLe programme ignore ses arguments.",
+	"texts": {
+		"wave": {
+			"1": "à chaque lettre",
+			"2": "toutes les 2 lettres",
+			"3": "toutes les 3 lettres"
+		},
+		"start": {
+			"lower": "Les premières lettres sont en minuscule",
+			"upper": "Les premières lettres sont en majuscule"
+		},
+		"separator": {
+			"joined": "Les lettres sont collées, sans rien entre elles",
+			"spaced": "Les lettres sont séparées par un espace"
+		}
+	}
+}

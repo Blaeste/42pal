@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui\n$rule.\n\nUn mot commence par un préfixe quand ses premiers caractères sont le préfixe : tout\nmot commence par le préfixe vide, et par lui-même. La casse compte.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"top_k": "prend une liste de mots, où\nun mot peut apparaître plusieurs fois, un préfixe prefix et un int k à partir de 0. Parmi les\nmots qui commencent par prefix, elle renvoie les k trouvés le plus de fois dans\nla liste, chacun une fois (moins s'il y en a moins) : le plus fréquent d'abord,\net dans l'ordre ASCII parmi les mots trouvés autant de fois",
+			"next_letters": "prend une liste de mots et un\npréfixe prefix, et renvoie les caractères qui viennent juste après prefix dans les\nmots qui commencent par lui et sont plus longs que lui : chaque caractère une fois,\ndans l'ordre ASCII, sous forme de chaîne",
+			"shortest_unique": "prend une liste de mots différents\net renvoie, pour chaque mot dans l'ordre de la liste, son plus court\npréfixe par lequel aucun autre mot de la liste ne commence ; le mot entier si\nchacun de ses préfixes commence aussi un autre mot"
+		}
+	}
+}

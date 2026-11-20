@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et l'affiche, suivie d'un\nretour à la ligne, avec les caractères d'un groupe retournés comme dans un miroir,\nchacun remplacé par celui à la même place depuis l'autre bout du\ngroupe. Le groupe est\n$group.\n$case.\nTout autre caractère est affiché tel quel.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"group": {
+			"vowels": "les voyelles : a par u, e par o, i reste i, o par e et u par a (y n'est pas\nune voyelle)",
+			"consonants": "les consonnes, dans l'ordre de l'alphabet : b par z, c par y, d par x\net ainsi de suite, n restant n au milieu",
+			"digits": "les chiffres : 0 par 9, 1 par 8 et ainsi de suite, 9 par 0",
+			"halves": "chaque moitié de l'alphabet : de a à m, a par m, b par l et ainsi de suite, g\nrestant g ; de n à z, n par z, o par y et ainsi de suite, t restant t"
+		},
+		"case": {
+			"keep": "Un caractère remplacé garde sa casse",
+			"swap": "Chaque caractère du groupe change aussi de casse : une minuscule devient\nmajuscule et l'inverse"
+		}
+	}
+}

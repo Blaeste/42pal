@@ -95,6 +95,7 @@
 	"Exam stopped (Ctrl-C): run ./42pal again to resume it.": "Exam arrêté (Ctrl-C) : relance ./42pal pour le reprendre.",
 	"Exam stopped: run ./42pal again to resume it.": "Exam arrêté : relance ./42pal pour le reprendre.",
 	"Exam:": "Exam :",
+	"Examples:": "Exemples :",
 	"Exams: {exams}": "Exams : {exams}",
 	"Exchange values through pointers": "Échanger des valeurs par des pointeurs",
 	"Files": "Fichiers",

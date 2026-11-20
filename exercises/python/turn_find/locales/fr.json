@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend deux listes d'int, a et b, et renvoie\n$rule.\n\nUne liste tournée de k places vers la droite a ses k derniers éléments en premier, dans leur\nordre, puis les autres : [1, 2, 3, 4] tournée d'1 place donne [4, 1, 2, 3].\nDes listes de longueurs différentes ne sont jamais des rotations l'une de l'autre.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"steps": "le plus petit nombre de places k (à partir de 0) tel que a tournée de k places vers\nla droite donne b ; ou -1 s'il n'y en a pas. Deux listes vides donnent 0",
+			"all_steps": "chaque nombre de places k, de 0 à la longueur de a moins 1,\ntel que a tournée de k places vers la droite donne b, dans l'ordre croissant (une\nliste vide s'il n'y en a pas). Deux listes vides donnent [0]",
+			"mirrored": "True si b est la liste a lue à l'envers, puis tournée d'un certain nombre de\nplaces vers la droite (0 compris), et False sinon. Deux listes vides\ndonnent True"
+		}
+	}
+}

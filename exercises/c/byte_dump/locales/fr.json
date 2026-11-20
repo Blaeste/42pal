@@ -1,0 +1,13 @@
+{
+	"subject": "Écrire une fonction qui affiche les size octets trouvés à l'adresse addr,\n$width octets par ligne (la dernière ligne peut en avoir moins). Chaque ligne montre\n$layout\n\nUn retour à la ligne termine chaque ligne. Les chiffres hexadécimaux sont écrits en\nminuscule. Si size vaut 0, la fonction n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(const void *addr, size_t size);",
+	"texts": {
+		"layout": {
+			"offset": "le décalage de son premier octet depuis addr, en hexadécimal sur 4 chiffres (avec\ndes zéros devant), puis deux-points, puis chacun de ses octets sous la forme d'un espace suivi\nde ses 2 chiffres hexadécimaux.",
+			"text": "deux parties :\n- ses octets, chacun sous la forme de ses 2 chiffres hexadécimaux suivis d'un espace (la\ndernière ligne reçoit 3 espaces pour chaque octet qui lui manque, pour que les colonnes\nrestent alignées) ;\n- les mêmes octets en texte, entre deux | : un octet imprimable (de l'espace à\n~) tel quel, tout autre octet sous la forme d'un point."
+		},
+		"width": {
+			"eight": "8",
+			"twelve": "12"
+		}
+	}
+}

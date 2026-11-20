@@ -1,0 +1,12 @@
+{
+	"subject": "Écrire une fonction qui prend les adresses de deux int et\n$operation.\nLes résultats tiennent toujours dans un int.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(int *a, int *b);\n\nDans les exemples, le commentaire montre les valeurs avant l'appel, et la ligne\nen dessous montre *a et *b après l'appel.",
+	"texts": {
+		"operation": {
+			"order_up": "met les deux valeurs dans l'ordre croissant : la plus petite dans *a, la\nplus grande dans *b",
+			"order_down": "met les deux valeurs dans l'ordre décroissant : la plus grande dans *a, la\nplus petite dans *b",
+			"sum_diff": "met dans *a la somme des deux valeurs, et dans *b la première valeur moins\nla seconde (les valeurs d'avant l'appel)",
+			"swap_double": "échange les deux valeurs, chacune doublée : *a reçoit deux fois l'ancien *b,\n*b reçoit deux fois l'ancien *a",
+			"swap_negate": "échange les deux valeurs, chacune avec son signe changé : *a reçoit\nmoins l'ancien *b, *b reçoit moins l'ancien *a"
+		}
+	}
+}

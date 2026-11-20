@@ -1,0 +1,9 @@
+{
+	"subject": "Écrire un programme qui affiche les nombres de\n$start\njusqu'à 0, dans l'ordre décroissant, séparés par\n$separator,\nsuivis d'un retour à la ligne.\n\nLe programme ignore ses arguments.",
+	"texts": {
+		"separator": {
+			"space": "un espace",
+			"comma": "une virgule et un espace"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et affiche ses mots séparés par\nun espace, suivis d'un retour à la ligne, avec\n$move.\nLes autres mots restent dans leur ordre.\n\nUn mot est une partie de la chaîne entre des espaces ou des tabulations, ou le début ou la\nfin de la chaîne.\n\nSi le nombre d'arguments n'est pas 1, ou s'il n'y a aucun mot, le programme\naffiche seulement un retour à la ligne.",
+	"texts": {
+		"move": {
+			"swap_ends": "le premier mot et le dernier échangés",
+			"first_two_last": "les deux premiers mots déplacés à la fin, dans leur ordre",
+			"longest_first": "le plus long mot (le premier d'entre eux si plusieurs sont aussi longs) déplacé\nau début",
+			"shortest_last": "le plus court mot (le premier d'entre eux si plusieurs sont aussi courts) déplacé\nà la fin"
+		}
+	}
+}

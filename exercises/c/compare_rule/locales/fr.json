@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui compare les chaînes s1 et s2\n$rule.\nElle renvoie\n$result.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(char *s1, char *s2);",
+	"texts": {
+		"rule": {
+			"any_case": "caractère par caractère depuis le début, une lettre et son autre casse\nétant la même (chaque lettre est prise en minuscule)",
+			"from_end": "caractère par caractère depuis leurs derniers caractères jusqu'à leurs\npremiers ; au-delà du début de la chaîne la plus courte, son caractère vaut 0",
+			"length_first": "d'abord par leurs longueurs : la différence est la longueur de s1 moins\nla longueur de s2 ; seulement à longueur égale, elles sont comparées caractère par\ncaractère depuis le début",
+			"skip_spaces": "caractère par caractère depuis le début, comme si leurs espaces et tabulations\nn'étaient pas là"
+		},
+		"result": {
+			"sign": "-1 si s1 vient en premier, 1 si s2 vient en premier, et 0 si elles sont égales",
+			"difference": "la différence trouvée : le premier caractère de s1 qui diffère moins\ncelui de s2 à la même place (0 au-delà de la fin d'une chaîne), ou 0"
+		}
+	}
+}

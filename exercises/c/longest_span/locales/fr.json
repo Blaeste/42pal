@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et affiche sa plus longue partie\n$rule,\nsuivie d'un retour à la ligne. Une partie est une suite de caractères voisins dans\nla chaîne ; la chaîne entière en est une. Si plusieurs parties sont les plus\nlongues,\n$tie.\nLa chaîne a au plus 100 caractères.\n\nSi aucune partie ne convient, ou si le nombre d'arguments n'est pas 1, le programme\naffiche seulement un retour à la ligne.",
+	"texts": {
+		"rule": {
+			"unique": "dans laquelle aucun caractère n'apparaît deux fois",
+			"repeated": "qui apparaît au moins deux fois dans la chaîne (les deux peuvent se chevaucher,\ncomme ana dans banana)",
+			"sorted": "dont les caractères sont dans l'ordre ASCII croissant (un caractère peut venir\nplusieurs fois de suite, comme dans abbcz)",
+			"two_chars": "faite de deux caractères différents au plus, comme aabaa"
+		},
+		"tie": {
+			"first": "il affiche celle qui commence en premier",
+			"last": "il affiche celle qui commence en dernier"
+		}
+	}
+}

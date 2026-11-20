@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui affiche sur la sortie standard une chaîne donnée en\nparamètre, sous cette forme :\n$how.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(char *str);",
+	"texts": {
+		"how": {
+			"spaced": "ses caractères avec un espace entre chacun d'eux (aucun avant le\npremier ni après le dernier), puis un retour à la ligne",
+			"framed": "un [, la chaîne, un ], puis un retour à la ligne",
+			"words_lines": "chacun de ses mots suivi d'un retour à la ligne : un mot par ligne, et rien\npour une chaîne sans mot. Un mot est un groupe de caractères qui ne sont ni des\nespaces ni des tabulations, aussi long qu'il peut l'être"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire un programme qui prend un nombre n, écrit uniquement avec des chiffres et compris entre 1\net 50, et affiche une table de lignes pour k allant de 1 à\n$rows,\nune par ligne, chacune écrite sous la forme\n$operation.\nLes résultats tiennent dans un unsigned long long, ou dans un long long quand ils sont négatifs.\n\nSi le nombre d'arguments n'est pas 1, ou si l'argument n'est pas un tel\nnombre, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"operation": {
+			"plus": "k + n = la somme, comme 1 + 3 = 4",
+			"minus": "n - k = la différence, comme 3 - 1 = 2 (elle peut être négative)",
+			"power": "n ^ k = n puissance k, comme 2 ^ 5 = 32",
+			"modulo": "n % k = le reste de n divisé par k, comme 7 % 2 = 1"
+		}
+	}
+}

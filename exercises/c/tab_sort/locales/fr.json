@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui trie le tableau tab de size int, sur place, dans cet\nordre :\n$key.\n$order.\nQuand size vaut 0, tab peut être NULL.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(int *tab, unsigned int size);\n\nDans les exemples, chaque tableau est écrit comme un compound literal C, et la\nligne en dessous montre le tableau une fois trié.",
+	"texts": {
+		"key": {
+			"absolute": "selon la valeur absolue ; de deux nombres aussi grands, comme -3 et 3, le\nnégatif vient en premier",
+			"parity": "les nombres pairs d'abord (0 compris), puis les impairs, chaque groupe\ndans l'ordre croissant",
+			"last_digit": "selon le dernier chiffre de leur valeur absolue, de 0 à 9 ; avec le\nmême dernier chiffre, dans l'ordre croissant",
+			"digit_count": "selon le nombre de chiffres de leur valeur absolue (0 en a un) ; avec\nautant de chiffres, dans l'ordre croissant"
+		},
+		"order": {
+			"up": "Le tableau finit dans cet ordre, de sa première valeur à sa dernière",
+			"down": "Le tableau finit dans l'ordre exactement inverse : sa première valeur\nest celle que cet ordre met en dernier"
+		}
+	}
+}

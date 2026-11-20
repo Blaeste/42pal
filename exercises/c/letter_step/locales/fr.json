@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et l'affiche, suivie d'un\nretour à la ligne, avec\n$what.\n$case.\nTout autre caractère est affiché tel quel.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"what": {
+			"vowels": "chaque voyelle remplacée par la voyelle suivante : a par e, e par i, i par o, o par u et u par a\n(y n'est pas une voyelle)",
+			"consonants": "chaque consonne remplacée par la consonne suivante dans l'alphabet : b par c,\nd par f, et z par b",
+			"digits": "chaque chiffre remplacé par le chiffre suivant : 0 par 1 et ainsi de suite, et 9 par 0",
+			"backward_letters": "chaque lettre remplacée par la lettre d'avant dans l'alphabet : b par\na, et a par z"
+		},
+		"case": {
+			"keep": "Un caractère remplacé garde sa casse",
+			"swap": "Un caractère remplacé change aussi de casse : une minuscule devient majuscule\net l'inverse"
+		}
+	}
+}

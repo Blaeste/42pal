@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend un nombre quelconque de chaînes et affiche une ligne\npour chacune, sur ses parenthèses. Les parenthèses sont\n$brackets ;\ntout autre caractère est ignoré. Les parenthèses d'une chaîne sont correctes quand\nchaque parenthèse fermante ferme la dernière parenthèse ouverte et pas encore fermée, de\nla même sorte, et qu'aucune parenthèse n'est encore ouverte à la fin. Une chaîne sans\nparenthèse est correcte. Chaque chaîne a au plus 1000 caractères.\n\nLa ligne affichée pour une chaîne est\n$report.\n\nS'il n'y a aucun argument, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"report": {
+			"depth": "le plus grand nombre de parenthèses ouvertes en même temps (0 pour aucune)\nsi ses parenthèses sont correctes, ou Error sinon",
+			"error_at": "OK si ses parenthèses sont correctes ; sinon l'indice, à partir de 0, de la\npremière parenthèse fausse : une parenthèse fermante qui ne ferme rien ou une parenthèse\nd'une autre sorte, ou, quand la chaîne se termine, la dernière parenthèse ouverte qui\nest encore ouverte",
+			"complete": "la chaîne suivie des parenthèses fermantes qui ferment les parenthèses\nencore ouvertes, la dernière ouverte en premier ; ou Error si une parenthèse fermante ne ferme\nrien ou une parenthèse d'une autre sorte"
+		},
+		"brackets": {
+			"round": "( et ) seulement",
+			"three": "(), [] et {}",
+			"four": "(), [], {} et <>"
+		}
+	}
+}

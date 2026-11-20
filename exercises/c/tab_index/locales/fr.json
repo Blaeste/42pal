@@ -1,0 +1,16 @@
+{
+	"subject": "Écrire une fonction qui prend un tableau de len int et renvoie l'indice de\n$which\n$rule.\nSi aucune valeur ne convient, ou si len vaut 0, elle renvoie -1. Quand len vaut 0, tab peut\nêtre NULL.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(int *tab, unsigned int len);\n\nDans les exemples, chaque tableau est écrit comme un compound literal C, et la\nligne en dessous montre l'indice renvoyé.",
+	"texts": {
+		"which": {
+			"first": "la première valeur (celle de plus petit indice)",
+			"last": "la dernière valeur (celle de plus grand indice)"
+		},
+		"rule": {
+			"biggest": "qui est la plus grande du tableau",
+			"smallest": "qui est la plus petite du tableau",
+			"negative": "qui est négative",
+			"even": "qui est paire (0 compris)",
+			"repeated": "qui est déjà dans le tableau à un indice plus petit"
+		}
+	}
+}

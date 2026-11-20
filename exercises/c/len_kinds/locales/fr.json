@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend une chaîne et renvoie\n$what.\n\nUn mot est un groupe de caractères qui ne sont ni des espaces ni des tabulations, aussi long qu'il\npeut l'être. Une chaîne vide donne 0.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(char *str);",
+	"texts": {
+		"what": {
+			"words": "son nombre de mots",
+			"longest_word": "la longueur de son plus long mot (0 s'il n'a aucun mot)",
+			"no_spaces": "son nombre de caractères qui ne sont ni des espaces ni des tabulations",
+			"until_digit": "son nombre de caractères avant son premier chiffre (toute sa longueur s'il\nn'a aucun chiffre)"
+		}
+	}
+}

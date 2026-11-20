@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une chaîne et renvoie\n$rule.\n\nLes parties d'un découpage sont des caractères voisins ; remises dans l'ordre,\nelles donnent la chaîne. Une chaîne se lit pareil dans les deux sens quand elle est\nla même retournée (chaque caractère compte, la casse aussi).\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"ways": "le nombre de façons de découper la chaîne en parties qui se lisent toutes pareil\ndans les deux sens (la chaîne elle-même, non découpée, est une façon si elle se lit\npareil dans les deux sens). Une chaîne vide donne 1",
+			"fewest": "la liste des parties d'un découpage en parties qui se lisent toutes pareil\ndans les deux sens, avec le moins de parties. Quand plusieurs découpages ont autant de\nparties, celui dont la première partie est la plus longue, puis dont la deuxième partie\nest la plus longue, et ainsi de suite. Une chaîne vide donne une liste vide",
+			"no_single": "le plus petit nombre de parties d'un découpage en parties qui se lisent toutes pareil\ndans les deux sens et ont toutes au moins 2 caractères ; -1 s'il n'y a pas\nde tel découpage. Une chaîne vide donne 0"
+		}
+	}
+}

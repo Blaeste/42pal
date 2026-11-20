@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui\n$rule.\n\nLe graphe est non orienté : l'arête [u, v] relie u et v dans les deux sens. Aucune arête\nne relie un nœud à lui-même, et deux arêtes ne relient jamais les deux mêmes nœuds.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"components": "prend un nombre de nœuds n (les\nnœuds sont 1 à n) et une liste d'arêtes, chacune une paire [u, v], et renvoie\nle nombre de groupes du graphe. Les nœuds reliés par des arêtes, directement ou\nnon, sont dans le même groupe ; un nœud sans arête est un groupe à lui seul",
+			"cycle_edges": "prend les arêtes d'un graphe\nqui était un arbre de nœuds 1 à n (tous reliés, sans cycle) et a reçu une arête\nde plus : n arêtes, chacune une paire [u, v]. Le graphe contient maintenant exactement un\ncycle ; la fonction renvoie les arêtes de ce cycle, telles que données, dans\nl'ordre de la liste",
+			"count": "prend un nombre de nœuds n (les nœuds\nsont 1 à n) et une liste d'arêtes, chacune une paire [u, v], et renvoie le\nplus petit nombre d'arêtes à retirer pour que le graphe ne contienne aucun cycle"
+		}
+	}
+}

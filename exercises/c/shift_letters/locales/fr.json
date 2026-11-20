@@ -1,0 +1,19 @@
+{
+	"subject": "Ce programme reçoit une chaîne et l'affiche avec $letters\ndécalée de $shift, $direction.\nLe décalage fait le tour de l'alphabet : après z vient a, et avant a vient z\n(de même pour Z et A).\nTout autre caractère est affiché tel quel, et un retour à la ligne termine la ligne.\n\nAvec tout autre nombre d'arguments, il affiche seulement un retour à la ligne.",
+	"texts": {
+		"shift": {
+			"2": "2 positions",
+			"3": "3 positions",
+			"5": "5 positions"
+		},
+		"direction": {
+			"forward": "vers l'avant dans l'alphabet",
+			"backward": "vers l'arrière dans l'alphabet"
+		},
+		"letters": {
+			"all": "chaque lettre",
+			"lowercase": "chaque lettre minuscule",
+			"uppercase": "chaque lettre majuscule"
+		}
+	}
+}

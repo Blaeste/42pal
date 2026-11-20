@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une grille de lettres et un mot de 2 lettres ou\nplus. La grille est une liste de chaînes de même longueur : la ligne 0 est la première\nchaîne, et la colonne 0 le premier caractère de chaque chaîne.\n\n$rule\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"first": "La fonction renvoie le premier endroit où le\nmot est écrit en ligne droite, sous forme d'un tuple (row, col, direction) : row\net col sont ceux de sa première lettre, et direction est le sens dans lequel il va,\nun de ces 8, dans cet ordre :\n- R (droite), D (bas), L (gauche), U (haut),\n- DR (bas-droite), DL (bas-gauche), UL (haut-gauche), UR (haut-droite).\n\nLes endroits sont essayés case par case, ligne par ligne depuis le haut et chaque ligne\ndepuis la gauche ; pour chaque case, les 8 directions dans l'ordre ci-dessus. Si le\nmot n'est nulle part, la fonction renvoie None.",
+			"path": "La fonction renvoie True si le mot peut être épelé le long d'un chemin de\ncases : sa première lettre dans une case, puis chaque lettre suivante dans une case voisine\nde la précédente par un côté (haut, bas, gauche ou droite), aucune case utilisée\ndeux fois. Sinon elle renvoie False.",
+			"straight": "La fonction renvoie combien de fois le mot est écrit en\nligne droite, vers la droite, le bas, la gauche ou le haut. Une première case et une\ndirection comptent une fois chacune : un mot qui se lit pareil dans les deux sens, écrit\nune fois dans la grille, compte deux fois."
+		}
+	}
+}

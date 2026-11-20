@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une liste de réunions, chacune une liste [start, end]\nde deux int, start avant end, dans n'importe quel ordre. Une réunion a lieu\nde son début jusqu'à sa fin, la fin exclue : [1, 3] et [3, 5] ne se\nchevauchent pas. La fonction\n$rule.\n\nLa liste donnée ne doit pas être modifiée.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"merge": "renvoie les moments où au moins\nune réunion a lieu, sous forme de liste d'intervalles [start, end] triés par\ndébut : les réunions qui se chevauchent ou se suivent sans trou sont fusionnées\nen un seul intervalle",
+			"gaps": "prend aussi une journée, de day_start à day_end (day_start avant day_end),\net renvoie les moments libres de cette journée, quand aucune réunion n'a lieu, sous forme\nde liste d'intervalles [start, end] triés par début. Une réunion peut commencer\navant la journée ou finir après elle",
+			"busiest": "renvoie [time, count] : count est le\nplus grand nombre de réunions qui ont lieu en même temps, et time le\nmoment le plus tôt où il y en a autant ; [0, 0] s'il n'y a aucune\nréunion"
+		}
+	}
+}

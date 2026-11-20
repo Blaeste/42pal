@@ -1,0 +1,12 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et l'affiche, suivie d'un\nretour à la ligne, avec chaque caractère répété selon cette règle :\n$rule.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"rule": {
+			"reverse_rank": "chaque lettre selon son rang depuis la fin de l'alphabet : z une fois, y\ndeux fois et ainsi de suite, a 26 fois, quelle que soit sa casse ; tout autre caractère\nune fois",
+			"digit_value": "chaque chiffre autant de fois que sa valeur : 3 trois fois, 0 pas du tout ;\ntout autre caractère une fois",
+			"position": "chaque caractère autant de fois que sa place dans la chaîne : le premier\nune fois, le deuxième deux fois et ainsi de suite",
+			"word_number": "chaque caractère d'un mot autant de fois que le numéro de son mot (le\npremier mot une fois, le deuxième mot deux fois, et ainsi de suite). Les mots sont coupés par\nles espaces et les tabulations, qui sont affichés une fois",
+			"vowel_rank": "chaque voyelle selon son rang parmi les voyelles : a une fois, e deux fois, i 3 fois,\no 4 fois et u 5 fois, quelle que soit sa casse ; tout autre caractère une fois"
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire un programme qui prend une expression comme seul argument, et\naffiche sa valeur suivie d'un retour à la ligne. L'expression est écrite\n$notation.\n\nLes nombres sont faits uniquement de chiffres, et les opérateurs sont + - * / et %,\ncalculés sur des int comme en C. Chaque expression a au plus 1000 caractères,\net les nombres, la valeur et les valeurs intermédiaires tiennent toutes dans un int.\n\nSi l'expression est mal écrite (un caractère inconnu, un opérateur\nauquel il manque un opérande, un nombre en trop...) ou divise par 0 (avec / ou\n%), le programme affiche Error suivi d'un retour à la ligne.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche un retour à la ligne.",
+	"texts": {
+		"notation": {
+			"prefix": "en notation préfixe : chaque opérateur vient avant ses deux opérandes, et\nles nombres et les opérateurs sont séparés par un espace ou plus (il peut\ny avoir des espaces au début et à la fin aussi). Par exemple, - * 6 7 2 vaut\n(6 * 7) - 2",
+			"compact": "en notation postfixe compacte : chaque opérateur vient après ses deux\nopérandes, chaque nombre est un chiffre, et il n'y a pas d'espaces. Par\nexemple, 67*2- vaut (6 * 7) - 2",
+			"nested": "avec des parenthèses : une expression est un nombre, ou ( puis une expression, un\nopérateur, une expression, puis ), sans espaces. Par exemple,\n((6*7)-2) vaut (6 * 7) - 2"
+		}
+	}
+}

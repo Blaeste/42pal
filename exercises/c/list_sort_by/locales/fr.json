@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui trie une liste chaînée selon les clés de ses éléments, et\nrenvoie le premier élément de la liste triée (NULL pour une liste vide). Aucun élément\nne doit être perdu.\n\nL'ordre des clés : $key.\n$order.\n\nLes éléments sont du type t_item, déclaré dans le header item.h, fourni à côté\nde ce sujet :\n\n#ifndef ITEM_H\n# define ITEM_H\n\ntypedef struct s_item\n{\n\tint\t\t\t\tkey;\n\tstruct s_item\t*next;\n}\tt_item;\n\n#endif\n\nIncluez-le dans votre fichier, mais ne le rendez pas.\n\nVotre fonction doit être déclarée comme suit :\n\nt_item\t*$assignment(t_item *begin);\n\nDans les exemples, le commentaire montre les clés de la liste avant l'appel,\ndepuis le premier élément, et la ligne en dessous montre la liste renvoyée.",
+	"texts": {
+		"key": {
+			"absolute": "selon leur valeur absolue, depuis la plus petite ; de deux clés de même\nvaleur absolue, comme -3 et 3, la négative vient en premier",
+			"parity": "les clés paires d'abord (0 compris), puis les impaires ; parmi les clés\npaires, et parmi les impaires, depuis la plus petite",
+			"last_digit": "selon le dernier chiffre de leur valeur absolue, de 0 à 9 ; parmi les clés\nde même dernier chiffre, depuis la plus petite",
+			"digit_count": "selon le nombre de chiffres de leur valeur absolue, depuis le plus petit (0\na un chiffre) ; parmi les clés qui ont autant de chiffres, depuis la plus petite"
+		},
+		"order": {
+			"up": "La liste triée suit cet ordre : son premier élément est celui qui y vient en premier",
+			"down": "La liste triée suit cet ordre à l'envers : son premier élément est celui\nqui y vient en dernier"
+		}
+	}
+}

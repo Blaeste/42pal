@@ -2,21 +2,66 @@
 
 Like the rest of the core, this module never prints: it returns the text,
 and the front-ends write it (subject.en.txt in the terminal, a page on the web).
+
+In another language than English, the statement and the words of the
+variant come from exercises/<language>/<name>/locales/<code>.json:
+{"subject": the statement with the same $fields, "texts": {param: {value:
+words}}}. The header stays in English, like the subjects of 42; Examples is
+translated. Without a translation, or with a broken one, English.
 """
 
+import json
 import re
 import textwrap
+from functools import lru_cache
+from pathlib import Path
 from string import Template
+
+from pal42 import i18n
+from pal42.i18n import t
+
+# exercises/ is next to the pal42 package (see pal42/catalog.py).
+EXERCISES_DIR = Path(__file__).resolve().parent.parent / "exercises"
 
 # An argument made only of these characters needs no quotes in a shell.
 PLAIN_ARG = re.compile(r"[A-Za-z0-9_./=:,+-]+")
 
-def render(variant):
-	"""Return the subject of `variant`, in the 42 format.
+def translation(exo, code):
+	"""The translation of the subject of `exo` in the language `code`, or None."""
+	if code == i18n.DEFAULT:
+		return None
+	return _read_translation(exo.language, exo.name, code)
+
+@lru_cache(maxsize=None)
+def _read_translation(language, name, code):
+	path = EXERCISES_DIR / language / name / "locales" / f"{code}.json"
+	try:
+		data = json.loads(path.read_text(encoding="utf-8"))
+	except (OSError, ValueError):
+		return None
+	if not isinstance(data, dict) or not isinstance(data.get("subject"), str) or not data["subject"]:
+		return None
+	return data
+
+def param_text(variant, param, code=None):
+	"""What `$param` becomes in the subject of `variant`, in the language `code` (the one in use)."""
+	value = variant.params[param.name]
+	table = translation(variant.exercise, code or i18n.language())
+	words = ((table or {}).get("texts") or {}).get(param.name, {}).get(value) if table else None
+	return words if isinstance(words, str) and words else param.text(value)
+
+def examples_label(code=None):
+	"""The line before the examples: Examples:, in the language `code` (the one in use)."""
+	return "Examples:" if (code or i18n.language()) == i18n.DEFAULT else t("Examples:")
+
+def render(variant, code=None):
+	"""Return the subject of `variant`, in the 42 format, in the language `code`.
 
 	The header, a line of dashes, the statement, then the examples if the
-	exercise has some.
+	exercise has some. code is the language in use by default ("en" for the
+	English subject); the header stays in English, like at 42.
 	"""
+	code = code or i18n.language()
 	exo = variant.exercise
 	if exo.language == "python":
 		# What a Python file may use: modules to import, and calls it may not make.
@@ -34,20 +79,32 @@ def render(variant):
 		*([f"Given files      : {', '.join(exo.provided_files)}"] if exo.provided_files else []),
 		"-" * 80,
 		"",
-		statement(variant),
+		statement(variant, code),
 	]
 	if variant.examples:
-		lines += ["", "Examples:", ""] + _examples(variant)
+		lines += ["", examples_label(code), ""] + _examples(variant)
 	return "\n".join(lines) + "\n"
 
-def statement(variant):
+def statement(variant, code=None):
 	"""Return the statement of `variant`: each `$param` becomes its text.
 
 	The name and the files use the drawn values (repeat_twice), but the
-	statement uses their texts ("2 times"), see Param.texts.
+	statement uses their texts ("2 times"), see Param.texts. In the
+	language `code` (the one in use), from the translation of the exercise
+	when there is one that fits; else in English.
 	"""
+	code = code or i18n.language()
+	table = translation(variant.exercise, code)
+	if table is not None:
+		try:
+			return _statement(variant, table["subject"], code)
+		except (KeyError, ValueError):
+			pass
+	return _statement(variant, variant.exercise.subject, i18n.DEFAULT)
+
+def _statement(variant, template, code):
 	texts = {
-		param.name: param.text(variant.params[param.name])
+		param.name: param_text(variant, param, code)
 		for param in variant.exercise.params
 	}
 	# $assignment: the name of the program or function, for a prototype.
@@ -55,7 +112,7 @@ def statement(variant):
 	# $prototype: a declaration that changes with the variant.
 	if variant.exercise.prototype:
 		texts["prototype"] = wrap_declaration(variant.exercise.prototype(variant.name, variant.params))
-	return reflow(Template(variant.exercise.subject).substitute(texts))
+	return reflow(Template(template).substitute(texts))
 
 def reflow(text, width=80):
 	"""Wrap each paragraph of prose at `width` columns, like the 42 subjects.

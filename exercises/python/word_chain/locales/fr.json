@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui relie des mots. Chaque mot d'une chaîne après start doit\nêtre dans la liste words ; la casse compte. La fonction\n$rule.\n\nUne chaîne d'un mot vers lui-même est ce mot seul.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"path": "renvoie la plus courte\nchaîne de start à end : la liste de ses mots, de start à end, chacun\ndifférant du précédent par une lettre changée (None s'il n'y a\npas de chaîne). Quand plusieurs chaînes sont aussi courtes, la chaîne est celle que\nce parcours en largeur trouve :\n- il part de start ;\n- il prend les mots atteints, dans l'ordre où ils ont été atteints, et depuis\nchacun, chaque mot de la liste à un changement de lui et pas encore atteint, dans\nl'ordre de la liste ;\n- chaque mot garde le mot depuis lequel il a été atteint en premier : la chaîne remonte\ndepuis end le long de ces mots",
+			"reachable": "renvoie combien de mots différents de\nla liste (start exclu) peuvent être atteints depuis start en changeant une\nlettre à la fois",
+			"grow": "renvoie le nombre de mots de\nla plus courte chaîne de start à end, start et end compris, où chaque\nmot vient du précédent en changeant une lettre, ou en ajoutant ou en\nretirant une lettre n'importe où ; 0 s'il n'y a pas de chaîne"
+		}
+	}
+}

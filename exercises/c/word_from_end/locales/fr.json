@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et affiche\n$which,\n$how, suivi d'un retour à la ligne.\n\nUn mot est une partie de la chaîne entre des espaces ou des tabulations, ou le début ou la\nfin de la chaîne.\n\nSi le nombre d'arguments n'est pas 1, ou s'il n'y a pas un tel mot, le\nprogramme affiche seulement un retour à la ligne.",
+	"texts": {
+		"which": {
+			"second_last": "son avant-dernier mot",
+			"last_two": "ses deux derniers mots, dans leur ordre, séparés par un espace",
+			"last_capital": "son dernier mot qui commence par une lettre majuscule",
+			"last_digit": "son dernier mot qui contient un chiffre"
+		},
+		"how": {
+			"plain": "tel quel",
+			"upper": "avec les lettres minuscules changées en majuscules"
+		}
+	}
+}

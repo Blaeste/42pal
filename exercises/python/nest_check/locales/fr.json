@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire une fonction qui prend une chaîne et renvoie\n$report.\n\nLes parenthèses sont $kinds ; tout autre caractère est ignoré. Les parenthèses d'une\nchaîne sont correctes quand chaque parenthèse fermante ferme la dernière parenthèse\nouverte et pas encore fermée, de la même sorte, et qu'aucune parenthèse n'est encore ouverte\nà la fin. Une chaîne sans parenthèse est correcte.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"report": {
+			"pairs": "le nombre de paires de parenthèses qu'elle contient si ses parenthèses sont correctes, ou -1\nsinon",
+			"deepest": "l'indice de la première parenthèse ouverte au niveau le plus profond (la première\nqui rend le plus de parenthèses ouvertes en même temps) si ses parenthèses\nsont correctes, ou -1 sinon ou si elle n'a aucune parenthèse",
+			"repair": "la chaîne suivie des parenthèses fermantes des parenthèses encore ouvertes,\nla dernière ouverte en premier, si aucune parenthèse fermante n'est fausse ; ou None si l'une\nl'est (elle ne ferme rien, ou une parenthèse d'une autre sorte)"
+		},
+		"kinds": {
+			"two": "( ) et [ ] seulement : { } et < > ne sont pas des parenthèses ici",
+			"four": "( ), [ ], { } et < >"
+		}
+	}
+}

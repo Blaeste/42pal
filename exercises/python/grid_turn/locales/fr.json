@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend une matrice (une liste de lignes, chacune une liste d'int,\ntoutes de même longueur) et renvoie une nouvelle matrice : la matrice donnée\n$move.\n\nLa matrice donnée ne doit pas être modifiée. Une matrice vide donne une matrice\nvide ; aucune ligne d'une matrice n'est vide.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\ndef $assignment(matrix: list[list[int]]) -> list[list[int]]:",
+	"texts": {
+		"move": {
+			"upside_down": "à l'envers : sa dernière ligne en premier, jusqu'à sa première ligne en dernier",
+			"transpose": "transposée : sa première ligne est la première colonne de la matrice donnée,\nsa deuxième ligne la deuxième colonne, et ainsi de suite",
+			"rotate_right": "tournée d'un quart de tour vers la droite (sens horaire) : sa première ligne est\nla première colonne de la matrice donnée lue de bas en haut",
+			"rotate_left": "tournée d'un quart de tour vers la gauche (sens antihoraire) : sa première\nligne est la dernière colonne de la matrice donnée lue de haut en bas"
+		}
+	}
+}

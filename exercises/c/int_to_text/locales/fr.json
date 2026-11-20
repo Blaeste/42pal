@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui renvoie une nouvelle chaîne, allouée avec malloc, contenant\nl'int n écrit en base 10,\n$format.\nElle marche pour tout int, de -2147483648 à 2147483647.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(int n);",
+	"texts": {
+		"format": {
+			"spaced": "ses chiffres par groupes de trois comptés depuis la droite, séparés par\nun espace, après un signe moins pour un n négatif (-1 234 567)",
+			"commas": "ses chiffres par groupes de trois comptés depuis la droite, séparés par une\nvirgule, après un signe moins pour un n négatif (-1,234,567)",
+			"signed": "toujours avec un signe avant ses chiffres : + pour un n positif, - pour un\nn négatif, et pas de signe pour 0 (+42, -42, 0)",
+			"padded": "avec au moins 6 chiffres, des zéros ajoutés à gauche, après un signe moins\npour un n négatif (000042, -000042, 1234567)"
+		}
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui prend un nombre de 1 à 100 et affiche les nombres\nde 1 jusqu'à lui, un par ligne, chacun suivi d'un retour à la ligne, sauf que :\n\n- les multiples de $bip sont remplacés par bip ;\n- les nombres $bop sont remplacés par bop ;\n- les nombres qui sont les deux sont remplacés par bipbop.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche un retour à la ligne.",
+	"texts": {
+		"bip": {
+			"by3": "3",
+			"by4": "4"
+		},
+		"bop": {
+			"has7": "qui contiennent le chiffre 7 (7, 17, 70...)",
+			"has2": "qui contiennent le chiffre 2 (2, 12, 20...)",
+			"ends5": "qui se terminent par le chiffre 5 (5, 15, 25...)"
+		}
+	}
+}

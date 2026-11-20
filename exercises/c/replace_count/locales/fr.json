@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui remplace, sur place, par le caractère to les\noccurrences du caractère from dans la chaîne str\n$where.\nLes autres caractères ne changent pas. La fonction renvoie combien de\ncaractères elle a remplacés.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(char *str, char from, char to);\n\nDans les exemples, la ligne sous un appel montre l'int renvoyé, puis str\naprès l'appel.",
+	"texts": {
+		"where": {
+			"word_start": "qui commencent un mot : le premier caractère de la chaîne, ou un caractère juste\naprès un espace ou une tabulation",
+			"word_end": "qui terminent un mot : le dernier caractère de la chaîne, ou un caractère juste\navant un espace ou une tabulation",
+			"in_runs": "qui sont dans une suite : voisins d'un autre from (juste avant ou juste après\nlui)",
+			"inside": "qui ne sont ni le premier ni le dernier caractère de la chaîne"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend une carte : une liste de chaînes de même longueur,\nfaite de # pour la terre et de . pour l'eau (une liste vide est une carte vide). Une\nîle est un groupe de cases de terre reliées par leurs côtés, aussi grand qu'il peut\nl'être. La fonction renvoie\n$rule.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\ndef $assignment(grid: list[str]) -> int:",
+	"texts": {
+		"rule": {
+			"largest": "le nombre de cases de la plus grande île (0 s'il n'y a pas de terre)",
+			"diagonal": "le nombre d'îles, quand deux cases de terre qui se touchent par un coin sont\nreliées aussi",
+			"lakes": "le nombre de lacs : les régions de cases d'eau reliées par leurs côtés qui\nne touchent aucun bord de la grille",
+			"perimeter": "la longueur de la côte : le nombre de côtés de cases de terre qui touchent\nune case d'eau ou le bord de la grille"
+		}
+	}
+}

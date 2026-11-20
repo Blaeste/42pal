@@ -21,7 +21,7 @@ Un menu **Settings** dans le premier menu de `./42pal`, avec **Language** : angl
 
 Chaque étape en TDD, puis les tests utilisateur. **Découpage décidé le 2026-11-20 : le français d'abord, de bout en bout (interface, traces, sujets) ; les autres langues ensuite, une par une.**
 
-**Avancement** : phase 1 faite ; phase 2 faite (interface en français, 323 textes avec les thèmes) ; la suite : les traces en français, puis les sujets en français.
+**Avancement** : le français est fait de bout en bout : phase 1 (la mécanique), phase 2 (l'interface, 323 textes avec les thèmes), phase 3 (les traces), phase 4 (les 126 sujets, `subject.fr.txt`). La suite : les autres langues, une par une (phase 5).
 
 ### Phase 1 — La mécanique
 

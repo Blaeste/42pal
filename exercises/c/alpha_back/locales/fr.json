@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui affiche les lettres de l'alphabet à l'envers,\n$step,\nsuivies d'un retour à la ligne. Parmi les lettres affichées,\n$pattern.\n\nLe programme ignore ses arguments.",
+	"texts": {
+		"pattern": {
+			"alternate_lower": "une lettre sur deux est en majuscule, en commençant par la deuxième\naffichée (la première est en minuscule)",
+			"alternate_upper": "une lettre sur deux est en majuscule, en commençant par la première\naffichée",
+			"thirds": "une lettre sur trois est en majuscule, en commençant par la première\naffichée",
+			"halves": "les lettres de z à n sont en majuscule, les lettres de m à a en\nminuscule"
+		},
+		"step": {
+			"all": "toutes les lettres, de z à a",
+			"skip": "une lettre sur deux : z, x, v et ainsi de suite jusqu'à b"
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend un dict de paquets : chaque clé est le nom d'un\npaquet, et sa valeur la liste des paquets dont il a besoin, qui doivent être\ninstallés avant lui. Un paquet nécessaire qui n'est pas une clé du dict est\nignoré. La fonction\n$rule.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"levels": "renvoie les paquets\nniveau par niveau : le premier niveau contient les paquets qui n'ont besoin de rien,\nle deuxième ceux qui n'ont besoin que de paquets du premier niveau, et ainsi\nde suite (chaque paquet au premier niveau où il peut être). Chaque niveau est une liste\ntriée dans l'ordre alphabétique. Si certains paquets ne peuvent jamais être placés\nparce qu'ils ont besoin les uns des autres, elle renvoie None. Un dict vide donne une\nliste vide",
+			"install_for": "renvoie les paquets à installer pour obtenir target, une clé du dict : les\npaquets dont il a besoin, ceux dont ils ont besoin, et ainsi de suite, puis target lui-même. Chacun\nvient après tous les paquets dont il a besoin et, parmi les paquets qui\npourraient venir ensuite, le premier dans l'ordre alphabétique vient en premier. Si certains\nde ces paquets ont besoin les uns des autres, elle renvoie None",
+			"depth": "renvoie un dict qui\ndonne, pour chaque paquet, la longueur de la plus longue chaîne de besoins sous\nlui : 0 pour un paquet qui n'a besoin de rien, 1 pour un paquet qui n'a besoin que de\npaquets qui n'ont besoin de rien, et ainsi de suite. Ses clés viennent dans l'ordre du\ndict donné. Si certains paquets ont besoin les uns des autres, elle renvoie None"
+		}
+	}
+}

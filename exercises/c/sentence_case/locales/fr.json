@@ -1,0 +1,13 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne, une phrase, et affiche ses mots\ncomme un seul nom écrit en\n$style,\nsuivi d'un retour à la ligne.\n\nUn mot est une suite de lettres et de chiffres ; tout autre caractère sépare les\nmots. La casse des lettres données ne compte pas.\n\nSi le nombre d'arguments n'est pas 1, ou s'il n'y a aucun mot, le programme\naffiche seulement un retour à la ligne.",
+	"texts": {
+		"style": {
+			"camel": "camelCase : les mots collés, le premier en minuscule, chacun des autres\navec une majuscule au début (helloBigWorld)",
+			"pascal": "PascalCase : les mots collés, chacun avec une majuscule au début\n(HelloBigWorld)",
+			"snake": "snake_case : les mots en minuscule, reliés par _ (hello_big_world)",
+			"kebab": "kebab-case : les mots en minuscule, reliés par - (hello-big-world)",
+			"constant": "CONSTANT_CASE : les mots en majuscule, reliés par _ (HELLO_BIG_WORLD)",
+			"dot": "dot.case : les mots en minuscule, reliés par . (hello.big.world)"
+		}
+	}
+}

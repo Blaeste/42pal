@@ -1,0 +1,9 @@
+{
+	"subject": "Écrire une fonction qui renvoie un nouveau tableau d'int, alloué avec malloc,\ncontenant des nombres espacés de\n$step,\nen allant\n$direction,\nsans dépasser l'autre bout. Le tableau contient\n(|end - start| / step) + 1 nombres ; start et end peuvent être dans n'importe quel ordre.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t*$assignment(int start, int end);",
+	"texts": {
+		"direction": {
+			"forward": "de start vers end (start en premier)",
+			"backward": "de end vers start (end en premier)"
+		}
+	}
+}

@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend un plateau, donné ligne par ligne en arguments, et\naffiche\n$answer.\n\nLes arguments ont tous la même longueur. Le plateau contient exactement un T, la\ncible ; tout caractère qui n'est ni T ni une pièce est une case vide.\n\n$pieces\n\nLes lignes sont numérotées à partir de 1 (le premier argument est la ligne 1), et les colonnes\nà partir de 1, depuis la gauche.\n\nS'il n'y a aucun argument, le programme affiche un retour à la ligne.",
+	"texts": {
+		"answer": {
+			"count": "le nombre de pièces qui attaquent T, suivi d'un retour à la ligne",
+			"where": "la position de chaque pièce qui attaque T, sous la forme ligne,colonne suivie d'un\nretour à la ligne, dans l'ordre du plateau : ligne par ligne depuis la première, chaque\nligne de gauche à droite. Si aucune pièce n'attaque T, il affiche safe suivi\nd'un retour à la ligne"
+		},
+		"pieces": {
+			"knights": "Les pièces sont les N. Un N attaque les cases à deux lignes et une colonne de lui, ou à deux colonnes et une\nligne ; il saute par-dessus les cases entre les deux.",
+			"guards": "Les pièces sont les G. Un G attaque les 8 cases autour de lui.",
+			"lines": "Les pièces sont les L. Un L attaque les cases de sa ligne et de sa colonne, dans les 4 directions, jusqu'à la\npremière case qui n'est pas vide (une pièce ou T), qui est attaquée elle aussi.",
+			"mixed": "Les pièces sont les N, les G et les L :\n- un N attaque les cases à deux lignes et une colonne de lui, ou à deux colonnes et une\nligne ; il saute par-dessus les cases entre les deux ;\n- un G attaque les 8 cases autour de lui ;\n- un L attaque les cases de sa ligne et de sa colonne, dans les 4 directions, jusqu'à la\npremière case qui n'est pas vide (une pièce ou T), qui est attaquée elle aussi."
+		}
+	}
+}

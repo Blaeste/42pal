@@ -1,0 +1,12 @@
+{
+	"subject": "Écrire une fonction qui prend un octet et affiche\n$form,\nsans rien après (pas de retour à la ligne).\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(unsigned char octet);",
+	"texts": {
+		"form": {
+			"lsb_first": "ses 8 bits, en 0 et 1, du plus bas au plus haut",
+			"grouped": "ses 8 bits, en 0 et 1, depuis le plus haut, en deux groupes de quatre\nséparés par un espace",
+			"dots": "ses 8 bits depuis le plus haut, un . pour chaque 0 et un # pour chaque 1",
+			"hex": "sa valeur en hexadécimal, toujours avec 2 chiffres (minuscules a à f)",
+			"octal": "sa valeur en octal, toujours avec 3 chiffres"
+		}
+	}
+}

@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et affiche ses mots, dans leur\nordre, séparés par\n$joint,\nsuivis d'un retour à la ligne. Rien ne vient avant le premier mot ni après le\ndernier.\n$case.\n\nUn mot est une partie de la chaîne entre des espaces ou des tabulations, ou le début ou la\nfin de la chaîne.\n\nSi le nombre d'arguments n'est pas 1, ou s'il n'y a aucun mot, le programme\naffiche seulement un retour à la ligne.",
+	"texts": {
+		"joint": {
+			"dash": "un tiret (-)",
+			"dot": "un point (.)",
+			"comma": "une virgule et un espace (, )",
+			"newline": "un retour à la ligne (un mot par ligne)"
+		},
+		"case": {
+			"keep": "Les mots sont affichés tels quels",
+			"lower": "Les lettres majuscules des mots sont changées en minuscules"
+		}
+	}
+}

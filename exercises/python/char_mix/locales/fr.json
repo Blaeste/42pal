@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend deux chaînes, s1 et s2, et renvoie\n$rule.\n\nChaque caractère compte, les espaces aussi, et la casse compte (a et A sont deux\ncaractères).\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"only_first": "une chaîne des caractères de s1 qui ne sont pas dans s2, chacun une fois, dans\nl'ordre de leur première apparition dans s1",
+			"one_side": "une chaîne des caractères qui sont dans l'une des deux chaînes mais pas\ndans l'autre, chacun une fois : d'abord ceux de s1, dans l'ordre de leur première\napparition dans s1, puis ceux de s2, de la même façon",
+			"common_count": "un dict qui donne, pour chaque caractère trouvé dans les deux\nchaînes, le plus petit de ses deux nombres d'apparitions (dans s1 et dans\ns2) ; ses clés viennent dans l'ordre de leur première apparition dans s1"
+		}
+	}
+}

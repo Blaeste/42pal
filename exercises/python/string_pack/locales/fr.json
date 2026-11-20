@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui\n$rule.\n\nLes chaînes peuvent contenir n'importe quel caractère. Vous ne pouvez utiliser ni eval() ni importer\nquoi que ce soit.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"pack_escape": "prend une liste de chaînes et les renvoie regroupées\nen une seule chaîne : chaque chaîne, suivie d'un ;. Dans une chaîne, chaque \\\nest écrit \\\\ et chaque ; est écrit \\; pour que les ; qui terminent les chaînes\npuissent être distingués. La liste vide donne une chaîne vide, et une liste d'une\nseule chaîne vide donne ;",
+			"unpack_escape": "prend une chaîne regroupée de cette façon : chaque\nchaîne suivie d'un ;, où dans une chaîne chaque \\ est écrit \\\\ et\nchaque ; est écrit \\; -- et renvoie la liste des chaînes. Si packed\nest mal formée (un \\ suivi d'autre chose que \\ ou ;, ou des caractères\naprès le dernier ;), elle renvoie None. Une chaîne vide donne une liste vide",
+			"unpack_length": "prend une chaîne regroupée de cette façon : chaque\nchaîne écrite sous la forme de sa longueur en décimal, un :, puis ses caractères (3:abc\npour abc, 0: pour une chaîne vide) -- et renvoie la liste des chaînes.\nSi packed est mal formée (pas de longueur là où il en faut une, ou moins de\ncaractères restants qu'une longueur ne l'annonce), elle renvoie None. Une chaîne vide\ndonne une liste vide"
+		}
+	}
+}

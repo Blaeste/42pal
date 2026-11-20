@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui copie dans dst la chaîne src\n$what,\nsuivie d'un \\0, et renvoie\n$returned.\ndst est toujours assez grand.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *dst, char *src);\n\nDans les exemples, les lignes sous chaque appel montrent dst après l'appel, et\noù se trouve dans dst le pointeur renvoyé.",
+	"texts": {
+		"what": {
+			"reversed": "avec ses caractères dans l'ordre inverse",
+			"letters": "en ne gardant que ses lettres (a à z et A à Z), dans leur ordre",
+			"upper": "avec ses lettres minuscules changées en majuscules",
+			"no_spaces": "sans ses espaces"
+		},
+		"returned": {
+			"start": "dst, le début de la copie",
+			"end": "l'adresse du \\0 écrit à la fin de la copie dans dst"
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une liste de listes d'int, chacune triée de la\nplus petite à la plus grande valeur,\n$rule.\n\nLe résultat est une nouvelle liste triée de la plus petite à la plus grande valeur,\noù chaque valeur apparaît une fois sauf indication contraire. Les listes données ne\ndoivent pas être modifiées.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"at_least": "et un int m à partir de 1, et renvoie les valeurs\ntrouvées dans au moins m des listes",
+			"with_counts": "et renvoie les valeurs trouvées dans chaque liste, chacune\nautant de fois qu'elle est dans la liste qui l'a le moins de fois (aucune\nliste ne donne une liste vide)",
+			"only_one": "et renvoie les valeurs trouvées dans une seule des listes,\nquel que soit le nombre de fois où elles y sont"
+		}
+	}
+}

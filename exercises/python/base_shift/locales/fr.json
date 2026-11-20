@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend un nombre écrit dans une chaîne et une base de 2\nà 36, et renvoie\n$op.\n\nLes chiffres d'une base vont de 0 à 9, puis de A à Z pour 10 à 35 : une base\nn'utilise que les premiers (0 et 1 pour la base 2). Les lettres sont lues dans\nles deux casses et écrites en majuscule. Un nombre peut commencer par un signe - ;\nrien d'autre que ses chiffres ne peut s'y trouver. Le résultat n'a pas de zéros devant.\n\nLa fonction renvoie None si la base n'est pas entre 2 et 36, ou si le nombre\nn'a aucun chiffre ou contient un caractère qui n'est pas un de ses chiffres.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\ndef $assignment(number: str, base: int) -> str | None:",
+	"texts": {
+		"op": {
+			"to_decimal": "la valeur du nombre, écrit dans cette base, sous forme de chaîne écrite en\ndécimal",
+			"from_decimal": "la valeur du nombre, écrit en décimal, sous forme de chaîne écrite dans\ncette base",
+			"next": "le nombre qui le suit (le nombre plus un), sous forme de chaîne écrite\ndans cette base aussi"
+		}
+	}
+}

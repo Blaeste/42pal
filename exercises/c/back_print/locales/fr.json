@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui affiche sur la sortie standard\n$what,\npuis un retour à la ligne. str est la chaîne donnée en paramètre.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(char *str);",
+	"texts": {
+		"what": {
+			"letters_only": "ses lettres seulement (a à z et A à Z), de la dernière à la première",
+			"every_other": "un caractère sur deux en partant de sa fin : le dernier caractère, celui\ndeux places avant, et ainsi de suite",
+			"each_line": "chacune de ses lignes retournée, les lignes restant dans leur ordre (les\nlignes sont séparées par des retours à la ligne, qui restent à leur place)"
+		}
+	}
+}

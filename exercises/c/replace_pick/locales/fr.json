@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend trois arguments : une chaîne, un caractère à trouver\net un caractère à mettre. Parmi les endroits où le caractère à trouver est dans\nla chaîne, il remplace\n$which\npar le caractère à mettre, puis affiche la chaîne, suivie d'un retour à la ligne.\n$match.\n\nSi le nombre d'arguments n'est pas 3, ou si le deuxième ou le troisième n'est\npas un seul caractère, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"which": {
+			"first": "le premier",
+			"last": "le dernier",
+			"every_other": "un sur deux (le premier, le troisième, le cinquième et ainsi de suite)",
+			"all_but_first": "tous sauf le premier"
+		},
+		"match": {
+			"exact": "Le caractère trouvé doit être exactement celui donné",
+			"any_case": "Pour une lettre, sa minuscule comme sa majuscule sont trouvées (a\ntrouve a et A)"
+		}
+	}
+}

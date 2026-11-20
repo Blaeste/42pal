@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une chaîne et renvoie\n$rule.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"digits": "True si les chiffres de la chaîne, lus depuis la fin, sont les mêmes\nque lus depuis le début, et False sinon (une chaîne sans chiffres\ndonne True) ; les autres caractères sont ignorés",
+			"longest_word": "le plus long mot de la chaîne qui se lit pareil dans les deux sens,\nsans tenir compte de la casse ; le premier si plusieurs ont cette longueur, et une chaîne\nvide s'il n'y en a pas. Les mots sont séparés par des espaces, et un mot\nd'une lettre se lit pareil dans les deux sens",
+			"near": "True si les lettres de la chaîne, sans tenir compte de la casse, se lisent pareil dans\nles deux sens, ou le feraient après en avoir retiré une ; False sinon. Les\nautres caractères sont ignorés"
+		}
+	}
+}

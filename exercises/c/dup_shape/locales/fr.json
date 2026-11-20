@@ -1,0 +1,12 @@
+{
+	"subject": "Écrire une fonction qui renvoie une nouvelle chaîne, allouée avec malloc, contenant\n$shape.\nsrc n'est jamais modifiée.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *src);",
+	"texts": {
+		"shape": {
+			"reversed": "src avec ses caractères dans l'ordre inverse",
+			"doubled": "src avec chacun de ses caractères deux fois de suite",
+			"twice": "src deux fois de suite",
+			"trimmed": "src sans les espaces et tabulations de son début et de sa fin",
+			"upper": "src avec ses lettres minuscules changées en majuscules"
+		}
+	}
+}

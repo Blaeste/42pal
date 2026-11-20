@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire une fonction qui prend une grille de caractères et la place (x, y) de l'une\nde ses cases, et travaille sur la zone de cette case.\n\nLa grille a height lignes de width caractères. grid[y][x] est la case à la\ncolonne x et à la ligne y, toutes deux comptées à partir de 0. La zone d'une case est cette case\net toutes les cases du même caractère qui peuvent être atteintes depuis elle, pas\nà pas : chaque pas va vers l'un de $connect, et chaque case sur le chemin a\nce même caractère.\n\nLa fonction $measure.\n\n(x, y) est toujours dans la grille, et la grille fait au plus 50 sur 50.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(char **grid, int width, int height, int x, int y);\n\nDans les exemples, le commentaire montre les lignes de la grille avant l'appel,\nséparées par /. Les lignes en dessous montrent la grille après l'appel, puis l'int\nrenvoyé.",
+	"texts": {
+		"connect": {
+			"four": "ses quatre voisins (haut, bas, gauche et droite)",
+			"eight": "ses huit voisins (haut, bas, gauche, droite et les quatre diagonales)"
+		},
+		"measure": {
+			"fill": "remplace chaque case de la zone par le caractère F, et renvoie combien\nde cases elle a remplacées",
+			"size": "renvoie combien de cases a la zone, et laisse la grille telle quelle",
+			"edge": "renvoie combien de cases de la zone sont sur le bord de la grille (dans sa\npremière ou sa dernière ligne, ou dans sa première ou sa dernière colonne), et laisse la grille\ntelle quelle"
+		}
+	}
+}

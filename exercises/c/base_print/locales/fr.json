@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend un nombre positif, écrit en base 10, et\nl'affiche\n$base,\nsuivi d'un retour à la ligne.\n$form.\n\nLe nombre est toujours fait uniquement de chiffres, et tient dans un int.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"base": {
+			"binary": "en binaire (base 2)",
+			"octal": "en octal (base 8)",
+			"hex": "en hexadécimal (base 16, avec les lettres minuscules a à f)"
+		},
+		"form": {
+			"plain": "Les chiffres sont affichés tels quels",
+			"prefixed": "Les chiffres viennent après un préfixe : 0b, 0o ou 0x pour les bases 2, 8 et 16",
+			"grouped": "Les chiffres sont affichés par groupes de 4, comptés depuis la droite et\nséparés par un espace (le premier groupe peut être plus court)"
+		}
+	}
+}

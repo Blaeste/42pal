@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire une fonction qui renvoie une nouvelle chaîne, allouée avec malloc, contenant\nl'int n écrit\n$base.\n$format.\nElle marche pour tout int, de -2147483648 à 2147483647.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(int n);",
+	"texts": {
+		"base": {
+			"binary": "en binaire (base 2)",
+			"octal": "en octal (base 8)",
+			"hex": "en hexadécimal (base 16, avec les lettres minuscules a à f)"
+		},
+		"format": {
+			"plain": "Rien ne vient avant les chiffres, sauf un signe moins pour un n négatif",
+			"prefixed": "Les chiffres viennent après un préfixe, 0b, 0o ou 0x pour les bases 2, 8 et 16 ;\nun signe moins, pour un n négatif, vient avant le préfixe"
+		}
+	}
+}

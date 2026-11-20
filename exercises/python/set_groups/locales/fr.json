@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une classe nommée Groups qui range des éléments en groupes : chaque élément est\ndans exactement un groupe, et réunir deux éléments fusionne leurs groupes.\nGardez, pour chaque élément, un parent qui mène au représentant de son groupe.\n\n$rule\n\nLes méthodes renvoient leurs résultats et n'affichent rien.\n\nVotre classe doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"sizes": "Ses méthodes :\n- Groups(n) crée n éléments, numérotés de 0 à n - 1, chacun dans un groupe\nà lui seul ;\n- union(a, b) réunit les groupes de a et b et renvoie True, ou renvoie\nFalse s'ils étaient déjà dans le même groupe ;\n- size(x) renvoie le nombre d'éléments du groupe de x ;\n- count() renvoie le nombre de groupes.",
+			"names": "Les éléments sont des noms (des chaînes) : un nom utilisé pour la première fois est un\nnouvel élément, dans un groupe à lui seul. Ses méthodes :\n- Groups() commence sans aucun élément ;\n- join(a, b) réunit les groupes de a et b et renvoie True, ou renvoie False\ns'ils étaient déjà dans le même groupe ;\n- same(a, b) renvoie True si a et b sont dans le même groupe, False\nsinon ;\n- members(a) renvoie les noms du groupe de a, dans l'ordre alphabétique.",
+			"undo": "Ses méthodes :\n- Groups(n) crée n éléments, numérotés de 0 à n - 1, chacun dans un groupe\nà lui seul ;\n- union(a, b) réunit les groupes de a et b et renvoie True, ou renvoie\nFalse s'ils étaient déjà dans le même groupe (cette union ne change\nrien) ;\n- together(a, b) renvoie True si a et b sont dans le même groupe, False\nsinon ;\n- undo() annule la dernière union qui a réuni deux groupes et qui n'est pas\nencore annulée, pour que ces deux groupes soient à nouveau séparés, et renvoie True ;\nelle renvoie False s'il n'y en a pas."
+		}
+	}
+}

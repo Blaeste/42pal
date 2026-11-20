@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui prend un nombre positif n, écrit uniquement avec des chiffres,\net affiche\n$measure,\n$range,\nsuivi d'un retour à la ligne. n ne dépasse jamais 20000.\n\nSi le nombre d'arguments n'est pas 1, ou si l'argument n'est pas un nombre\npositif, le programme affiche 0 suivi d'un retour à la ligne.",
+	"texts": {
+		"measure": {
+			"count": "combien il y a de nombres premiers",
+			"largest": "le plus grand nombre premier (0 s'il n'y en a pas)",
+			"digit_sum": "la somme de tous les chiffres des nombres premiers (13 donne 1 + 3)"
+		},
+		"range": {
+			"up_to": "de 2 à n",
+			"between": "de n à 2n (n et 2n compris)"
+		}
+	}
+}

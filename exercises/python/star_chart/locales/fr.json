@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui\n$rule.\n\nLa grille est une liste de chaînes, une pour chaque ligne, depuis celle du haut.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"count": "prend des points sous forme de\ntuples (row, col), une hauteur et une largeur, et renvoie une grille de height\nlignes de width caractères. Une case montre combien de points tombent dessus : un point\npour aucun, le chiffre pour 1 à 9, + pour 10 ou plus. La ligne 0 est celle du haut, la\ncolonne 0 celle de gauche, et les points hors de la grille sont ignorés",
+			"bounds": "prend des points sous forme de tuples (row, col), qui peuvent\nêtre négatifs, et renvoie le plus petit rectangle qui les contient tous :\nsa première ligne est la plus petite ligne d'un point et sa dernière ligne la\nplus grande, et de même pour les colonnes. Une case avec un point montre *, les\nautres un point. Aucun point donne une liste vide",
+			"up": "prend des points sous forme de tuples (x, y) et une\ntaille size, et renvoie une grille carrée de size lignes de size caractères, comme un\ngraphique : x est la colonne, à partir de 0 à gauche, et y monte, à partir de 0 sur la\nligne du bas. Une case avec un point montre *, les autres un point, et les\npoints hors de la grille sont ignorés"
+		}
+	}
+}

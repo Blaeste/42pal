@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend un octet et le renvoie avec\n$part.\n\nVotre fonction doit être déclarée comme suit :\n\nunsigned char\t$assignment(unsigned char octet);\n\nDans les exemples, le commentaire montre l'octet donné en binaire, et la ligne\nen dessous montre l'octet renvoyé, en binaire aussi.",
+	"texts": {
+		"part": {
+			"each_half": "chacune de ses deux moitiés retournée séparément : les bits 7 6 5 4\ndeviennent 4 5 6 7, et les bits 3 2 1 0 deviennent 0 1 2 3",
+			"pairs": "chaque paire de bits échangée : le bit 7 avec le bit 6, 5 avec 4, 3 avec 2, et\n1 avec 0",
+			"middle_six": "ses six bits du milieu retournés (les bits 6 à 1 deviennent 1 à 6), le\nbit le plus haut et le plus bas restant à leur place"
+		}
+	}
+}

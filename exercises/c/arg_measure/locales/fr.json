@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire un programme qui affiche\n$what,\nsuivi d'un retour à la ligne. Sans argument, il affiche 0 suivi d'un\nretour à la ligne.",
+	"texts": {
+		"what": {
+			"total_length": "la somme des longueurs de ses arguments",
+			"longest": "la longueur de son plus long argument",
+			"numbers": "combien de ses arguments sont des nombres : faits uniquement de chiffres, et\nnon vides (un signe n'est pas un chiffre)",
+			"distinct": "combien d'arguments différents il a (la même chaîne deux fois compte\nune fois)"
+		}
+	}
+}

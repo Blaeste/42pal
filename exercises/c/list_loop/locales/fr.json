@@ -1,0 +1,10 @@
+{
+	"subject": "Dans une liste chaînée, le next du dernier maillon peut pointer vers l'un des\nmaillons (le dernier compris), formant une boucle ; sinon il vaut NULL. Écrire une\nfonction qui prend le premier maillon (NULL pour une liste vide) et renvoie\n$what.\nLa liste n'est pas modifiée.\n\nLes maillons sont du type t_ring, déclaré dans le header ring.h, fourni à côté\nde ce sujet :\n\n#ifndef RING_H\n# define RING_H\n\ntypedef struct s_ring\n{\n\tint\t\t\t\tvalue;\n\tstruct s_ring\t*next;\n}\tt_ring;\n\n#endif\n\nIncluez-le dans votre fichier, mais ne le rendez pas.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(t_ring *begin);\n\nDans les exemples, le commentaire montre les valeurs de la liste et où pointe son\ndernier maillon, et la ligne en dessous montre l'int renvoyé.",
+	"texts": {
+		"what": {
+			"length": "combien de maillons a la boucle (0 s'il n'y a pas de boucle)",
+			"start": "l'indice, à partir de 0, du premier maillon de la boucle : le maillon vers lequel\npointe le dernier (-1 s'il n'y a pas de boucle)",
+			"before": "combien de maillons viennent avant la boucle (tous s'il n'y a pas de boucle)"
+		}
+	}
+}

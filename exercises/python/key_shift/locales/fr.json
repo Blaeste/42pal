@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui renvoie une copie de la chaîne text où\n$rule.\n\nUne lettre est décalée parmi les lettres de sa casse : z décalé de 1 donne a,\nZ donne A, et a décalé de -1 donne z. Les lettres sont a à z et A à Z ;\nles autres caractères restent tels quels.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"by_key": "chaque lettre est décalée de la valeur d'une lettre de key,\na valant 0, b valant 1, jusqu'à z pour 25, dans les deux casses. Les lettres de key\nsont utilisées à tour de rôle : la première lettre de text par la première lettre de key,\nla deuxième par la deuxième, et ainsi de suite, en reprenant key au début quand elle se termine.\nkey n'est jamais vide et ne contient que des lettres. Les caractères de text qui\nne sont pas des lettres n'utilisent aucune lettre de key",
+			"growing": "la première lettre est décalée de 0, la deuxième de step,\nla troisième de 2 fois step, et ainsi de suite : la lettre numéro n, en comptant\nà partir de 0, est décalée de n fois step. step peut être négatif",
+			"with_digits": "chaque lettre est décalée de shift, et chaque chiffre aussi,\nparmi les chiffres : 9 décalé de 1 donne 0. shift peut être négatif"
+		}
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui prend un script comme seul argument et l'exécute.\n\nLe script travaille sur une bande de 64 cases d'un octet chacune, toutes à 0 au\ndépart. La case courante est la première au départ. Les commandes\nsont :\n\n\t+\tajoute 1 à la case courante (255 + 1 donne 0)\n\t-\tretire 1 à la case courante (0 - 1 donne 255)\n\t>\tfait de la case suivante la case courante\n\t<\tfait de la case précédente la case courante\n\t.\taffiche la case courante\n\nLa case courante est affichée\n$print.\n\nLes boucles s'écrivent avec $loop.\nLes boucles peuvent être imbriquées.\n\nTout autre caractère du script est ignoré. Le script est toujours\ncorrect : ses crochets se correspondent, et il ne sort jamais de la bande.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche un retour à la ligne.",
+	"texts": {
+		"loop": {
+			"times": "( et ), toujours suivies d'un chiffre d de 0 à 9 : les commandes entre\nles parenthèses sont exécutées d fois de suite (pas du tout pour 0), puis le script\ncontinue après le chiffre",
+			"countdown": "[ et ]. Quand le script atteint [, si la case courante vaut 0, il continue\naprès le ] correspondant. Quand il atteint ], il retire 1 à la\ncase courante ; puis, si la case courante ne vaut pas 0, il revient juste\naprès le [ correspondant",
+			"repeat": "{ et }. Quand le script atteint {, les commandes entre les accolades\nsont exécutées autant de fois que la valeur de la case courante à ce moment\n(pas du tout pour 0) ; la boucle elle-même ne change pas la case. Puis le\nscript continue après la } correspondante"
+		},
+		"print": {
+			"char": "sous forme de caractère (un octet)",
+			"number": "sous forme de nombre en décimal, suivi d'un retour à la ligne"
+		}
+	}
+}

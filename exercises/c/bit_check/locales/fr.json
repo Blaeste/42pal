@@ -1,0 +1,12 @@
+{
+	"subject": "Écrire une fonction qui renvoie 1 si l'unsigned int n est\n$property ;\nsinon, et pour 0, elle renvoie 0.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(unsigned int n);",
+	"texts": {
+		"property": {
+			"power_of_4": "une puissance de 4 : 1, 4, 16, 64 et ainsi de suite",
+			"all_ones": "écrit en binaire avec seulement des uns : 1, 3 (11), 7 (111) et ainsi de suite",
+			"alternating": "écrit en binaire avec des bits qui alternent, deux bits voisins n'étant\njamais égaux : 1, 2 (10), 5 (101), 10 (1010) et ainsi de suite",
+			"bit_palindrome": "écrit en binaire (sans les zéros à gauche) de la même façon dans les\ndeux sens : 1, 3 (11), 5 (101), 9 (1001) et ainsi de suite",
+			"two_ones": "écrit en binaire avec exactement deux uns : 3 (11), 5 (101), 6 (110)\net ainsi de suite"
+		}
+	}
+}

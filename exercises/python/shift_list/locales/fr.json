@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une liste d'int et un int k à partir de 0, et\nrenvoie une nouvelle liste avec\n$rule.\n\nLa liste donnée ne doit pas être modifiée, et une liste vide donne une liste vide.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\ndef $assignment(items: list[int], k: int) -> list[int]:",
+	"texts": {
+		"rule": {
+			"left": "les éléments tournés vers la gauche de k places : les k premiers éléments vont à la\nfin, dans leur ordre. k peut être plus grand que la longueur de la liste :\ntourner de la longueur redonne la liste",
+			"blocks": "les éléments inversés par blocs de k éléments (k vaut au moins 1) : les k premiers\néléments dans l'ordre inverse, puis les k suivants dans l'ordre inverse, et ainsi\nde suite ; le dernier bloc peut avoir moins d'éléments",
+			"keep_negatives": "les valeurs à partir de 0 tournées vers la droite de k places entre elles :\nles k dernières viennent en premier, dans leur ordre, et elles prennent les places\noù étaient des valeurs à partir de 0. Les valeurs négatives restent à leur place"
+		}
+	}
+}

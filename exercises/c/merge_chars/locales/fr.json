@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend deux chaînes et affiche, sans doublons, les\ncaractères\n$which,\n$order,\nsuivis d'un retour à la ligne.\n\nSi le nombre d'arguments n'est pas 2, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"which": {
+			"all": "trouvés dans au moins l'une d'elles",
+			"once": "trouvés dans une seule d'entre elles (pas dans les deux)",
+			"letters": "trouvés dans au moins l'une d'elles qui sont des lettres (a à z, A à Z)"
+		},
+		"order": {
+			"appearance": "dans l'ordre où ils apparaissent dans la première chaîne, puis dans la seconde",
+			"ascii": "dans l'ordre ASCII croissant",
+			"reverse_ascii": "dans l'ordre ASCII décroissant"
+		}
+	}
+}

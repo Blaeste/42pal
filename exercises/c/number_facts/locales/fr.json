@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend un nombre positif n, écrit uniquement avec 1 à 6\nchiffres, et affiche\n$what,\ndans l'ordre croissant, séparés par\n$separator, puis un retour à la ligne.\n\nSi le nombre d'arguments n'est pas 1, ou si l'argument n'est pas un tel\nnombre, il affiche seulement un retour à la ligne.",
+	"texts": {
+		"what": {
+			"divisors": "chaque diviseur de n (1 et n compris)",
+			"prime_divisors": "chaque nombre premier qui divise n, une fois chacun",
+			"primes_up_to": "chaque nombre premier de 2 à n"
+		},
+		"separator": {
+			"space": "un espace",
+			"comma": "une virgule et un espace",
+			"newline": "un retour à la ligne (un nombre par ligne)"
+		}
+	}
+}

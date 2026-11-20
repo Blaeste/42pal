@@ -1,0 +1,16 @@
+{
+	"subject": "Écrire une fonction qui renvoie un nouveau tableau de n int, alloué avec malloc,\ncontenant les n premiers\n$sequence,\n$order.\nSi n vaut 0 ou moins, elle renvoie NULL. n ne dépasse jamais 31.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t*$assignment(int n);\n\nDans les exemples, la ligne sous chaque appel montre les n int du tableau\nrenvoyé, séparés par des espaces.",
+	"texts": {
+		"sequence": {
+			"squares": "carrés : 0, 1, 4, 9, 16... (k * k pour k = 0, 1, 2...)",
+			"triangles": "nombres triangulaires : 0, 1, 3, 6, 10... (0 + 1 + ... + k pour k = 0, 1, 2...)",
+			"fibonacci": "nombres de Fibonacci : 0, 1, 1, 2, 3, 5, 8... (à partir du troisième,\nchacun est la somme des deux d'avant)",
+			"odds": "nombres impairs : 1, 3, 5, 7, 9...",
+			"powers_of_two": "puissances de deux : 1, 2, 4, 8, 16... (2 puissance k pour k = 0, 1, 2...)"
+		},
+		"order": {
+			"up": "dans cet ordre : le premier à l'indice 0, le n-ième à l'indice n - 1",
+			"down": "dans l'ordre inverse : le n-ième à l'indice 0, le premier à l'indice n - 1"
+		}
+	}
+}

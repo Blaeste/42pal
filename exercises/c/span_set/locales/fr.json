@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui renvoie combien de\n$set\nil y a à la suite\n$side.\n\nVotre fonction doit être déclarée comme suit :\n\nsize_t\t$assignment(char *s);",
+	"texts": {
+		"set": {
+			"digits": "chiffres (0 à 9)",
+			"letters": "lettres (a à z et A à Z)",
+			"blanks": "blancs (espaces et tabulations)",
+			"vowels": "voyelles (a, e, i, o, u, dans les deux casses)"
+		},
+		"side": {
+			"start": "au début de s : depuis son premier caractère, jusqu'au premier qui\nn'est pas dans l'ensemble",
+			"end": "à la fin de s : depuis son dernier caractère en remontant, jusqu'au premier qui\nn'est pas dans l'ensemble"
+		}
+	}
+}

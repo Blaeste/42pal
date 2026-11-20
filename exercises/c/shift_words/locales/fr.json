@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui décale, sur place, chaque lettre de la chaîne str\nvers l'avant dans l'alphabet de\n$by.\nUne lettre garde sa casse et fait le tour : z décalé de 1 donne a, et Z donne\nA. Les autres caractères ne changent pas. Un mot est un groupe de caractères qui\nne sont ni des espaces ni des tabulations. La fonction renvoie str.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *str);\n\nDans les exemples, la ligne sous un appel montre str après l'appel.",
+	"texts": {
+		"by": {
+			"word_rank": "le rang de son mot : les lettres du premier mot de 1, celles du\ndeuxième mot de 2, et ainsi de suite",
+			"position": "son rang parmi les lettres de la chaîne : la première lettre de 1, la\ndeuxième lettre de 2, et ainsi de suite (les autres caractères ne sont pas comptés)",
+			"word_length": "la longueur de son mot, en caractères (a1 est un mot de 2 caractères)"
+		}
+	}
+}

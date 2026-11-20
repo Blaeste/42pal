@@ -1,6 +1,7 @@
 """~/42pal_exam/: the folders the student works in, like at the exam.
 
-subjects/<name>/subject.en.txt holds the subject, rendu/<name>/ is where
+subjects/<name>/subject.en.txt holds the subject (and subject.<code>.txt
+in the language chosen in Settings, when it is not English), rendu/<name>/ is where
 the student writes the code, and traces/ gets a trace for each failed
 grademe. The student's work is never deleted.
 """
@@ -9,6 +10,7 @@ import getpass
 import subprocess
 from pathlib import Path
 
+from pal42 import i18n
 from pal42.subject import render
 
 # Not ~/42pal: that is often where the repository itself was cloned.
@@ -40,9 +42,13 @@ class Workspace:
 		"""
 		for folder in (self.subjects, self.rendu, self.traces):
 			folder.mkdir(parents=True, exist_ok=True)
-		subject = self.subjects / variant.name / "subject.en.txt"
-		subject.parent.mkdir(exist_ok=True)
-		subject.write_text(render(variant), encoding="utf-8")
+		english = self.subjects / variant.name / "subject.en.txt"
+		english.parent.mkdir(exist_ok=True)
+		english.write_text(render(variant, i18n.DEFAULT), encoding="utf-8")
+		# In another language, its own file too: that one is shown.
+		subject = self.subject_file(variant)
+		if subject != english:
+			subject.write_text(render(variant), encoding="utf-8")
 		# Files given by the exercise (a header with a struct...), for the student.
 		for name, content in variant.provided_files.items():
 			(subject.parent / name).write_text(content, encoding="utf-8")
@@ -50,6 +56,10 @@ class Workspace:
 		if self.remote:
 			self._ensure_git()
 		return subject
+
+	def subject_file(self, variant):
+		"""The file of the subject of `variant` in the language in use: subject.<code>.txt."""
+		return self.subjects / variant.name / f"subject.{i18n.language()}.txt"
 
 	def _ensure_git(self):
 		"""Make rendu/ a git repository pushing to `remote`, the first time only.

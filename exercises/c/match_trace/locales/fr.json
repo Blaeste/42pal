@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui prend deux chaînes, s1 et s2. s1 peut être faite à partir de s2\nquand ses caractères sont tous dans s2, dans le même ordre : chacun est le premier\naprès celui utilisé avant. Le programme affiche\n$what,\nsuivi d'un retour à la ligne.\n$case.\n\nSi le nombre d'arguments n'est pas 2, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"what": {
+			"marked": "s2 avec les caractères utilisés pour faire s1 en majuscule (les autres tels\nquels), si s1 peut être faite ; seulement un retour à la ligne sinon",
+			"skipped": "les caractères de s2 qui ne servent pas à faire s1, dans leur ordre, si\ns1 peut être faite ; seulement un retour à la ligne sinon",
+			"prefix": "le plus long début de s1 qui peut être fait à partir de s2 (peut-être vide)"
+		},
+		"case": {
+			"exact": "Les caractères sont comparés exactement : a et A sont différents",
+			"any_case": "Une lettre et son autre casse sont la même : a et A correspondent"
+		}
+	}
+}

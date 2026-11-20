@@ -1,0 +1,18 @@
+{
+	"subject": "Écrire une fonction qui prend un octet, octet, et le renvoie avec ses 8 bits\ndécalés en rotation de $amount $way.\nChaque bit qui sort d'un côté revient de l'autre côté.\n$invert.\n\nVotre fonction doit être déclarée comme suit :\n\nunsigned char\t$assignment(unsigned char octet);\n\nDans les exemples, le commentaire montre l'octet donné en binaire, et la ligne\nen dessous montre l'octet renvoyé, en binaire aussi.",
+	"texts": {
+		"way": {
+			"left": "vers la gauche (vers le bit de poids fort)",
+			"right": "vers la droite (vers le bit de poids faible)"
+		},
+		"amount": {
+			"1": "1 position",
+			"2": "2 positions",
+			"3": "3 positions"
+		},
+		"invert": {
+			"keep": "Elle renvoie l'octet décalé tel quel",
+			"flip": "Puis elle inverse chaque bit de l'octet décalé (chaque 0 devient 1\net chaque 1 devient 0) et renvoie le résultat"
+		}
+	}
+}

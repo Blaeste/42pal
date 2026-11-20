@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui remplace, sur place, dans la chaîne str\n$where\npar la lettre suivante de l'alphabet : a devient b, et z devient a ; la\nlettre garde sa casse (Z devient A). Les autres caractères ne changent pas. Un\nmot est un groupe de caractères qui ne sont ni des espaces ni des tabulations. La fonction\nrenvoie str.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *str);\n\nDans les exemples, la ligne sous un appel montre str après l'appel.",
+	"texts": {
+		"where": {
+			"word_starts": "le premier caractère de chaque mot, quand c'est une lettre",
+			"word_ends": "le dernier caractère de chaque mot, quand c'est une lettre",
+			"capitals": "chaque lettre majuscule"
+		}
+	}
+}

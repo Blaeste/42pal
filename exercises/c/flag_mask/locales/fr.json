@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui lit des options dans ses arguments et les affiche.\n\nUn argument qui commence par - contient des options : chaque caractère après le - est\nune option, une lettre minuscule de a à z. Les autres arguments sont ignorés.\nToutes les options sont désactivées au départ, et chaque option donnée\n$repeat.\n\nLe programme affiche ensuite\n$show,\nsuivi d'un retour à la ligne.\n\nSi un caractère d'une option n'est pas une lettre minuscule, le programme\naffiche Bad option suivi d'un retour à la ligne, et rien d'autre.\n\nS'il n'y a aucun argument, le programme affiche un retour à la ligne.",
+	"texts": {
+		"show": {
+			"letters": "les options activées, sous forme de leurs lettres dans l'ordre alphabétique (rien\nsi aucune n'est activée)",
+			"mask": "26 chiffres, un pour chaque lettre de a à z dans cet ordre : 1 si son\noption est activée, 0 sinon",
+			"hex": "un nombre en hexadécimal (en minuscule, sans zéros devant, 0 si aucune\noption n'est activée) dont le bit 0 vaut 1 si l'option a est activée, le bit 1 si b l'est,\net ainsi de suite jusqu'au bit 25 pour z"
+		},
+		"repeat": {
+			"set": "l'active ; une option donnée à nouveau reste activée",
+			"toggle": "la bascule : activée si elle était désactivée, désactivée si elle était activée"
+		}
+	}
+}

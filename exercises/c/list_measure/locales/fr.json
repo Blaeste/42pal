@@ -1,0 +1,16 @@
+{
+	"subject": "Écrire une fonction qui prend la première cellule d'une liste chaînée d'int et,\nen regardant\n$cells,\nrenvoie\n$measure.\nPour une liste vide (NULL), elle renvoie 0.\n\nLes cellules sont du type t_cell, déclaré dans le header cell.h, fourni à côté\nde ce sujet :\n\n#ifndef CELL_H\n# define CELL_H\n\ntypedef struct s_cell\n{\n\tint\t\t\t\tnumber;\n\tstruct s_cell\t*next;\n}\tt_cell;\n\n#endif\n\nIncluez-le dans votre fichier, mais ne le rendez pas.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(t_cell *begin);\n\nDans les exemples, le commentaire montre les nombres de la liste, depuis la première\ncellule, et la ligne en dessous montre l'int renvoyé.",
+	"texts": {
+		"measure": {
+			"sum": "la somme des nombres",
+			"max": "le plus grand nombre",
+			"min": "le plus petit nombre",
+			"count_even": "combien de nombres sont pairs (0 compris)",
+			"count_negative": "combien de nombres sont négatifs"
+		},
+		"cells": {
+			"all": "toutes ses cellules",
+			"every_other": "une cellule sur deux (la première, la troisième, la cinquième et ainsi de suite)"
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une classe nommée Keeper qui garde au plus capacity clés (des int), chacune\navec une valeur (un int). Ses méthodes :\n- Keeper(capacity) crée un gardien vide (capacity vaut au moins 1) ;\n- get(key) renvoie la valeur de key, ou -1 si key n'est pas gardée ;\n- put(key, value) donne à key la valeur value, et renvoie None.\n\nQuand une nouvelle clé arrive et que le gardien est plein, une clé sort d'abord :\n$rule.\n\nLes méthodes renvoient leurs résultats et n'affichent rien.\n\nVotre classe doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"lfu": "la clé utilisée le moins de fois sort ; parmi les clés utilisées autant de fois,\ncelle dont la dernière utilisation est la plus ancienne. Une utilisation est un get qui trouve la clé\nou un put de celle-ci (le put qui fait entrer une clé est sa première utilisation)",
+			"fifo": "la clé entrée en premier sort. Un get ne change rien, et un put d'une\nclé déjà gardée change sa valeur mais pas sa place",
+			"mru": "la clé utilisée en dernier sort, avant que la nouvelle clé n'entre. Une utilisation est un get\nqui trouve la clé ou un put de celle-ci"
+		}
+	}
+}

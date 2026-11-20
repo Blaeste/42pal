@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire une fonction qui affiche, sur la sortie standard, la chaîne str\n$what.\n$end.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(char *str);",
+	"texts": {
+		"what": {
+			"letters": "en ne gardant que ses lettres (a à z et A à Z), dans leur ordre",
+			"digits": "en ne gardant que ses chiffres (0 à 9), dans leur ordre",
+			"upper": "avec ses lettres minuscules changées en majuscules",
+			"doubled": "avec chacun de ses caractères deux fois de suite"
+		},
+		"end": {
+			"bare": "Rien n'est affiché après",
+			"newline": "Un retour à la ligne est affiché après, même si rien d'autre ne l'a été"
+		}
+	}
+}

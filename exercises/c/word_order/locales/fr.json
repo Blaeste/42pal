@@ -1,0 +1,17 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et affiche ses mots\n$order,\nséparés par\n$separator, puis un retour à la ligne.\nUn mot est une suite de caractères autres que des espaces et des tabulations.\n\nSi le nombre d'arguments n'est pas 1, ou si la chaîne n'a aucun mot, il\naffiche seulement un retour à la ligne.",
+	"texts": {
+		"order": {
+			"reverse": "du dernier au premier",
+			"rotate_left": "à partir du deuxième, le premier déplacé à la fin",
+			"rotate_right": "le dernier en premier, puis les autres dans leur ordre",
+			"sort": "triés dans l'ordre ASCII",
+			"by_length": "du plus court au plus long (dans leur ordre s'ils sont aussi longs)"
+		},
+		"separator": {
+			"space": "un espace",
+			"newline": "un retour à la ligne (un mot par ligne)",
+			"comma": "une virgule et un espace"
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend deux chaînes, small et big. Les caractères de\nsmall sont trouvés dans big quand ils apparaissent dans big dans le même ordre, pas\nforcément voisins. La fonction renvoie\n$rule.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"positions": "la liste des indices dans big où ses caractères\nsont trouvés, chacun le plus tôt possible après le précédent ; None s'ils\nne peuvent pas tous être trouvés de cette façon, et une liste vide pour un small vide",
+			"count": "combien de fois ses caractères peuvent être trouvés de cette façon, en parcourant\nbig une fois depuis son début : après chaque fois où tous sont trouvés, la\nrecherche reprend au premier caractère de small (0 pour un small\nvide)",
+			"nocase": "True s'ils peuvent être trouvés de cette façon quand la casse des lettres est\nignorée (a et A sont alors la même), et False sinon"
+		}
+	}
+}

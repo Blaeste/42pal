@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend n, un nombre de tâches numérotées de 0 à n - 1,\net une liste de prérequis : chacun est une paire [a, b] qui signifie que la tâche b\ndoit être faite avant la tâche a. La fonction\n$rule.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"rounds": "renvoie le plus petit nombre de tours\npour faire toutes les tâches, quand chaque tour fait en même temps chaque tâche\ndont les prérequis sont tous faits ; -1 si les tâches ne peuvent jamais toutes être faites\n(certaines s'attendent les unes les autres), et 0 quand n vaut 0",
+			"ancestors": "prend aussi une\ntâche task, et renvoie les tâches qui doivent être faites avant elle : ses\nprérequis, les leurs, et ainsi de suite, triées dans l'ordre croissant. Les\nprérequis ne s'attendent jamais les uns les autres",
+			"largest_first": "renvoie un ordre pour faire\ntoutes les tâches une par une : à chaque fois, la tâche de plus grand numéro parmi\ncelles dont les prérequis sont tous faits. Si les tâches ne peuvent jamais toutes être\nfaites (certaines s'attendent les unes les autres), elle renvoie une liste vide"
+		}
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"subject": "Ce programme reçoit deux chaînes en arguments, s1 et s2.\n\nIl affiche chaque caractère $mode,\n$order.\nChaque caractère n'est affiché qu'une fois, même s'il apparaît plusieurs fois.\n\nLes caractères sont $separator,\net un retour à la ligne termine la ligne.\n\nAvec tout autre nombre d'arguments, il affiche seulement un retour à la ligne.",
+	"texts": {
+		"mode": {
+			"common": "qui apparaît à la fois dans s1 et dans s2",
+			"only_first": "de s1 qui n'apparaît jamais dans s2",
+			"only_second": "de s2 qui n'apparaît jamais dans s1"
+		},
+		"order": {
+			"appearance": "dans l'ordre de leur première apparition en lisant s1, puis s2",
+			"ascii": "triés par valeur ASCII croissante"
+		},
+		"separator": {
+			"none": "écrits les uns à côté des autres",
+			"space": "séparés par un espace, sans espace aux extrémités"
+		}
+	}
+}

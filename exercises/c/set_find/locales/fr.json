@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend une chaîne s et une chaîne set, et renvoie un\npointeur vers\n$kind.\nS'il n'y a pas de tel caractère dans s, elle renvoie NULL.\n\nUn caractère est dans set s'il y apparaît au moins une fois. L'ordre des\ncaractères de set ne compte pas, et set peut être vide. Le\n'\\0' final de s n'est jamais un de ses caractères.\n\nDans les exemples, le main de test affiche où se trouve dans s le pointeur renvoyé,\npuis la chaîne à partir de là.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *s, char *set);",
+	"texts": {
+		"kind": {
+			"last": "le dernier caractère de s qui est dans set",
+			"first_out": "le premier caractère de s qui n'est pas dans set",
+			"last_out": "le dernier caractère de s qui n'est pas dans set",
+			"pair": "le premier caractère de s qui est dans set et est suivi d'un autre\ncaractère de set : le premier de deux caractères de set à la suite"
+		}
+	}
+}

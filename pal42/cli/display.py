@@ -13,6 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from pal42 import subject as subject_module
 from pal42.i18n import N_, t
 
 def short_path(path):
@@ -40,10 +41,11 @@ def subject_text(variant, text):
 	"""
 	styled = Text(text)
 	start = max(0, text.find("-" * 80))
-	end = text.find("\nExamples:")
+	end = text.find("\n" + subject_module.examples_label())
 	end = len(text) if end < 0 else end
 	for param in variant.exercise.params:
-		words = param.text(variant.params[param.name]).split()
+		# The words as the subject in the language in use writes them.
+		words = subject_module.param_text(variant, param).split()
 		if not words:
 			continue
 		pattern = r"\s+".join(map(re.escape, words))

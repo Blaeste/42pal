@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui prend un nombre quelconque de chaînes et affiche chacune sur\nsa propre ligne, avec, dans chaque mot,\n$which\nen majuscule (si c'est une lettre).\n$rest.\n\nUn mot est une partie d'une chaîne entre des espaces ou des tabulations, ou le début ou la\nfin de la chaîne. Les espaces et les tabulations sont affichés tels quels.\n\nS'il n'y a aucun argument, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"which": {
+			"first_two": "ses deux premiers caractères",
+			"second": "son deuxième caractère",
+			"first_vowel": "sa première voyelle (a, e, i, o, u, dans les deux casses)"
+		},
+		"rest": {
+			"lower": "Toute autre lettre est mise en minuscule",
+			"keep": "Toute autre lettre reste telle quelle"
+		}
+	}
+}

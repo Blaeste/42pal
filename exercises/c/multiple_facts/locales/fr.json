@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire un programme qui prend de 2 à 5 nombres, chacun écrit uniquement avec des chiffres\net compris entre 1 et 1000, et affiche\n$what,\nsuivi d'un retour à la ligne. Les résultats tiennent dans un unsigned long long.\n\nS'il n'y a pas de 2 à 5 arguments, ou si l'un d'eux n'est pas un tel nombre,\nle programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"what": {
+			"lcm_all": "leur plus petit commun multiple : le plus petit nombre qu'ils divisent tous",
+			"first_three": "leurs trois premiers multiples communs, dans l'ordre croissant, séparés\npar des espaces",
+			"count_up_to_1000": "combien de multiples communs ils ont de 1 à 1000",
+			"next_after_100": "leur plus petit multiple commun plus grand que 100"
+		}
+	}
+}

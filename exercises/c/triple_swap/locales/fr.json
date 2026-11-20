@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend les adresses de trois int et\n$how.\n\nVotre fonction doit être déclarée comme suit :\n\nvoid\t$assignment(int *a, int *b, int *c);\n\nDans les exemples, le commentaire montre les valeurs avant l'appel, et la ligne\nen dessous montre *a, *b et *c après l'appel.",
+	"texts": {
+		"how": {
+			"turn_left": "fait tourner les trois valeurs vers la gauche : *a reçoit l'ancien *b, *b l'ancien *c,\net *c l'ancien *a",
+			"turn_right": "fait tourner les trois valeurs vers la droite : *a reçoit l'ancien *c, *b l'ancien *a,\net *c l'ancien *b",
+			"sort_up": "met les trois valeurs dans l'ordre croissant : la plus petite dans *a, la\nplus grande dans *c",
+			"sort_down": "met les trois valeurs dans l'ordre décroissant : la plus grande dans *a, la\nplus petite dans *c"
+		}
+	}
+}

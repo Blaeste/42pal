@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui modifie la chaîne str, sur place, pour qu'elle contienne\n$part,\net renvoie str.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *str);\n\nDans les exemples, la ligne sous chaque appel montre str après l'appel.",
+	"texts": {
+		"part": {
+			"each_word": "les caractères de chaque mot dans l'ordre inverse, chaque mot restant à sa\nplace (les mots sont coupés par les espaces et les tabulations)",
+			"letters_only": "ses lettres dans l'ordre inverse, tout autre caractère restant à sa\nplace",
+			"halves": "ses deux moitiés échangées : la seconde moitié d'abord, puis la première\n(avec une longueur impaire, le caractère du milieu va avec la seconde moitié)",
+			"inner": "tous ses caractères dans l'ordre inverse sauf le premier et le dernier,\nqui restent à leur place"
+		}
+	}
+}

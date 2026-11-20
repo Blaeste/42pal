@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui prend deux chaînes, s1 et s2. s1 est cachée dans s2 quand\ntous ses caractères sont dans s2, dans le même ordre, peut-être avec d'autres\ncaractères entre eux. Le programme affiche\n$what,\nsuivi d'un retour à la ligne.\n$case.\n\nSi le nombre d'arguments n'est pas 2, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"what": {
+			"positions": "où les caractères de s1 sont trouvés dans s2 : pour chacun, dans l'ordre,\nle premier indice dans s2 après celui trouvé avant (indices à partir de 0,\nséparés par des espaces) ; rien si s1 n'est pas cachée dans s2 ou est vide",
+			"window": "la longueur de la plus courte partie de s2 (des caractères voisins)\noù s1 est cachée ; 0 si s1 n'est pas cachée dans s2 ou est vide",
+			"backwards": "1 si s1 est cachée dans s2 lue de son dernier caractère à son premier,\n0 sinon (une s1 vide est cachée partout)"
+		},
+		"case": {
+			"exact": "Les caractères sont comparés exactement : a et A sont différents",
+			"any_case": "Une lettre et son autre casse sont la même : a et A correspondent"
+		}
+	}
+}

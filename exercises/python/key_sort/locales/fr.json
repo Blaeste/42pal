@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une liste de chaînes et renvoie une nouvelle liste avec\nles mêmes chaînes, triées\n$rule.\n\nLes chaînes que ces règles ne permettent pas de départager gardent leur ordre de la liste\ndonnée. La liste donnée ne doit pas être modifiée. Vous ne pouvez utiliser ni sorted() ni la\nméthode sort() des listes.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\ndef $assignment(words: list[str]) -> list[str]:",
+	"texts": {
+		"rule": {
+			"consonants": "par leur nombre de consonnes, les moins nombreuses d'abord ; puis, parmi les chaînes qui en ont\nautant, dans l'ordre alphabétique des chaînes écrites en minuscule,\nen comparant les caractères par leur code ASCII. Les consonnes sont les\nlettres autres que a, e, i, o et u, dans les deux casses",
+			"last_char": "par leur dernier caractère, dans l'ordre ASCII (une chaîne vide vient en premier),\npuis de la plus longue à la plus courte",
+			"digits": "par leur nombre de chiffres, le plus grand d'abord, puis de la plus courte à la\nplus longue"
+		}
+	}
+}

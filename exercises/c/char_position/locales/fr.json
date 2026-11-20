@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire une fonction qui renvoie\n$mode.\nLes lettres sont comparées $case.\nLe premier caractère de str a l'indice 0.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(char *str, char c);",
+	"texts": {
+		"mode": {
+			"count": "combien de fois le caractère c apparaît dans la chaîne str",
+			"first": "l'indice du premier c dans la chaîne str, ou -1 s'il n'y en a pas",
+			"last": "l'indice du dernier c dans la chaîne str, ou -1 s'il n'y en a pas"
+		},
+		"case": {
+			"exact": "exactement : 'a' et 'A' sont différents",
+			"any": "sans tenir compte de la casse : 'a' et 'A' sont la même lettre"
+		}
+	}
+}

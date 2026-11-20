@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui affiche\n$which,\n$how,\nsuivi d'un retour à la ligne.\n\nS'il a moins de 2 arguments, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"which": {
+			"second_last": "son avant-dernier argument",
+			"last_two": "ses deux derniers arguments, dans leur ordre, séparés par un espace"
+		},
+		"how": {
+			"plain": "tel que donné",
+			"upper": "avec leurs lettres minuscules changées en majuscules",
+			"reversed": "chacun avec ses caractères dans l'ordre inverse"
+		}
+	}
+}

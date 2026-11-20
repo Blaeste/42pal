@@ -1,0 +1,16 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et l'affiche, suivie d'un\nretour à la ligne, avec\n$letters,\n$action.\nTout autre caractère est affiché tel quel.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"action": {
+			"swap": "avec sa casse inversée (une minuscule devient majuscule et l'inverse)",
+			"upper": "en majuscule",
+			"lower": "en minuscule"
+		},
+		"letters": {
+			"vowels": "chaque voyelle (a, e, i, o, u, dans les deux casses ; y n'en est pas une)",
+			"consonants": "chaque consonne (toute lettre qui n'est pas a, e, i, o ou u)",
+			"every_other": "une lettre sur deux : la première, la troisième, la cinquième lettre de\nla chaîne et ainsi de suite (les autres caractères ne comptent pas)",
+			"word_starts": "le premier caractère de chaque mot, si c'est une lettre (les mots sont coupés\npar les espaces et les tabulations)"
+		}
+	}
+}

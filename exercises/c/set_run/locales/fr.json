@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend une chaîne s et une chaîne set, et renvoie\n$kind.\n\nUn caractère est dans set s'il y apparaît au moins une fois. L'ordre des\ncaractères de set ne compte pas, et set peut être vide.\n\nVotre fonction doit être déclarée comme suit :\n\nsize_t\t$assignment(char *s, char *set);",
+	"texts": {
+		"kind": {
+			"end": "combien de caractères de set il y a à la suite à la fin de s : depuis\nson dernier caractère en remontant, jusqu'au premier qui n'est pas dans set",
+			"longest": "la longueur de la plus longue suite de s faite uniquement de caractères de set\n(une suite est un groupe de caractères voisins)",
+			"first": "la longueur de la première suite de s faite uniquement de caractères de set : les\ncaractères avant elle, qui ne sont pas dans set, sont sautés",
+			"count": "combien de caractères de s sont dans set, où qu'ils soient dans s"
+		}
+	}
+}

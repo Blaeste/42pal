@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire un programme qui affiche une ligne faite de\n$count\nfois\n$char,\nsuivie d'un retour à la ligne.\n\nLe programme ignore ses arguments.",
+	"texts": {
+		"char": {
+			"hash": "le caractère #",
+			"dash": "le caractère -",
+			"equal": "le caractère ="
+		}
+	}
+}

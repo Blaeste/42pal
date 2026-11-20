@@ -1,0 +1,14 @@
+{
+	"subject": "Écrire un programme qui prend un nombre quelconque de chaînes et affiche, pour chaque\nchaîne dans l'ordre,\n$which,\n$join.\n\nUn mot est un groupe de caractères qui ne sont ni des espaces ni des tabulations, aussi long qu'il\npeut l'être.\n\nS'il n'y a aucun argument, le programme affiche un retour à la ligne.",
+	"texts": {
+		"which": {
+			"shortest": "son plus court mot (le premier de cette longueur s'il y en a plusieurs)",
+			"longest": "son plus long mot (le premier de cette longueur s'il y en a plusieurs)",
+			"second": "son deuxième mot"
+		},
+		"join": {
+			"lines": "chacun suivi d'un retour à la ligne : une ligne pour chaque chaîne, une ligne vide pour\nune chaîne qui n'a pas un tel mot",
+			"spaces": "tous sur une ligne, séparés par un espace, puis un retour à la ligne ; une chaîne qui\nn'a pas un tel mot ne donne rien"
+		}
+	}
+}

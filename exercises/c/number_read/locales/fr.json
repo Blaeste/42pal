@@ -1,0 +1,16 @@
+{
+	"subject": "Écrire une fonction qui lit la chaîne str comme un nombre écrit\n$base,\net renvoie sa valeur sous forme d'int.\n\nLe nombre peut commencer par un signe moins, pour un nombre négatif.\n$format.\nToute la chaîne doit être le nombre : si autre chose s'y trouve (un espace,\nun signe plus, un caractère qui n'est pas un chiffre de la base...), ou s'il n'a\naucun chiffre, la fonction renvoie 0. Le nombre est toujours entre\n-2147483647 et 2147483647.\n\nVotre fonction doit être déclarée comme suit :\n\nint\t$assignment(char *str);",
+	"texts": {
+		"base": {
+			"binary": "en binaire (base 2 : les chiffres 0 et 1)",
+			"octal": "en octal (base 8 : les chiffres 0 à 7)",
+			"decimal": "en base 10 (les chiffres 0 à 9)",
+			"hex": "en hexadécimal (base 16 : les chiffres 0 à 9, puis a à f ou A à F)"
+		},
+		"format": {
+			"plain": "Les chiffres viennent juste après le signe, s'il y en a un",
+			"prefixed": "Les chiffres viennent après un préfixe, juste après le signe s'il y en a un : 0b,\n0o ou 0x pour les bases 2, 8 et 16, écrit en minuscule",
+			"grouped": "Les chiffres peuvent être coupés en groupes par des underscores, un entre deux\nchiffres, comme 1_000_000"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"subject": "Écrire une fonction qui prend une liste d'int nums et un int k. Une fenêtre est k\nvaleurs voisines dans nums : avec k = 3, [1, 2, 3, 4] a les fenêtres\n[1, 2, 3] et [2, 3, 4]. La fonction renvoie une liste avec, pour chaque fenêtre,\ndepuis la première,\n$rule.\n\nSi k est plus petit que 1 ou plus grand que la longueur de nums, il n'y a aucune fenêtre :\nla fonction renvoie une liste vide. La liste donnée ne doit pas être modifiée.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\ndef $assignment(nums: list[int], k: int) -> list[int]:",
+	"texts": {
+		"rule": {
+			"min": "sa plus petite valeur",
+			"spread": "sa plus grande valeur moins sa plus petite valeur",
+			"distinct": "combien de valeurs différentes elle contient",
+			"first_negative": "sa première valeur négative, depuis la gauche, ou 0 si elle n'en a pas"
+		}
+	}
+}

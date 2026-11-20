@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui renvoie une nouvelle chaîne, allouée avec malloc, faite des\ncaractères de str dans l'ordre, chacun répété :\n$rule.\n\nVotre fonction doit être déclarée comme suit :\n\nchar\t*$assignment(char *str);",
+	"texts": {
+		"rule": {
+			"vowels_twice": "chaque voyelle (a, e, i, o, u, dans les deux casses) deux fois, tout autre\ncaractère une fois",
+			"by_case": "chaque lettre majuscule 3 fois, chaque lettre minuscule deux fois, tout\nautre caractère une fois",
+			"by_index": "chaque caractère autant de fois que son indice, compté à partir de 0, modulo 3,\nplus 1 : le premier caractère une fois, le deuxième deux fois, le troisième 3 fois,\nle quatrième une fois à nouveau, et ainsi de suite"
+		}
+	}
+}

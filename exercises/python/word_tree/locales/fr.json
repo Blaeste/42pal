@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une classe nommée WordTree qui range des mots dans un arbre de préfixes : chaque nœud\ncontient les lettres qui peuvent suivre, pour que les mots qui commencent de la même\nfaçon partagent leurs premiers nœuds. Les mots sont faits de lettres minuscules. Ses\nméthodes :\n- WordTree() crée un arbre vide ;\n- add(word) met word dans l'arbre, et renvoie None ;\n$rule\n\nLes méthodes renvoient leurs résultats et n'affichent rien.\n\nVotre classe doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"count": "- count(prefix) renvoie combien de mots ajoutés commencent par prefix (un mot\najouté deux fois compte deux fois, et tout mot commence par le préfixe vide) ;\n- remove(word) retire une copie de word de l'arbre et renvoie True, ou\nrenvoie False si word n'y est pas.",
+			"longest": "- longest(text) renvoie le plus long mot\najouté par lequel text commence (text lui-même compte), ou une chaîne vide s'il n'y\nen a pas.",
+			"pattern": "- match(pattern) renvoie True si un mot\najouté a autant de lettres que pattern et lui correspond : chaque point du\nmotif remplace n'importe quelle lettre, toute autre lettre doit être la même ;\nelle renvoie False sinon."
+		}
+	}
+}

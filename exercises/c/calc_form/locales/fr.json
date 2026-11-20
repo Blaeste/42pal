@@ -1,0 +1,18 @@
+{
+	"subject": "Écrire un programme qui prend trois arguments, dans cet ordre :\n$order.\nL'opération est\n$operators.\nLe programme affiche\n$show,\nsuivi d'un retour à la ligne.\n\nLes nombres sont des int, écrits en base 10, peut-être avec un signe moins ; le\nsecond n'est jamais 0 pour / et %, et chaque résultat tient dans un int. / et %\nmarchent comme en C : 7 / 2 = 3, -7 / 2 = -3 et -7 % 2 = -1.\n\nSi le nombre d'arguments n'est pas 3, le programme affiche seulement un retour à la ligne.",
+	"texts": {
+		"order": {
+			"infix": "un nombre, l'opération, puis un nombre (7 + 3)",
+			"prefix": "l'opération, puis les deux nombres (+ 7 3)",
+			"postfix": "les deux nombres, puis l'opération (7 3 +)"
+		},
+		"operators": {
+			"symbols": "un des symboles +, -, *, / et %",
+			"words": "un des mots plus, minus, times, over et mod (pour +, -, *, /\net %)"
+		},
+		"show": {
+			"result": "le résultat seul",
+			"equation": "l'équation : le premier nombre, l'opération telle que donnée, le second\nnombre, = et le résultat, séparés par des espaces (7 + 3 = 10)"
+		}
+	}
+}

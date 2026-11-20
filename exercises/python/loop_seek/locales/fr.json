@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend un graphe sous forme de dict : chaque clé est un nœud (un int)\net sa valeur la liste des nœuds vers lesquels vont ses arêtes. Un nœud peut aussi\napparaître seulement dans les listes. La fonction\n$rule.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"find": "renvoie un cycle, sous forme de liste de nœuds, trouvé par ce parcours\nen profondeur (None s'il n'y a pas de cycle) :\n- il part de chaque nœud dans l'ordre croissant, en sautant les nœuds déjà\nparcourus ;\n- il suit les arêtes d'un nœud dans leur ordre donné ;\n- la première fois qu'il atteint un nœud qui est sur son chemin en cours, le cycle\nest ce chemin, de ce nœud jusqu'au nœud en cours",
+			"undirected": "le graphe est non orienté : chaque arête est listée dans les deux sens\n(1 dans la liste de 2, et 2 dans la liste de 1), et aucune arête n'est listée\ndeux fois. Elle renvoie True si le graphe contient un cycle, un nœud avec une arête\nvers lui-même en étant un, et False sinon",
+			"on_cycle": "renvoie les nœuds qui sont sur un cycle (ceux qui peuvent s'atteindre\neux-mêmes par une arête ou plus), triés dans l'ordre croissant"
+		}
+	}
+}

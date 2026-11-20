@@ -1,0 +1,10 @@
+{
+	"subject": "Écrire une fonction qui prend une liste de listes d'int, qui peut être vide.\n$rule.\n\nLes listes données ne doivent pas être modifiées. Vous ne pouvez utiliser ni sorted() ni la\nméthode sort() des listes : parcourez les listes côte à côte.\n\nLa fonction renvoie son résultat et n'affiche rien.\n\nVotre fonction doit être déclarée comme suit :\n\n$prototype",
+	"texts": {
+		"rule": {
+			"descending": "Chaque liste est triée de la plus grande\nà la plus petite valeur ; la fonction renvoie une nouvelle liste de toutes leurs\nvaleurs, triée de la même façon",
+			"first_k": "Chaque liste est triée de la\nplus petite à la plus grande valeur, et k vaut 0 ou plus ; la fonction renvoie les\nk plus petites valeurs de toutes les listes, une valeur trouvée plusieurs fois comptant\nà chaque fois, triées depuis la plus petite ; toutes les valeurs s'il y en a moins\nque k",
+			"origins": "Chaque liste est triée de la plus petite\nà la plus grande valeur. Les fusionner prend, à chaque étape, la plus petite des\npremières valeurs restantes dans les listes (de la liste de plus petit indice quand\nplusieurs sont égales). La fonction renvoie, pour chaque étape, l'indice de\nla liste d'où la valeur est prise"
+		}
+	}
+}

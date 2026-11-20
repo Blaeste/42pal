@@ -1,0 +1,9 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et affiche la première lettre\n$letter\nqu'il y trouve,\n$case,\nsuivie d'un retour à la ligne. S'il n'y en a pas, il affiche seulement un retour à la ligne.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche la lettre\n$letter\nsuivie d'un retour à la ligne.",
+	"texts": {
+		"case": {
+			"exact": "en minuscule seulement",
+			"any_case": "en minuscule ou en majuscule (celle trouvée est affichée)"
+		}
+	}
+}

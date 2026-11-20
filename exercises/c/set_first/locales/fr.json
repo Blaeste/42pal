@@ -1,0 +1,15 @@
+{
+	"subject": "Écrire un programme qui prend une chaîne et affiche son premier caractère\nqui est\n$set,\nsuivi d'un retour à la ligne. S'il n'y en a pas, il affiche\n$fallback\nsuivi d'un retour à la ligne.\n\nSi le nombre d'arguments n'est pas 1, le programme affiche\n$fallback\nsuivi d'un retour à la ligne.",
+	"texts": {
+		"set": {
+			"vowel": "une voyelle (a, e, i, o, u, dans les deux casses)",
+			"digit": "un chiffre (0 à 9)",
+			"upper": "une lettre majuscule (A à Z)",
+			"punct": "un signe de ponctuation : un de . , ; : ! et ?"
+		},
+		"fallback": {
+			"question": "un point d'interrogation (?)",
+			"dash": "un tiret (-)"
+		}
+	}
+}
