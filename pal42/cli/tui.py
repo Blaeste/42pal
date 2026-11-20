@@ -42,13 +42,28 @@ from pal42.progress import exam_rows, summary, weak_themes
 from pal42.session import SessionStore
 from pal42.update import apply_update, restart
 
-LOGO = [
+LETTERS = [
 	"██╗  ██╗██████╗ ██████╗  █████╗ ██╗     ",
 	"██║  ██║╚════██╗██╔══██╗██╔══██╗██║     ",
 	"███████║ █████╔╝██████╔╝███████║██║     ",
 	"╚════██║██╔═══╝ ██╔═══╝ ██╔══██║██║     ",
 	"     ██║███████╗██║     ██║  ██║███████╗",
 	"     ╚═╝╚══════╝╚═╝     ╚═╝  ╚═╝╚══════╝",
+]
+# The left half of a handlebar moustache, its curl outside; the right half
+# is its mirror. With the letters: 64 columns, the width of the cards.
+MOUSTACHE = [
+	"           ",
+	" ▄▀▀▄      ",
+	"▐▌  ▀      ",
+	" ▀▀▄▄▄▄▄▄▄▄",
+	"   ▀▀█████▀",
+	"           ",
+]
+MIRRORED = str.maketrans("▌▐", "▐▌")
+LOGO = [
+	f"{left} {letters.ljust(40)} {left[::-1].translate(MIRRORED)}"
+	for left, letters in zip(MOUSTACHE, LETTERS)
 ]
 
 # The colors the logo goes through, cyan to violet; they move slowly.
