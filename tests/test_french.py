@@ -6,7 +6,9 @@ import unittest
 from random import Random
 
 import pal42.cli  # noqa: F401  (puts vendor/ in Python's path)
-from pal42 import i18n
+from types import SimpleNamespace
+
+from pal42 import i18n, trace
 from pal42.cli import display
 from pal42.cli.shell import COMMANDS, Shell
 from pal42.cli.tui import Pal42App, ScreenShell, capture_console
@@ -72,3 +74,31 @@ class TestFrenchScreen(FullScreenTest, FrenchTestCase):
 			self.assertEqual(screen.title, "Que veux-tu faire ?")
 			self.assertEqual([item[1] for item in screen.items][-2:], ["Entraînement", "Réglages"])
 			self.assertEqual(screen.last_label, "Quit")
+
+class TestFrenchTraces(FrenchTestCase):
+	"""The traces of a grademe in French; the commands and the outputs stay as they are."""
+
+	def test_a_missing_file(self):
+		text = trace.missing_trace(["first_word.c"])
+		self.assertTrue(text.startswith("= Fichiers ="))
+		self.assertIn("Fichier manquant : first_word.c", text)
+		self.assertIn("Files KO", text)
+
+	def test_a_crash(self):
+		text = trace.crash_trace(3, "./first_word 'a b'", SimpleNamespace(timed_out=False, signal="SIGSEGV"))
+		self.assertIn("= Test 3 =", text)
+		self.assertIn("$> ./first_word 'a b'", text)
+		self.assertIn("Segmentation fault", text)
+		self.assertIn("Timeout (trop long)", trace.crash_trace(1, "./x", SimpleNamespace(timed_out=True, signal=None)))
+
+	def test_a_diff(self):
+		text = trace.diff_trace(1, "./x", b"ab\n", "abc\n")
+		self.assertIn("--- étudiant", text)
+		self.assertIn("+++ moulinette", text)
+		self.assertIn("-ab$", text)
+		self.assertIn("+abc$", text)
+
+	def test_forbidden_functions(self):
+		text = trace.forbidden_trace(["printf"], ["write"])
+		self.assertIn("Fonction interdite : printf", text)
+		self.assertIn("Fonctions autorisées : write", text)

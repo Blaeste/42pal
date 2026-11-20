@@ -11,6 +11,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from pal42.i18n import t
 from pal42.runners.base import DEFAULT_TIMEOUT, MAX_OUTPUT, CompileResult, run_command
 from pal42.runners.c import _copy_into
 
@@ -48,7 +49,7 @@ class PythonRunner:
 		try:
 			process = subprocess.run(step, cwd=workdir, capture_output=True, text=True)
 		except FileNotFoundError:
-			return CompileResult(False, f"interpreter not found: {self.command[0]}", None)
+			return CompileResult(False, t("interpreter not found: {name}", name=self.command[0]), None)
 		output = process.stdout + process.stderr
 		if process.returncode != 0:
 			return CompileResult(False, output, None)

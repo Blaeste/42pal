@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pal42 import checks, trace
+from pal42.i18n import N_
 from pal42.subject import test_command
 
 # valgrind is slow (about 0.4 s a test): leaks are checked on this many tests
@@ -116,7 +117,8 @@ def _check_leaks(variant, program, tests, progress, valgrind):
 			progress(number, len(checked), "memory")
 		report = checks.memory_report(program, test, valgrind=valgrind)
 		if report is None:
-			warning = "valgrind not found: memory leaks were not checked"
+			# Translated where it is shown (pal42/cli/display.py).
+			warning = N_("valgrind not found: memory leaks were not checked")
 			return Grade(True, "", len(tests), len(tests), (warning,))
 		if report:
 			text = trace.leak_trace(number, test_command(variant, test), report)

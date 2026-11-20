@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from pal42.i18n import t
 from pal42.runners.base import DEFAULT_TIMEOUT, MAX_OUTPUT, CompileResult, run_command
 
 # The flags of the moulinette; an exam can give its own command instead.
@@ -50,7 +51,7 @@ class CRunner:
 				process = subprocess.run(step, cwd=workdir, capture_output=True, text=True)
 			# The command of an exam may name a compiler this machine lacks.
 			except FileNotFoundError:
-				return CompileResult(False, f"compiler not found: {self.command[0]}", None)
+				return CompileResult(False, t("compiler not found: {name}", name=self.command[0]), None)
 			output += process.stdout + process.stderr
 			if process.returncode != 0:
 				# If only the link failed, the objects exist: keep them, so that
