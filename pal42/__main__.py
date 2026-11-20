@@ -38,6 +38,9 @@ def main(argv=None):
 	# SUPPRESS: ./42pal --plain practice keeps the --plain given before.
 	practice.add_argument("--plain", action="store_true", default=argparse.SUPPRESS, help=plain_help)
 	arguments = parser.parse_args(argv)
+	# The language saved in Settings (or PAL42_LANG), before anything is shown.
+	from pal42.settings import apply_language
+	apply_language()
 	if arguments.report:
 		from pal42.report import report_text
 		print(report_text(), end="")

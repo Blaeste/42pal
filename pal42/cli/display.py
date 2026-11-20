@@ -276,8 +276,11 @@ PRACTICE_SUMMARY = "one theme, no timer"
 PROGRESS_TEXT = "Progress"
 PROGRESS_SUMMARY = "your exams and weak themes"
 
-def audience_menu(exams_by_audience, first=True, practice=False, progress=False):
-	"""The first menu: the exams of the piscine or of the students, then practice and progress."""
+# The choice of the first menu for the settings: the language, for now.
+SETTINGS_TEXT = "Settings"
+
+def audience_menu(exams_by_audience, first=True, practice=False, progress=False, settings=False, language=""):
+	"""The first menu: the exams of the piscine or of the students, then practice, progress, settings."""
 	lines = [FIRST_MENU_TITLE]
 	for number, (audience, exams) in enumerate(exams_by_audience.items(), start=1):
 		leads_to = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
@@ -289,7 +292,21 @@ def audience_menu(exams_by_audience, first=True, practice=False, progress=False)
 	if progress:
 		count += 1
 		lines.append(f"  {count}. {PROGRESS_TEXT:22}{PROGRESS_SUMMARY}")
+	if settings:
+		count += 1
+		lines.append(f"  {count}. {SETTINGS_TEXT:22}{settings_summary(language)}")
 	return lines + [last_choice(count + 1, first)]
+
+def settings_summary(language):
+	"""The grey line of Settings: the language in use."""
+	return f"language: {language}"
+
+def language_menu(languages, current):
+	"""The menu of the languages: each one under its own name, the one in use said."""
+	lines = ["Language:"]
+	for number, (code, name) in enumerate(languages.items(), start=1):
+		lines.append(f"  {number}. {name}{'  (in use)' if code == current else ''}")
+	return lines + [last_choice(len(languages) + 1, first=False)]
 
 def progress_summary(text):
 	"""The first line of the progress."""

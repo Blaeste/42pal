@@ -15,7 +15,7 @@ from datetime import datetime
 from rich.console import Console
 from rich.markup import escape
 
-from pal42 import cheat
+from pal42 import cheat, i18n, settings
 from pal42.catalog import load_catalog
 from pal42.cli import display
 from pal42.cli.workspace import Workspace
@@ -73,6 +73,8 @@ BACK = object()
 # The choices of the first menu that lead to practice, or to the progress, instead of an exam.
 PRACTICE = "practice"
 PROGRESS = "progress"
+# Settings, in the first menu: the language of 42pal.
+SETTINGS = "settings"
 
 class Shell:
 	"""One exam session in the terminal.
@@ -111,6 +113,8 @@ class Shell:
 		self.restart = False
 		# The encrypted cheat menu: cheat.PACK unless a test gives its own.
 		self.cheat_pack = None
+		# Where Settings keeps the language (None: ~/.42pal/settings.json).
+		self.settings_file = None
 
 	def _reset(self):
 		"""No exam in progress: the state before an exam starts."""
@@ -145,10 +149,13 @@ class Shell:
 				return
 			if not self.resume():
 				start = self.choose_start()
-				while start in (PRACTICE, PROGRESS):
-					theme = self.show_progress() if start == PROGRESS else None
-					if (start == PRACTICE or theme is not None) and self.practise(theme):
-						return
+				while start in (PRACTICE, PROGRESS, SETTINGS):
+					if start == SETTINGS:
+						self.choose_settings()
+					else:
+						theme = self.show_progress() if start == PROGRESS else None
+						if (start == PRACTICE or theme is not None) and self.practise(theme):
+							return
 					start = self.choose_start()
 				if start is None:
 					self.console.print("Goodbye!")
@@ -281,7 +288,7 @@ class Shell:
 					chosen.pop()
 				chosen.pop()
 				continue
-			if answer in (PRACTICE, PROGRESS):
+			if answer in (PRACTICE, PROGRESS, SETTINGS):
 				return answer
 			chosen.append(answer)
 			shown.append(self.menus_shown > menus_before)
@@ -300,14 +307,24 @@ class Shell:
 			if audience in by_audience}
 		choices = list(by_audience) + ([PRACTICE] if self._can_practise() else [])
 		choices += [PROGRESS] if self.store and self.store.grades() else []
-		if len(choices) == 1:
-			return choices[0]
+		choices.append(SETTINGS)
 		self._print_lines(display.audience_menu(by_audience, first, practice=PRACTICE in choices,
-			progress=PROGRESS in choices))
+			progress=PROGRESS in choices, settings=True, language=i18n.languages()[i18n.language()]))
 		last = len(choices) + 1
 		number = self._ask_choice("Your choice:", range(1, last + 1))
 		self.console.print()
 		return BACK if number == last else choices[number - 1]
+
+	def choose_settings(self):
+		"""Settings: the language of 42pal, each one under its own name; the choice is kept."""
+		languages = i18n.languages()
+		self._print_lines(display.language_menu(languages, i18n.language()))
+		codes = list(languages)
+		last = len(codes) + 1
+		number = self._ask_choice("Language:", range(1, last + 1))
+		self.console.print()
+		if number != last:
+			settings.choose_language(codes[number - 1], self.settings_file)
 
 	def _can_practise(self):
 		"""Practice is offered when the catalog has exercises."""

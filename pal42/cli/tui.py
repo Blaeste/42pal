@@ -33,10 +33,10 @@ from textual.suggester import SuggestFromList
 from textual.widgets import Input, OptionList, RichLog, Static
 from textual.widgets.option_list import Option
 
-from pal42 import cheat
+from pal42 import cheat, i18n, settings
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
-from pal42.cli.shell import BACK, COMMANDS, PRACTICE, PROGRESS, SHORTCUTS, Shell
+from pal42.cli.shell import BACK, COMMANDS, PRACTICE, PROGRESS, SETTINGS, SHORTCUTS, Shell
 from pal42.exam import AUDIENCES
 from pal42.progress import exam_rows, summary, weak_themes
 from pal42.session import SessionStore
@@ -654,6 +654,8 @@ class Pal42App(App):
 	launch = staticmethod(launch)
 	# The check for a newer 42pal started at launch, and the function that pulls it.
 	update_check = None
+	# Where Settings keeps the language (None: ~/.42pal/settings.json; the tests give their own).
+	settings_file = None
 	updater = staticmethod(apply_update)
 
 	def __init__(self, shell, practice=False, theme=None, user=None):
@@ -781,7 +783,11 @@ class Pal42App(App):
 				await self.run_session()
 				return
 		start = await self.choose_start()
-		while start in (PRACTICE, PROGRESS):
+		while start in (PRACTICE, PROGRESS, SETTINGS):
+			if start == SETTINGS:
+				await self.settings_flow()
+				start = await self.choose_start()
+				continue
 			practice = self.practice_shell()
 			if start == PROGRESS:
 				theme = await self.ask_progress()
@@ -800,6 +806,16 @@ class Pal42App(App):
 			return
 		self.run_quietly(lambda: shell.begin(*start))
 		await self.run_session()
+
+	async def settings_flow(self):
+		"""Settings: the language of 42pal, each one under its own name; the choice is kept."""
+		languages = i18n.languages()
+		current = i18n.language()
+		items = [(code, name, "in use" if code == current else "", "")
+			for code, name in languages.items()]
+		code = await self.ask("Language", items, first=False, highlight=list(languages).index(current))
+		if code is not BACK:
+			settings.choose_language(code, self.settings_file)
 
 	def practice_shell(self):
 		"""A practice shell with the console, workspace and catalog of the examshell."""
@@ -870,7 +886,7 @@ class Pal42App(App):
 		shown = []
 		while len(chosen) < len(steps):
 			answer, asked = await steps[len(chosen)](chosen, not any(shown))
-			if answer in (PRACTICE, PROGRESS):
+			if answer in (PRACTICE, PROGRESS, SETTINGS):
 				return answer
 			if answer is BACK:
 				if not any(shown):
@@ -901,8 +917,8 @@ class Pal42App(App):
 		if self.shell.store and self.shell.store.grades():
 			items.append((PROGRESS, display.PROGRESS_TEXT, display.PROGRESS_SUMMARY,
 				"How your exams went, and the themes that fail the most, to practise them."))
-		if len(items) == 1:
-			return items[0][0], False
+		items.append((SETTINGS, display.SETTINGS_TEXT, display.settings_summary(i18n.languages()[i18n.language()]),
+			"The language of 42pal: the menus, the messages, the traces and the subjects."))
 		return await self.ask(display.FIRST_MENU_TITLE, items, first), True
 
 	async def pick_exam(self, chosen, first):

@@ -11,8 +11,8 @@ then only go through those. The other tests always run.
   check: "none" (the workflow is not even started for them alone);
 - files of exercises: those exercises only;
 - the other tests, and the interface (pal42/cli/ but check.py, the report,
-  the progress, the session, the updates, the cheat menu): nothing more to
-  check, they grade no exercise (their own tests run anyway);
+  the progress, the session, the updates, the cheat menu, the languages):
+  nothing more to check, they grade no exercise (their own tests run anyway);
 - anything else (pal42/, themes.json, exams/, the launcher, vendor/, the
   workflow, the helpers of the tests...) can change every exercise: "all".
 
@@ -28,7 +28,7 @@ IGNORED_FOLDERS = ("docs/", ".github/ISSUE_TEMPLATE/")
 
 # The interface: it grades no exercise. pal42/cli/check.py is check-catalog itself.
 INTERFACE = ("pal42/cli/", "pal42/report.py", "pal42/progress.py", "pal42/session.py", "pal42/update.py",
-	"pal42/cheat.py", "pal42/cheat.pack")
+	"pal42/cheat.py", "pal42/cheat.pack", "pal42/i18n.py", "pal42/settings.py", "pal42/locales/")
 
 # Tests that every exercise goes through, and what all the tests share.
 TESTS_FOR_ALL = ("tests/__init__.py", "tests/helpers.py", "tests/test_reference.py", "tests/test_smoke.py")
