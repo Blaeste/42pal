@@ -10,6 +10,7 @@ import time
 from rich.markup import escape
 
 from pal42.cli import display
+from pal42.i18n import N_, t
 from pal42.cli.shell import BACK, STATE_DIR, Shell, terminal
 from pal42.session import SessionStore
 from pal42.cli.workspace import Workspace
@@ -17,11 +18,11 @@ from pal42.practice import draw_practice
 
 # The practice commands and what they do, shown by help.
 PRACTICE_COMMANDS = {
-	"grademe": "grade your work",
-	"next": "another subject of the same theme",
-	"report": "write a report for an issue: subject, your code, last trace",
-	"finish": "stop practising",
-	"help": "show this help",
+	"grademe": N_("grade your work"),
+	"next": N_("another subject of the same theme"),
+	"report": N_("write a report for an issue: subject, your code, last trace"),
+	"finish": N_("stop practising"),
+	"help": N_("show this help"),
 }
 
 # One letter (then Enter) for each command: g, n, r, f and ?.
@@ -57,12 +58,11 @@ class PracticeShell(Shell):
 				if theme is None and not first:
 					return BACK
 				if theme is None:
-					self.console.print("Goodbye!")
+					self.console.print(t("Goodbye!"))
 					return 0
 			elif theme not in choices:
-				self.console.print(
-					f"No exercise to practise '{escape(theme)}' yet. Themes: {', '.join(choices)}"
-				)
+				self.console.print(t("No exercise to practise '{theme}' yet. Themes: {themes}",
+					theme=escape(theme), themes=", ".join(choices)))
 				return 1
 			self.theme = theme
 			self.next_subject()
@@ -112,13 +112,14 @@ class PracticeShell(Shell):
 
 	def choose_language(self, languages, first=True):
 		"""Show the languages as a numbered menu; return the one picked, or None to leave."""
-		self.console.print("Choose a language:")
+		self.console.print(t("Choose a language:"))
 		for number, (language, count) in enumerate(languages.items(), start=1):
 			name = display.LANGUAGE_NAMES.get(language, language)
-			self.console.print(f"  {number}. {name} ({count} theme{'s' if count != 1 else ''})")
+			count_text = t("{count} themes", count=count) if count != 1 else t("1 theme")
+			self.console.print(f"  {number}. {name} ({count_text})")
 		last = len(languages) + 1
 		self.console.print(display.last_choice(last, first=first), markup=False)
-		number = self._ask_choice("Your choice:", range(1, last + 1))
+		number = self._ask_choice(t("Your choice:"), range(1, last + 1))
 		self.console.print()
 		return None if number == last else list(languages)[number - 1]
 
@@ -128,12 +129,12 @@ class PracticeShell(Shell):
 		The last choice quits (first menu) or goes back: None is returned.
 		"""
 		_, themes = self._catalog()
-		self.console.print("Choose a theme to practise:")
+		self.console.print(t("Choose a theme to practise:"))
 		for number, theme in enumerate(choices, start=1):
-			self.console.print(f"  {number}. {theme} · {escape(themes[theme].skill)}")
+			self.console.print(f"  {number}. {theme} · {escape(t(themes[theme].skill))}")
 		last = len(choices) + 1
 		self.console.print(display.last_choice(last, first=first), markup=False)
-		number = self._ask_choice("Your choice:", range(1, last + 1))
+		number = self._ask_choice(t("Your choice:"), range(1, last + 1))
 		if not first and number == last:
 			self.console.print()
 		return None if number == last else choices[number - 1]
@@ -172,10 +173,8 @@ class PracticeShell(Shell):
 		"""Run one practice command; return True when the practice is over."""
 		command = PRACTICE_SHORTCUTS.get(command.strip(), command.strip())
 		if command == "finish":
-			self.console.print(
-				f"Practice summary: {self.passed} subject{'s' if self.passed != 1 else ''}"
-				f" passed, {self.attempts} grademe"
-			)
+			passed = t("1 subject passed") if self.passed == 1 else t("{count} subjects passed", count=self.passed)
+			self.console.print(f"{t('Practice summary:')} {passed}, {self.attempts} grademe")
 			return True
 		if command == "help":
 			self.console.print(display.help_table(PRACTICE_COMMANDS))
@@ -189,7 +188,7 @@ class PracticeShell(Shell):
 				self.passed += 1
 				self.next_subject()
 		elif command:
-			self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
+			self.console.print(t("Unknown command: {command}. Type help for the list.", command=escape(command)))
 		if command:
 			self.console.print()
 		return False
@@ -207,5 +206,5 @@ def main(theme=None, full_screen=False):
 	try:
 		return PracticeShell(console, ask, workspace, store=SessionStore()).run(theme)
 	except KeyboardInterrupt:
-		console.print("\nPractice stopped (Ctrl-C).")
+		console.print("\n" + t("Practice stopped (Ctrl-C)."))
 		return 130

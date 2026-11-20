@@ -13,6 +13,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from pal42.i18n import N_, t
+
 def short_path(path):
 	"""Write `path` with ~ for the home folder, like a shell does."""
 	path = Path(path)
@@ -57,17 +59,17 @@ def subject_text(variant, text):
 def subject_panel(exam, level, variant, subject, rendu, mode="exam"):
 	"""The panel shown when a subject is given; mode is "exam" or "revision"."""
 	if mode == "revision":
-		how = "revision mode · soft waits · no time limit"
+		how = t("revision mode · soft waits · no time limit")
 	else:
-		how = f"exam mode · hard waits · {exam.duration_minutes} min"
+		how = t("exam mode · hard waits · {minutes} min", minutes=exam.duration_minutes)
 	# escape: a [ in a path would otherwise be read as rich markup.
 	lines = [
-		f"[bold]{escape(exam.title)}[/] · level {level} · {how}",
-		f"This level is worth {points(exam.points_per_level)} points.",
+		f"[bold]{escape(exam.title)}[/] · {t('level {level}', level=level)} · {how}",
+		t("This level is worth {points} points.", points=points(exam.points_per_level)),
 		"",
-		f"Subject: [bold cyan]{escape(variant.name)}[/]",
-		f"Read it: {path_link(subject)}",
-		f"Hand in: {path_link(rendu, '/')}",
+		f"{t('Subject:')} [bold cyan]{escape(variant.name)}[/]",
+		f"{t('Read it:')} {path_link(subject)}",
+		f"{t('Hand in:')} {path_link(rendu, '/')}",
 	]
 	# 80 wide, like the subject printed under it (narrower if the terminal is).
 	return Panel("\n".join(lines), title="42pal", width=80)
@@ -78,16 +80,16 @@ def duration(seconds):
 
 def report_written(path):
 	"""Said after the report command: where the report is, and what to do with it."""
-	return (f"Report written: {path_link(path)}\n"
-		"Attach it to an issue on GitHub (Issues, then New issue), or paste it there."
-		" It holds your code: share it only if you want to.")
+	return (f"{t('Report written:')} {path_link(path)}\n"
+		+ t("Attach it to an issue on GitHub (Issues, then New issue), or paste it there."
+		" It holds your code: share it only if you want to."))
 
 def help_table(commands):
 	"""The table of the examshell commands, from {command: what it does}."""
-	table = Table(title="Commands", show_header=False, box=None,
-		caption="Something wrong? Run ./42pal --report and open an issue on GitHub.")
+	table = Table(title=t("Commands"), show_header=False, box=None,
+		caption=t("Something wrong? Run ./42pal --report and open an issue on GitHub."))
 	for command, meaning in commands.items():
-		table.add_row(f"[bold]{command}[/]", meaning)
+		table.add_row(f"[bold]{command}[/]", t(meaning))
 	return table
 
 def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry="", grade=0,
@@ -98,37 +100,37 @@ def status_table(exam, level, variant, elapsed, left, wait=0, if_ko=0, retry="",
 	that a failed grademe would bring; retry describes the retry timer.
 	"""
 	table = Table(show_header=False, box=None)
-	table.add_row("Exam", escape(exam.title))
-	table.add_row("Mode", mode)
-	table.add_row("Level", f"{level} of {exam.level_count}")
-	table.add_row("Subject", f"[bold cyan]{escape(variant.name)}[/]")
-	table.add_row("Grade", f"{points(grade)}/100")
-	table.add_row("Time spent", duration(elapsed))
-	table.add_row("Time left", "no limit" if left == float("inf") else duration(left))
-	table.add_row("Next grademe", f"in {duration(wait)}" if wait else "now")
-	table.add_row("If KO", duration(if_ko) if if_ko else "no wait")
+	table.add_row(t("Exam"), escape(exam.title))
+	table.add_row(t("Mode"), t(MODE_NAMES.get(mode, mode)))
+	table.add_row(t("Level"), t("{level} of {count}", level=level, count=exam.level_count))
+	table.add_row(t("Subject"), f"[bold cyan]{escape(variant.name)}[/]")
+	table.add_row(t("Grade"), f"{points(grade)}/100")
+	table.add_row(t("Time spent"), duration(elapsed))
+	table.add_row(t("Time left"), t("no limit") if left == float("inf") else duration(left))
+	table.add_row(t("Next grademe"), t("in {duration}", duration=duration(wait)) if wait else t("now"))
+	table.add_row(t("If KO"), duration(if_ko) if if_ko else t("no wait"))
 	if retry:
-		table.add_row("Retry timer", retry)
+		table.add_row(t("Retry timer"), retry)
 	return table
 
 def retry_preview(wait):
 	"""Said before grading: the wait a KO would bring."""
-	when = f"in {duration(wait)}" if wait else "right away"
-	return f"[dim]If KO: next grademe {when}[/]"
+	when = t("in {duration}", duration=duration(wait)) if wait else t("right away")
+	return f"[dim]{t('If KO: next grademe {when}', when=when)}[/]"
 
 def next_grademe(wait, next_wait):
 	"""Said after a KO: when grademe is allowed again, and what the next KO costs."""
 	if wait:
 		at = (datetime.now() + timedelta(seconds=wait)).strftime("%H:%M")
-		when = f"in {duration(wait)} (at {at})"
+		when = t("in {duration} (at {at})", duration=duration(wait), at=at)
 	else:
-		when = "now (the first retry is free)"
-	again = duration(next_wait) if next_wait else "no wait"
-	return f"[yellow]Next grademe {when}[/] · if KO again: {again}"
+		when = t("now (the first retry is free)")
+	again = duration(next_wait) if next_wait else t("no wait")
+	return f"[yellow]{t('Next grademe {when}', when=when)}[/] · {t('if KO again: {wait}', wait=again)}"
 
 def wait_message(wait):
 	"""Said when grademe comes before the end of the wait."""
-	return f"[yellow]Wait {duration(wait)} before your next grademe.[/]"
+	return f"[yellow]{t('Wait {duration} before your next grademe.', duration=duration(wait))}[/]"
 
 def typewriter(console, text, sleep=time.sleep, delay=0.02):
 	"""Print `text` one letter at a time, as if someone were typing it.
@@ -151,14 +153,15 @@ TRACE_LINES_SHOWN = 25
 
 def grade_result(grade, log):
 	"""The result of a grademe: OK or KO, the tests passed, the clickable log."""
+	tests = f"{grade.tests_passed}/{grade.tests_total}"
 	if grade.passed:
-		verdict = f"[bold green]✓ OK[/]  {grade.tests_passed}/{grade.tests_total} tests"
+		verdict = f"[bold green]✓ OK[/]  {t('{tests} tests', tests=tests)}"
 	else:
-		verdict = f"[bold red]✗ KO[/]  {grade.tests_passed}/{grade.tests_total} tests passed"
+		verdict = f"[bold red]✗ KO[/]  {t('{tests} tests passed', tests=tests)}"
 	# [link=...]: the terminal opens the file when the path is clicked.
 	link = path_link(log)
-	warnings = "".join(f"\n[yellow]! {escape(warning)}[/]" for warning in grade.warnings)
-	return f"{verdict}\nTrace: {link}{warnings}"
+	warnings = "".join(f"\n[yellow]! {escape(t(warning))}[/]" for warning in grade.warnings)
+	return f"{verdict}\n{t('Trace:')} {link}{warnings}"
 
 def trace_panel(trace):
 	"""The trace in a red frame, cut after TRACE_LINES_SHOWN lines."""
@@ -168,71 +171,76 @@ def trace_panel(trace):
 	text = Text(shown)
 	if len(lines) > TRACE_LINES_SHOWN:
 		more = len(lines) - TRACE_LINES_SHOWN
-		text.append(f"\n… {more} more lines: see the trace file", style="dim")
+		text.append("\n… " + t("{count} more lines: see the trace file", count=more), style="dim")
 	# 84 wide: the 80 columns of a trace line, plus the frame and its margins.
 	return Panel(text, title="trace", border_style="red", width=84)
 
 def exam_passed_panel(exam):
 	"""The panel shown when the last playable level is passed."""
 	return Panel(
-		f"[bold green]Well done! Exam passed[/]: {escape(exam.title)}, grade 100/100.",
+		f"[bold green]{t('Well done! Exam passed')}[/]: "
+		+ t("{exam}, grade 100/100.", exam=escape(exam.title)),
 		border_style="green", width=80,
 	)
 
 def time_up():
 	"""Said when a command comes after the end of the exam."""
-	return "[bold red]Time is up![/] The exam is over: no more grademe."
+	return f"[bold red]{t('Time is up!')}[/] {t('The exam is over: no more grademe.')}"
 
 def almost_over(left):
 	"""Said once, when less than 10 minutes are left."""
-	return f"[bold yellow]Less than 10 minutes left[/] ({duration(left)})."
+	return f"[bold yellow]{t('Less than 10 minutes left')}[/] ({duration(left)})."
 
 def summary_table(exam, passed_levels, attempts, oks, elapsed, grade=0):
 	"""The summary at the end of the exam: grade, levels passed, grademe, time spent."""
-	table = Table(title=f"Summary · {escape(exam.title)}", show_header=False, box=None)
-	levels = ", ".join(map(str, passed_levels)) or "none"
-	table.add_row("Grade", f"{points(grade)}/100")
-	table.add_row("Levels passed", f"{len(passed_levels)} ({levels})")
-	table.add_row("Grademe", f"{attempts} ({oks} OK, {attempts - oks} KO)")
-	table.add_row("Time spent", duration(elapsed))
+	table = Table(title=f"{t('Summary')} · {escape(exam.title)}", show_header=False, box=None)
+	levels = ", ".join(map(str, passed_levels)) or t("none")
+	table.add_row(t("Grade"), f"{points(grade)}/100")
+	table.add_row(t("Levels passed"), f"{len(passed_levels)} ({levels})")
+	table.add_row(t("Grademe"), f"{attempts} ({oks} OK, {attempts - oks} KO)")
+	table.add_row(t("Time spent"), duration(elapsed))
 	return table
 
 def resume_question(exam, level, variant, left):
 	"""The question asked when a saved exam can be resumed."""
-	time = "no time limit" if left == float("inf") else f"{duration(left)} left"
-	return f"Resume your exam? {exam.title} · level {level} · {variant.name} · {time} (y/n)"
+	time = t("no time limit") if left == float("inf") else t("{duration} left", duration=duration(left))
+	# (y/n) stays: the answer is read by its first letter.
+	return f"{t('Resume your exam?')} {exam.title} · {t('level {level}', level=level)} · {variant.name} · {time} (y/n)"
 
 def time_ran_out_while_away(exam):
 	"""Said when the saved exam ended while the terminal was closed."""
-	return (f"[yellow]Your last exam ({escape(exam.title)}) time ran out while you were"
-		" away: it is kept in your history.[/]")
+	return ("[yellow]" + t("Your last exam ({exam}) time ran out while you were away: it is kept in your history.",
+		exam=escape(exam.title)) + "[/]")
 
 def cannot_resume(variant_id):
 	"""Said when the subject of the saved exam no longer exists."""
-	return f"[yellow]Your last exam cannot be resumed: its subject {escape(variant_id)} is gone.[/]"
+	return ("[yellow]" + t("Your last exam cannot be resumed: its subject {subject} is gone.",
+		subject=escape(variant_id)) + "[/]")
 
 def practice_panel(theme, variant, subject, rendu):
 	"""The panel shown when a practice subject is given."""
 	lines = [
-		f"[bold]Practice · {escape(theme.id)}[/] · {escape(theme.skill)}",
-		"No timer, no wait: grademe, next, finish",
+		f"[bold]{t('Practice')} · {escape(theme.id)}[/] · {escape(t(theme.skill))}",
+		t("No timer, no wait: grademe, next, finish"),
 		"",
-		f"Subject: [bold cyan]{escape(variant.name)}[/]",
-		f"Read it: {path_link(subject)}",
-		f"Hand in: {path_link(rendu, '/')}",
+		f"{t('Subject:')} [bold cyan]{escape(variant.name)}[/]",
+		f"{t('Read it:')} {path_link(subject)}",
+		f"{t('Hand in:')} {path_link(rendu, '/')}",
 	]
 	return Panel("\n".join(lines), title="42pal", width=80)
 
 def update_message(update):
 	"""Said when a newer 42pal is found: how many commits, and the last ones."""
-	plural = "s" if update.count != 1 else ""
-	lines = [f"[bold #a5b4fc]A new version of 42pal is available: {update.count} new commit{plural}.[/]"]
+	text = (t("A new version of 42pal is available: {count} new commits.", count=update.count) if update.count != 1
+		else t("A new version of 42pal is available: 1 new commit."))
+	lines = [f"[bold #a5b4fc]{text}[/]"]
 	lines += [f"  · {escape(change)}" for change in update.changes]
 	return "\n".join(lines)
 
 def update_failed(why):
 	"""Said when git pull refused: nothing was changed."""
-	return f"[yellow]The update failed: {escape(why)}[/] Nothing was changed; 42pal goes on."
+	return (f"[yellow]{t('The update failed: {why}', why=escape(why))}[/] "
+		+ t("Nothing was changed; 42pal goes on."))
 
 def points(value):
 	"""Write points with 2 decimals at most and no useless zero: 25, 12.5, 16.67."""
@@ -241,81 +249,89 @@ def points(value):
 # The menus before the exam. Their lines stay under 80 characters.
 
 # How the first menu names each audience (see AUDIENCES in pal42/exam.py).
-AUDIENCE_TEXTS = {"piscine": "Piscine (piscineux)", "student": "Student (cursus)"}
+AUDIENCE_TEXTS = {"piscine": N_("Piscine (piscineux)"), "student": N_("Student (cursus)")}
+
+# The names of the two modes, in the status.
+MODE_NAMES = {"exam": N_("exam"), "revision": N_("revision")}
 
 def exam_length(minutes):
 	"""Write a duration for a menu: 3 h, 4 h 30, or 45 min."""
 	hours, rest = divmod(minutes, 60)
 	if not hours:
-		return f"{rest} min"
-	return f"{hours} h {rest:02d}" if rest else f"{hours} h"
+		return t("{minutes} min", minutes=rest)
+	return t("{hours} h {minutes:02d}", hours=hours, minutes=rest) if rest else t("{hours} h", hours=hours)
 
 # How a menu names the language of an exam.
 LANGUAGE_NAMES = {"c": "C", "cpp": "C++", "python": "Python"}
 
 def exam_summary(exam):
 	"""The size and language of an exam, for a menu: 8 levels, 4 h, C."""
-	return (f"{exam.level_count} levels, {exam_length(exam.duration_minutes)}, "
+	return (t("{count} levels", count=exam.level_count) + f", {exam_length(exam.duration_minutes)}, "
 		f"{LANGUAGE_NAMES.get(exam.language, exam.language)}")
 
 def exam_tools(exam):
 	"""How the rendus of an exam are built: compiled in C, run in Python."""
-	verb = "Run" if exam.language == "python" else "Compiled"
-	return f"{verb} with {' '.join(exam.compile_command)}."
+	command = " ".join(exam.compile_command)
+	if exam.language == "python":
+		return t("Run with {command}.", command=command)
+	return t("Compiled with {command}.", command=command)
 
 def last_choice(number, first):
 	"""The last choice of a menu: back to the menu before, or quit in the first one."""
-	return f"  {number}. {'Quit' if first else 'Back (previous menu)'}"
+	return f"  {number}. {t('Quit') if first else t('Back (previous menu)')}"
 
 # The first menu: its title, and the choice that leads to practice.
-FIRST_MENU_TITLE = "What do you want to do?"
-PRACTICE_TEXT = "Practice"
-PRACTICE_SUMMARY = "one theme, no timer"
+# N_: marked to be translated where they are shown, with t() (the language
+# can change after these lines run).
+FIRST_MENU_TITLE = N_("What do you want to do?")
+PRACTICE_TEXT = N_("Practice")
+PRACTICE_SUMMARY = N_("one theme, no timer")
 
 # The choice of the first menu that shows the progress.
-PROGRESS_TEXT = "Progress"
-PROGRESS_SUMMARY = "your exams and weak themes"
+PROGRESS_TEXT = N_("Progress")
+PROGRESS_SUMMARY = N_("your exams and weak themes")
 
 # The choice of the first menu for the settings: the language, for now.
-SETTINGS_TEXT = "Settings"
+SETTINGS_TEXT = N_("Settings")
 
 def audience_menu(exams_by_audience, first=True, practice=False, progress=False, settings=False, language=""):
 	"""The first menu: the exams of the piscine or of the students, then practice, progress, settings."""
-	lines = [FIRST_MENU_TITLE]
+	lines = [t(FIRST_MENU_TITLE)]
 	for number, (audience, exams) in enumerate(exams_by_audience.items(), start=1):
-		leads_to = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
-		lines.append(f"  {number}. {AUDIENCE_TEXTS[audience]:22}{leads_to}")
+		leads_to = exams[0].title if len(exams) == 1 else t("{count} exams", count=len(exams))
+		lines.append(f"  {number}. {t(AUDIENCE_TEXTS[audience]):22}{leads_to}")
 	count = len(exams_by_audience)
 	if practice:
 		count += 1
-		lines.append(f"  {count}. {PRACTICE_TEXT:22}{PRACTICE_SUMMARY}")
+		lines.append(f"  {count}. {t(PRACTICE_TEXT):22}{t(PRACTICE_SUMMARY)}")
 	if progress:
 		count += 1
-		lines.append(f"  {count}. {PROGRESS_TEXT:22}{PROGRESS_SUMMARY}")
+		lines.append(f"  {count}. {t(PROGRESS_TEXT):22}{t(PROGRESS_SUMMARY)}")
 	if settings:
 		count += 1
-		lines.append(f"  {count}. {SETTINGS_TEXT:22}{settings_summary(language)}")
+		lines.append(f"  {count}. {t(SETTINGS_TEXT):22}{settings_summary(language)}")
 	return lines + [last_choice(count + 1, first)]
 
 def settings_summary(language):
 	"""The grey line of Settings: the language in use."""
-	return f"language: {language}"
+	return t("language: {language}", language=language)
 
 def language_menu(languages, current):
 	"""The menu of the languages: each one under its own name, the one in use said."""
-	lines = ["Language:"]
+	lines = [t("Language:")]
+	in_use = "  (" + t("in use") + ")"
 	for number, (code, name) in enumerate(languages.items(), start=1):
-		lines.append(f"  {number}. {name}{'  (in use)' if code == current else ''}")
+		lines.append(f"  {number}. {name}{in_use if code == current else ''}")
 	return lines + [last_choice(len(languages) + 1, first=False)]
 
 def progress_summary(text):
 	"""The first line of the progress."""
-	return f"[bold]Progress[/] · {escape(text)}"
+	return f"[bold]{t('Progress')}[/] · {escape(text)}"
 
 def exam_progress_table(rows):
 	"""The exams taken: how many times, passed, and the best grade."""
 	table = Table(show_header=True, box=None, header_style="dim")
-	for column in ("Exam", "Taken", "Passed", "Best"):
+	for column in (t("Exam"), t("Taken"), t("Passed"), t("Best")):
 		table.add_column(column)
 	for row in rows:
 		table.add_row(escape(row.title), str(row.tries), str(row.passed), f"{points(row.best)}/100")
@@ -323,12 +339,12 @@ def exam_progress_table(rows):
 
 def theme_score(row):
 	"""How a theme went: 1 OK out of 3 grademe."""
-	return f"{row.oks} OK out of {row.tries} grademe"
+	return t("{oks} OK out of {tries} grademe", oks=row.oks, tries=row.tries)
 
 def exam_menu(exams, first=False):
 	"""The menu of the exams: each title with its levels and duration."""
 	width = max(len(exam.title) for exam in exams) + 3
-	lines = ["Choose your exam:"]
+	lines = [t("Choose your exam:")]
 	for number, exam in enumerate(exams, start=1):
 		lines.append(f"  {number}. {exam.title:{width}}{exam_summary(exam)}")
 	return lines + [last_choice(len(exams) + 1, first)]
@@ -339,16 +355,16 @@ def mode_menu(exam, first=False):
 	soft = ", ".join(map(points, exam.retry["soft"].minutes))
 	indent = " " * 15
 	return [
-		"Choose the mode:",
-		f"  1. Exam      The real conditions: {exam_length(exam.duration_minutes)}, "
-			"then the exam ends.",
-		f"{indent}Waits after a failed grademe grow fast (minutes):",
+		t("Choose the mode:"),
+		f"  1. {t('Exam'):10}"
+			+ t("The real conditions: {length}, then the exam ends.", length=exam_length(exam.duration_minutes)),
+		f"{indent}{t('Waits after a failed grademe grow fast (minutes):')}",
 		f"{indent}{hard}",
-		"  2. Revision  No time limit.",
-		f"{indent}Waits after a failed grademe stay short (minutes):",
+		f"  2. {t('Revision'):10}{t('No time limit.')}",
+		f"{indent}{t('Waits after a failed grademe stay short (minutes):')}",
 		f"{indent}{soft}",
 		last_choice(3, first),
-		"Enter alone takes revision.",
+		t("Enter alone takes revision."),
 	]
 
 def level_menu(exam, first=False):
@@ -358,19 +374,20 @@ def level_menu(exam, first=False):
 	"""
 	playable = ", ".join(map(str, exam.playable_levels))
 	return [
-		"Choose the starting level:",
-		f"  {exam.level_count} levels, worth {points(exam.points_per_level)} points each: "
-			"pass them all for 100/100.",
-		"  If you start higher, the levels before it give no points.",
-		f"  Levels you can play: {playable}.",
+		t("Choose the starting level:"),
+		"  " + t("{count} levels, worth {points} points each: pass them all for 100/100.",
+			count=exam.level_count, points=points(exam.points_per_level)),
+		"  " + t("If you start higher, the levels before it give no points."),
+		"  " + t("Levels you can play: {levels}.", levels=playable),
 		last_choice(exam.level_count + 1, first),
 	]
 
 def points_won(won, grade):
 	"""Said after an OK: the points of the level, and the grade now."""
-	return f"[bold green]+{points(won)} points[/] · grade {points(grade)}/100"
+	return (f"[bold green]+{t('{points} points', points=points(won))}[/] · "
+		+ t("grade {grade}/100", grade=points(grade)))
 
 def no_more_levels(grade):
 	"""Said when the last playable level is passed but the grade is below 100."""
-	return (f"[yellow]No more playable level for now: your grade is {points(grade)}/100.[/]"
-		" The next levels have no exercise yet.")
+	return ("[yellow]" + t("No more playable level for now: your grade is {grade}/100.", grade=points(grade))
+		+ "[/] " + t("The next levels have no exercise yet."))

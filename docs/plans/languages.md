@@ -19,7 +19,9 @@ Un menu **Settings** dans le premier menu de `./42pal`, avec **Language** : angl
 
 ## Étapes
 
-Chaque étape en TDD, puis les tests utilisateur.
+Chaque étape en TDD, puis les tests utilisateur. **Découpage décidé le 2026-11-20 : le français d'abord, de bout en bout (interface, traces, sujets) ; les autres langues ensuite, une par une.**
+
+**Avancement** : phase 1 faite ; phase 2 faite (interface en français, 323 textes avec les thèmes) ; la suite : les traces en français, puis les sujets en français.
 
 ### Phase 1 — La mécanique
 
@@ -34,19 +36,18 @@ Chaque étape en TDD, puis les tests utilisateur.
 - **2.2** `pal42/locales/fr.json` complet. *Vérif* : `check` ne signale rien pour `fr` ; un test parcourt les menus en français.
 - **2.3** La mise en page tient avec des textes plus longs (menus alignés, cartes de 64 colonnes). *Vérif* : tests avec la langue aux textes les plus longs.
 
-### Phase 3 — Les autres langues de l'interface
+### Phase 3 — Les traces en français
 
-- `de`, `ru`, `uk`, `es`, `pt`, `it`, `tr`. *Vérif* : `check` ne signale rien ; essai à la main de chaque menu.
+- `trace.py` passe par `t()` ; `fr.json` complété. *Vérif* : tests des traces en français ; `check`.
 
-### Phase 4 — Les traces
+### Phase 4 — Les sujets en français
 
-- `trace.py` passe par `t()` ; les 8 catalogues complétés. *Vérif* : tests des traces en français ; `check`.
+- **4.1** `subject.py` lit la traduction de l'exercice, `subject.<code>.txt` écrit et montré. *Vérif* : tests.
+- **4.2** Les sujets en français (126 exercices), par exam. *Vérif* : chaque exercice a ses `$champs` et les textes de toutes ses valeurs ; chaque variant se rend en français.
 
-### Phase 5 — Les sujets
+### Phase 5 — Les autres langues, une par une
 
-- **5.1** `subject.py` lit la traduction de l'exercice, `subject.<code>.txt` écrit et montré. *Vérif* : tests.
-- **5.2** Les sujets en français (126 exercices). *Vérif* : chaque exercice a ses `$champs` et les textes de toutes ses valeurs ; chaque variant se rend dans chaque langue.
-- **5.3** Les sujets des 7 autres langues, par exam. *Vérif* : idem, `check`.
+- `de`, `ru`, `uk`, `es`, `pt`, `it`, `tr`, chacune de bout en bout (`tools/locales.py new`, interface, traces, sujets). *Vérif* : `check` ne signale rien ; essai à la main.
 
 ### Phase 6 — 42pal online
 

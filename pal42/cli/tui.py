@@ -34,6 +34,7 @@ from textual.widgets import Input, OptionList, RichLog, Static
 from textual.widgets.option_list import Option
 
 from pal42 import cheat, i18n, settings
+from pal42.i18n import N_, t
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
 from pal42.cli.shell import BACK, COMMANDS, PRACTICE, PROGRESS, SETTINGS, SHORTCUTS, Shell
@@ -69,7 +70,7 @@ LOGO = [
 # The colors the logo goes through, cyan to violet; they move slowly.
 GRADIENT = ["#5eead4", "#67e8f9", "#7dd3fc", "#93c5fd", "#a5b4fc", "#c4b5fd", "#d8b4fe"]
 
-TAGLINE = "exam trainer · random variants · local moulinette"
+TAGLINE = N_("exam trainer · random variants · local moulinette")
 
 # What the app exits with once a newer 42pal is pulled: it must start again.
 RESTART = object()
@@ -87,7 +88,7 @@ def hints(pairs):
 		if text:
 			text.append("   ")
 		text.append(key, style="bold #a5b4fc")
-		text.append(f" {what}")
+		text.append(f" {t(what)}")
 	return text
 
 def option_label(title, meta):
@@ -205,17 +206,17 @@ class LoginScreen(IntroScreen):
 			yield Static(classes="logo")
 			yield Static("examshell", classes="tagline")
 			with Vertical(classes="card"):
-				yield Static("login", classes="field-label")
+				yield Static(t("login"), classes="field-label")
 				yield Input(value=self.user, id="login")
-				yield Static("password", classes="field-label")
+				yield Static(t("password"), classes="field-label")
 				yield Input(password=True, id="password")
-			yield Static(hints([("⏎", "next"), ("esc", "quit")]), classes="hints")
+			yield Static(hints([("⏎", N_("next")), ("esc", N_("quit"))]), classes="hints")
 
 	def on_mount(self):
 		# A Logo widget for the logo: the placeholder was only for the layout.
 		self.query_one(".logo").remove()
 		self.query_one(".root").mount(Logo(classes="logo"), before=0)
-		self.query_one(".card").border_title = " Log in "
+		self.query_one(".card").border_title = f" {t('Log in')} "
 		self.query_one("#login", Input).focus()
 		self.call_after_refresh(self.animate_in)
 
@@ -276,22 +277,22 @@ class MenuScreen(IntroScreen):
 		self.highlight = highlight
 		# last: (label, details) of the last choice, instead of Quit or Back.
 		self.last_label, self.last_details = last or (
-			("Quit", "Quit 42pal.") if first else ("Back", "Back to the menu before."))
+			(N_("Quit"), N_("Quit 42pal.")) if first else (N_("Back"), N_("Back to the menu before.")))
 
 	def compose(self) -> ComposeResult:
 		with Vertical(classes="root"):
 			yield Logo(classes="logo")
-			yield Static(self.subtitle, classes="tagline")
+			yield Static(t(self.subtitle), classes="tagline")
 			with Vertical(classes="card"):
 				options = [Option(option_label(title, meta), id=str(index))
 					for index, (_, title, meta, _) in enumerate(self.items)]
 				options.append(None)
-				options.append(Option(Text(self.last_label, style="dim"), id="back"))
+				options.append(Option(Text(t(self.last_label), style="dim"), id="back"))
 				yield OptionList(*options)
 			yield Static(classes="details")
 			# Esc chooses the last choice: it quits only when that choice is Quit.
-			yield Static(hints([("↑↓ jk", "move"), ("⏎", "choose"),
-				("esc", "quit" if self.last_label == "Quit" else "back"), ("q", "quit")]), classes="hints")
+			yield Static(hints([("↑↓ jk", N_("move")), ("⏎", N_("choose")),
+				("esc", N_("quit") if self.last_label == "Quit" else N_("back")), ("q", N_("quit"))]), classes="hints")
 
 	def on_mount(self):
 		self.query_one(".card").border_title = f" {self.title} "
@@ -453,11 +454,11 @@ class SessionScreen(Screen):
 			yield SelectableLog(id="log", wrap=False, markup=False, highlight=False)
 		yield Static(id="activity")
 		letters = ", ".join(f"{letter} {command}" for letter, command in self.shortcuts.items())
-		yield Input(id="command", placeholder=f"{self.prompt} type a command ({letters})",
+		yield Input(id="command", placeholder=t("{prompt} type a command ({letters})", prompt=self.prompt, letters=letters),
 			suggester=SuggestFromList(list(self.commands), case_sensitive=False))
 		# The one-letter commands are in the placeholder of the command line.
-		yield Static(hints([("↑↓", "history"), ("→", "complete"), ("pgup pgdn", "subject"),
-			("ctrl+c ctrl+shift+c", "copy"), ("r", "report"), ("ctrl+q", "leave")]), id="session-hints")
+		yield Static(hints([("↑↓", N_("history")), ("→", N_("complete")), ("pgup pgdn", N_("subject")),
+			("ctrl+c ctrl+shift+c", N_("copy")), ("r", N_("report")), ("ctrl+q", N_("leave"))]), id="session-hints")
 
 	def on_mount(self):
 		self.query_one("#log").border_title = " log "
@@ -512,9 +513,9 @@ class SessionScreen(Screen):
 		# the file manager. One Text: textual can only select in a single text,
 		# for the prototypes and headers to be copied.
 		content = Text()
-		content.append("Read it  ", style="dim")
+		content.append(t("Read it") + "  ", style="dim")
 		content.append(display.short_path(subject), style=open_on_click(str(subject)))
-		content.append("\nHand in  ", style="dim")
+		content.append("\n" + t("Hand in") + "  ", style="dim")
 		content.append(f"{display.short_path(rendu)}/", style=open_on_click(str(rendu)))
 		content.append("\n\n")
 		# The words of the variant stand out (see display.subject_text).
@@ -530,27 +531,28 @@ class SessionScreen(Screen):
 		header = self.query_one("#header", Static)
 		text = Text()
 		if self.practice:
-			header.border_title = " 42pal · practice "
+			header.border_title = f" 42pal · {t('practice')} "
 			text.append(shell.theme, style="bold #e0e7ff")
-			text.append(f"   {shell.passed} passed · {shell.attempts} grademe", style="#9ca3af")
+			text.append("   " + t("{passed} passed · {attempts} grademe", passed=shell.passed, attempts=shell.attempts),
+				style="#9ca3af")
 			header.update(text)
 			return
 		exam = shell.exam
 		header.border_title = f" 42pal · {exam.title} "
-		text.append(f"level {shell.level} of {exam.level_count}", style="bold #e0e7ff")
-		text.append(f"   {shell.mode} mode", style="#9ca3af")
-		text.append(f"   grade {display.points(shell.grade)}/100", style="bold #a5b4fc")
+		text.append(t("level {level} of {count}", level=shell.level, count=exam.level_count), style="bold #e0e7ff")
+		text.append("   " + (t("exam mode") if shell.mode == "exam" else t("revision mode")), style="#9ca3af")
+		text.append("   " + t("grade {grade}/100", grade=display.points(shell.grade)), style="bold #a5b4fc")
 		if shell.started_at is not None:
 			left = shell._time_left()
 			if shell.mode == "exam":
 				style = "bold #fbbf24" if left < 10 * 60 else "#e0e7ff"
-				text.append(f"   time left {display.duration(max(0, left))}", style=style)
+				text.append("   " + t("time left {duration}", duration=display.duration(max(0, left))), style=style)
 			else:
 				elapsed = shell.clock() - shell.started_at
-				text.append(f"   time spent {display.duration(elapsed)}", style="#9ca3af")
+				text.append("   " + t("time spent {duration}", duration=display.duration(elapsed)), style="#9ca3af")
 		wait = shell._wait_left()
 		if wait > 0:
-			text.append(f"   next grademe in {display.duration(wait)}", style="#fbbf24")
+			text.append("   " + t("next grademe in {duration}", duration=display.duration(wait)), style="#fbbf24")
 		header.update(text)
 
 	def tick(self):
@@ -630,8 +632,8 @@ class SessionScreen(Screen):
 		if over:
 			self.over = True
 			self.final = printed
-			command.placeholder = "Press Enter to leave"
-			log.write(Text("Press Enter to leave.", style="dim"))
+			command.placeholder = t("Press Enter to leave")
+			log.write(Text(t("Press Enter to leave."), style="dim"))
 
 class Pal42App(App):
 	"""42pal in full screen: login, menus, then the exam (or the practice).
@@ -676,7 +678,7 @@ class Pal42App(App):
 		super().copy_to_clipboard(text)
 		self.copy_with_program(text)
 		lines = text.count("\n") + 1
-		self.notify(f"Copied: {lines} line{'s' if lines != 1 else ''}", timeout=2)
+		self.notify(t("Copied: 1 line") if lines == 1 else t("Copied: {count} lines", count=lines), timeout=2)
 
 	def copy_with_program(self, text):
 		"""Give `text` to the first clipboard program found (xclip, xsel, wl-copy...)."""
@@ -694,11 +696,12 @@ class Pal42App(App):
 		"""Open a file, a folder or a web page with the default application of the system."""
 		program = "open" if sys.platform == "darwin" else "xdg-open"
 		if self.launch is launch and shutil.which(program) is None:
-			self.notify(f"Cannot open it here: {program} is missing. {target}", severity="warning")
+			self.notify(t("Cannot open it here: {program} is missing. {target}", program=program, target=target),
+				severity="warning")
 			return
 		self.launch([program, target])
 		shown = target if WEB_ADDRESS.match(target) else display.short_path(target)
-		self.notify(f"Opening {shown}", timeout=3)
+		self.notify(t("Opening {target}", target=shown), timeout=3)
 
 	async def ask(self, title, items, first, highlight=0, last=None, subtitle=TAGLINE):
 		"""Show a menu; return the value of the item chosen, or BACK."""
@@ -712,12 +715,12 @@ class Pal42App(App):
 		_, themes = self.shell._catalog()
 		exams = ", ".join(f"{row.title} {display.points(row.best)}/100" for row in exam_rows(history))
 		items = [(row.theme, row.theme, display.theme_score(row),
-			(themes[row.theme].skill if row.theme in themes else "") + ". Practise it now.")
+			(t(themes[row.theme].skill) if row.theme in themes else "") + ". " + t("Practise it now."))
 			for row in weak_themes(grades) if row.theme in themes]
 		if not items:
-			items = [("none", "No weak theme", "every theme passed", "Nothing to practise again for now.")]
-		value = await self.ask("Progress", items, first=False, subtitle=summary(history, grades),
-			last=("Back", f"Best grades: {exams}." if exams else "Back to the menu before."))
+			items = [("none", t("No weak theme"), t("every theme passed"), t("Nothing to practise again for now."))]
+		value = await self.ask(t("Progress"), items, first=False, subtitle=summary(history, grades),
+			last=(t("Back"), t("Best grades: {exams}.", exams=exams) if exams else t("Back to the menu before.")))
 		return None if value in (BACK, "none") else value
 
 	@work
@@ -811,9 +814,9 @@ class Pal42App(App):
 		"""Settings: the language of 42pal, each one under its own name; the choice is kept."""
 		languages = i18n.languages()
 		current = i18n.language()
-		items = [(code, name, "in use" if code == current else "", "")
+		items = [(code, name, t("in use") if code == current else "", "")
 			for code, name in languages.items()]
-		code = await self.ask("Language", items, first=False, highlight=list(languages).index(current))
+		code = await self.ask(t("Language"), items, first=False, highlight=list(languages).index(current))
 		if code is not BACK:
 			settings.choose_language(code, self.settings_file)
 
@@ -836,12 +839,12 @@ class Pal42App(App):
 		update = await asyncio.to_thread(self.update_check.result)
 		if update is None:
 			return False
-		plural = "s" if update.count != 1 else ""
+		commits = (t("{count} new commits, then 42pal starts again", count=update.count) if update.count != 1
+			else t("1 new commit, then 42pal starts again"))
 		changes = "\n".join(f"· {change[:56]}" for change in update.changes[:3])
-		choice = await self.ask("A new version of 42pal", [
-			("update", "Update now", f"{update.count} new commit{plural}, then 42pal starts again",
-				changes),
-			("later", "Not now", "keep this version", "You will be asked again next time."),
+		choice = await self.ask(t("A new version of 42pal"), [
+			("update", t("Update now"), commits, changes),
+			("later", t("Not now"), t("keep this version"), t("You will be asked again next time.")),
 		], first=True)
 		if choice is BACK:
 			self.exit()
@@ -851,7 +854,7 @@ class Pal42App(App):
 		self.notify("Updating…", timeout=3)
 		ok, why = await asyncio.to_thread(self.updater)
 		if not ok:
-			self.notify(f"The update failed, nothing was changed: {why}", severity="error", timeout=10)
+			self.notify(t("The update failed, nothing was changed: {why}", why=why), severity="error", timeout=10)
 			return False
 		self.exit(RESTART)
 		return True
@@ -860,12 +863,12 @@ class Pal42App(App):
 		"""Resume the saved exam, or start a new one (the saved one is abandoned)."""
 		shell = self.shell
 		left = shell._time_left()
-		time = "no time limit" if shell.mode == "revision" else f"{display.duration(left)} left"
-		choice = await self.ask("Resume your exam?", [
-			("resume", "Resume", f"{shell.exam.title} · level {shell.level} · {time}",
-				f"Subject: {shell.variant.name}. The time kept running while you were away."),
-			("new", "Start a new exam", "the exam in progress goes to the history",
-				"It is kept in the history as abandoned."),
+		time = t("no time limit") if shell.mode == "revision" else t("{duration} left", duration=display.duration(left))
+		choice = await self.ask(t("Resume your exam?"), [
+			("resume", t("Resume"), f"{shell.exam.title} · {t('level {level}', level=shell.level)} · {time}",
+				t("Subject: {subject}. The time kept running while you were away.", subject=shell.variant.name)),
+			("new", t("Start a new exam"), t("the exam in progress goes to the history"),
+				t("It is kept in the history as abandoned.")),
 		], first=True)
 		if choice is BACK:
 			self.exit()
@@ -908,39 +911,39 @@ class Pal42App(App):
 		items = []
 		for audience in audiences:
 			exams = by_audience[audience]
-			meta = exams[0].title if len(exams) == 1 else f"{len(exams)} exams"
-			items.append((audience, display.AUDIENCE_TEXTS[audience], meta,
+			meta = exams[0].title if len(exams) == 1 else t("{count} exams", count=len(exams))
+			items.append((audience, t(display.AUDIENCE_TEXTS[audience]), meta,
 				", ".join(exam.title for exam in exams)))
 		if self.shell._can_practise():
-			items.append((PRACTICE, display.PRACTICE_TEXT, display.PRACTICE_SUMMARY,
-				"Subjects of one theme, one after the other: no timer, no wait."))
+			items.append((PRACTICE, t(display.PRACTICE_TEXT), t(display.PRACTICE_SUMMARY),
+				t("Subjects of one theme, one after the other: no timer, no wait.")))
 		if self.shell.store and self.shell.store.grades():
-			items.append((PROGRESS, display.PROGRESS_TEXT, display.PROGRESS_SUMMARY,
-				"How your exams went, and the themes that fail the most, to practise them."))
-		items.append((SETTINGS, display.SETTINGS_TEXT, display.settings_summary(i18n.languages()[i18n.language()]),
-			"The language of 42pal: the menus, the messages, the traces and the subjects."))
-		return await self.ask(display.FIRST_MENU_TITLE, items, first), True
+			items.append((PROGRESS, t(display.PROGRESS_TEXT), t(display.PROGRESS_SUMMARY),
+				t("How your exams went, and the themes that fail the most, to practise them.")))
+		items.append((SETTINGS, t(display.SETTINGS_TEXT), display.settings_summary(i18n.languages()[i18n.language()]),
+			t("The language of 42pal: the menus, the messages, the traces and the subjects.")))
+		return await self.ask(t(display.FIRST_MENU_TITLE), items, first), True
 
 	async def pick_exam(self, chosen, first):
 		exams = [exam for exam in self.shell._exams() if exam.audience == chosen[0]]
 		if len(exams) == 1:
 			return exams[0], False
 		items = [(exam, exam.title, display.exam_summary(exam),
-			f"{display.points(exam.points_per_level)} points a level, 100 to pass. "
-			f"{display.exam_tools(exam)}") for exam in exams]
-		return await self.ask("Choose your exam", items, first), True
+			t("{points} points a level, 100 to pass.", points=display.points(exam.points_per_level))
+			+ f" {display.exam_tools(exam)}") for exam in exams]
+		return await self.ask(t("Choose your exam"), items, first), True
 
 	async def pick_mode(self, chosen, first):
 		exam = chosen[1]
 		hard = ", ".join(map(display.points, exam.retry["hard"].minutes))
 		soft = ", ".join(map(display.points, exam.retry["soft"].minutes))
 		items = [
-			("exam", "Exam", f"the real conditions · {display.exam_length(exam.duration_minutes)}",
-				f"Starts at level 1. Waits after a failed grademe grow fast (minutes): {hard}."),
-			("revision", "Revision", "no time limit · any starting level",
-				f"Waits after a failed grademe stay short (minutes): {soft}."),
+			("exam", t("Exam"), t("the real conditions · {length}", length=display.exam_length(exam.duration_minutes)),
+				t("Starts at level 1. Waits after a failed grademe grow fast (minutes): {waits}.", waits=hard)),
+			("revision", t("Revision"), t("no time limit · any starting level"),
+				t("Waits after a failed grademe stay short (minutes): {waits}.", waits=soft)),
 		]
-		return await self.ask(f"{exam.title} · mode", items, first, highlight=1), True
+		return await self.ask(f"{exam.title} · {t('mode')}", items, first, highlight=1), True
 
 	async def pick_level(self, chosen, first):
 		exam, mode = chosen[1], chosen[2]
@@ -948,9 +951,10 @@ class Pal42App(App):
 		if mode == "exam":
 			return playable[0], False
 		points = display.points(exam.points_per_level)
-		items = [(level, f"Level {level}", f"{points} points · {len(exam.levels[level])} styles",
-			"If you start higher, the levels before it give no points.") for level in playable]
-		return await self.ask(f"{exam.title} · starting level", items, first), True
+		items = [(level, t("Level {level}", level=level),
+			t("{points} points · {count} styles", points=points, count=len(exam.levels[level])),
+			t("If you start higher, the levels before it give no points.")) for level in playable]
+		return await self.ask(f"{exam.title} · {t('starting level')}", items, first), True
 
 	@work
 	async def practice_flow(self):
@@ -979,16 +983,16 @@ class Pal42App(App):
 			language = shell.language
 			if asks_language:
 				items = [(name, display.LANGUAGE_NAMES.get(name, name),
-					f"{count} theme{'s' if count != 1 else ''}",
-					"Exams: " + ", ".join(exam.title for exam in shell._exams() if exam.language == name))
+					t("{count} themes", count=count) if count != 1 else t("1 theme"),
+					t("Exams: {exams}", exams=", ".join(exam.title for exam in shell._exams() if exam.language == name)))
 					for name, count in languages.items()]
-				language = await self.ask("Choose a language", items, first=first)
+				language = await self.ask(t("Choose a language"), items, first=first)
 				if language is BACK:
 					return None
-			items = [(name, name, themes[name].skill,
-				f"Real levels: {', '.join(f'{exam} {levels}' for exam, levels in themes[name].exams.items())}")
+			items = [(name, name, t(themes[name].skill),
+				t("Real levels: {levels}", levels=", ".join(f"{exam} {levels}" for exam, levels in themes[name].exams.items())))
 				for name in shell.practisable_themes(language)]
-			theme = await self.ask("Choose a theme to practise", items, first=first and not asks_language)
+			theme = await self.ask(t("Choose a theme to practise"), items, first=first and not asks_language)
 			if theme is not BACK:
 				return theme
 			if not asks_language:
@@ -1003,12 +1007,12 @@ def finish_in_terminal(final, shell, practice=False):
 	"""After the full screen: the summary stays in the terminal, or how to resume."""
 	console = Console()
 	if final is RESTART:
-		console.print("42pal is updated: it starts again.")
+		console.print(t("42pal is updated: it starts again."))
 		restart()
 	if final:
 		console.print(Text.from_ansi(final.rstrip("\n")))
 	elif not practice and shell.variant is not None and shell.store and shell.store.load():
-		console.print("Exam stopped: run ./42pal again to resume it.")
+		console.print(t("Exam stopped: run ./42pal again to resume it."))
 
 def run_exam(workspace, store, update_check=None):
 	"""42pal in full screen, on the real terminal; return the exit code.
@@ -1031,7 +1035,8 @@ def run_practice(workspace, theme=None):
 	shell = ScreenPracticeShell(capture_console(), None, workspace, store=SessionStore())
 	choices = shell.practisable_themes()
 	if theme is not None and theme not in choices:
-		Console().print(f"No exercise to practise '{escape(theme)}' yet. Themes: {', '.join(choices)}")
+		Console().print(t("No exercise to practise '{theme}' yet. Themes: {themes}",
+			theme=escape(theme), themes=", ".join(choices)))
 		return 1
 	final = Pal42App(shell, practice=True, theme=theme).run()
 	finish_in_terminal(final, shell, practice=True)

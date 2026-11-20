@@ -68,3 +68,11 @@ def t(text, **fields):
 		return translated.format(**fields)
 	except (KeyError, IndexError, ValueError):
 		return text.format(**fields)
+
+def N_(text):
+	"""Mark `text` to be translated where it is shown, with t(); return it as it is.
+
+	For texts set once, when a module is loaded (constants, tables): the
+	language can change after that.
+	"""
+	return text

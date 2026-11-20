@@ -16,6 +16,7 @@ from rich.console import Console
 from rich.markup import escape
 
 from pal42 import cheat, i18n, settings
+from pal42.i18n import N_, t
 from pal42.catalog import load_catalog
 from pal42.cli import display
 from pal42.cli.workspace import Workspace
@@ -30,12 +31,14 @@ from pal42.themes import load_themes
 from pal42.update import apply_update, restart
 
 # The examshell commands and what they do, shown by help.
+# The names stay, like the commands of the real examshell; what they do is
+# translated where it is shown (N_, see pal42/i18n.py).
 COMMANDS = {
-	"status": "where you are: exam, level, subject, time",
-	"grademe": "grade your work",
-	"report": "write a report for an issue: subject, your code, last trace",
-	"finish": "end the exam",
-	"help": "show this help",
+	"status": N_("where you are: exam, level, subject, time"),
+	"grademe": N_("grade your work"),
+	"report": N_("write a report for an issue: subject, your code, last trace"),
+	"finish": N_("end the exam"),
+	"help": N_("show this help"),
 }
 
 # One letter (then Enter) for each command: g, s, r, f and ?.
@@ -158,22 +161,22 @@ class Shell:
 							return
 					start = self.choose_start()
 				if start is None:
-					self.console.print("Goodbye!")
+					self.console.print(t("Goodbye!"))
 					return
 				self.begin(*start)
 		# Ctrl-D before the exam has started: just leave.
 		except EOFError:
-			self.console.print("\nGoodbye!")
+			self.console.print("\n" + t("Goodbye!"))
 			return
 		self.command_loop()
 
 	def login(self):
 		"""Fake login, like at the exam: any password, never checked or kept."""
 		display.typewriter(self.console, "42pal · examshell", sleep=self.sleep)
-		self.user = self.ask("login:", getpass.getuser())
+		self.user = self.ask(t("login:"), getpass.getuser())
 		# The password is read, then dropped at once: not checked, not stored.
-		self.ask_password("password: ")
-		display.typewriter(self.console, f"Welcome {self.user}!", sleep=self.sleep)
+		self.ask_password(t("password: "))
+		display.typewriter(self.console, t("Welcome {user}!", user=self.user), sleep=self.sleep)
 		self.console.print()
 
 	def offer_update(self):
@@ -182,7 +185,7 @@ class Shell:
 		if update is None:
 			return False
 		self.console.print(display.update_message(update))
-		if self.ask("Update now?", "y").strip().lower().startswith("n"):
+		if self.ask(t("Update now?") + " (y/n)", "y").strip().lower().startswith("n"):
 			self.console.print()
 			return False
 		ok, why = self.updater()
@@ -190,7 +193,7 @@ class Shell:
 			self.console.print(display.update_failed(why))
 			self.console.print()
 			return False
-		self.console.print("42pal is updated: it starts again.")
+		self.console.print(t("42pal is updated: it starts again."))
 		self.restart = True
 		return True
 
@@ -311,7 +314,7 @@ class Shell:
 		self._print_lines(display.audience_menu(by_audience, first, practice=PRACTICE in choices,
 			progress=PROGRESS in choices, settings=True, language=i18n.languages()[i18n.language()]))
 		last = len(choices) + 1
-		number = self._ask_choice("Your choice:", range(1, last + 1))
+		number = self._ask_choice(t("Your choice:"), range(1, last + 1))
 		self.console.print()
 		return BACK if number == last else choices[number - 1]
 
@@ -321,7 +324,7 @@ class Shell:
 		self._print_lines(display.language_menu(languages, i18n.language()))
 		codes = list(languages)
 		last = len(codes) + 1
-		number = self._ask_choice("Language:", range(1, last + 1))
+		number = self._ask_choice(t("Language:"), range(1, last + 1))
 		self.console.print()
 		if number != last:
 			settings.choose_language(codes[number - 1], self.settings_file)
@@ -342,12 +345,12 @@ class Shell:
 			self.console.print(display.exam_progress_table(rows))
 		weak = weak_themes(grades)
 		_, themes = self._catalog()
-		items = [(row.theme, row.theme, display.theme_score(row), themes[row.theme].skill if row.theme in themes else "")
+		items = [(row.theme, row.theme, display.theme_score(row), t(themes[row.theme].skill) if row.theme in themes else "")
 			for row in weak if row.theme in themes]
 		if not items:
-			self.console.print("No weak theme: every theme you met passed its last grademe.")
+			self.console.print(t("No weak theme: every theme you met passed its last grademe."))
 			return None
-		value = self._numbered_menu(("Practise a weak theme:", items), first=False)
+		value = self._numbered_menu((t("Practise a weak theme:"), items), first=False)
 		return None if value is BACK else value
 
 	def practise(self, theme=None):
@@ -375,12 +378,12 @@ class Shell:
 		exams = [exam for exam in self._exams() if exam.audience == audience]
 		if len(exams) == 1:
 			exam = exams[0]
-			self.console.print(f"Your exam: {exam.title} ({display.exam_summary(exam)})")
+			self.console.print(f"{t('Your exam:')} {exam.title} ({display.exam_summary(exam)})")
 			self.console.print()
 			return exam
 		self._print_lines(display.exam_menu(exams, first))
 		last = len(exams) + 1
-		number = self._ask_choice("Exam:", range(1, last + 1))
+		number = self._ask_choice(t("Exam:"), range(1, last + 1))
 		self.console.print()
 		return BACK if number == last else exams[number - 1]
 
@@ -388,7 +391,7 @@ class Shell:
 		"""Ask the mode: "exam" (hard waits, the real duration) or "revision", or BACK."""
 		self._print_lines(display.mode_menu(exam, first))
 		# Enter alone takes revision.
-		number = self._ask_choice("Mode:", [1, 2, 3], "2")
+		number = self._ask_choice(t("Mode:"), [1, 2, 3], "2")
 		self.console.print()
 		return {1: "exam", 2: "revision", 3: BACK}[number]
 
@@ -399,12 +402,12 @@ class Shell:
 		"""
 		playable = exam.playable_levels
 		if mode == "exam":
-			self.console.print(f"Exam mode starts at level {playable[0]}, like the real exam.")
+			self.console.print(t("Exam mode starts at level {level}, like the real exam.", level=playable[0]))
 			return playable[0]
 		self._print_lines(display.level_menu(exam, first))
 		last = exam.level_count + 1
 		# Enter alone takes the first playable level.
-		level = self._ask_choice("Starting level:", [*playable, last], str(playable[0]))
+		level = self._ask_choice(t("Starting level:"), [*playable, last], str(playable[0]))
 		if level == last:
 			self.console.print()
 			return BACK
@@ -506,7 +509,7 @@ class Shell:
 				return True
 		elif command:
 			# escape: what the student typed must not be read as rich markup.
-			self.console.print(f"Unknown command: {escape(command)}. Type help for the list.")
+			self.console.print(t("Unknown command: {command}. Type help for the list.", command=escape(command)))
 		# A blank line after each answer sets it apart from the next prompt;
 		# Enter alone gave no answer, so it adds nothing.
 		if command:
@@ -572,11 +575,11 @@ class Shell:
 		# The language of the subject: practice has no exam, only a subject.
 		runner = runner_for(self.variant.exercise.language, compile_command)
 		# A spinner while grading, with the number of the test being run.
-		with self._status("Grading…") as status:
+		with self._status(t("Grading…")) as status:
 			# step is "memory" when the tests run again under valgrind.
 			def progress(number, total, step="output"):
-				doing = "Checking memory" if step == "memory" else "Grading"
-				status.update(f"{doing}… test {number}/{total}")
+				doing = t("Checking memory…") if step == "memory" else t("Grading…")
+				status.update(f"{doing} {t('test {number}/{total}', number=number, total=total)}")
 			started = self.clock()
 			result = grade(self.variant, rendu, runner, progress)
 			# A grading often takes a tenth of a second: the spinner stays a
@@ -634,7 +637,7 @@ class Shell:
 		if self.store:
 			self.store.add_history(self._history_entry(end, elapsed))
 			self.store.clear()
-		self.console.print("End of the exam. See you soon!")
+		self.console.print(t("End of the exam. See you soon!"))
 
 	def _history_entry(self, end, elapsed):
 		"""What the history keeps of a finished exam: the base of a future score."""
@@ -748,9 +751,9 @@ class Shell:
 		lines = [title, *(f"  {number}. {label:{width}}{summary}"
 			for number, (_, label, summary, _) in enumerate(items, start=1))]
 		last = len(items) + 1
-		lines.append(f"  {last}. {'Back to the exam' if first else 'Back (previous menu)'}")
+		lines.append(f"  {last}. {t('Back to the exam') if first else t('Back (previous menu)')}")
 		self._print_lines(lines)
-		number = self._ask_choice("Your choice:", range(1, last + 1))
+		number = self._ask_choice(t("Your choice:"), range(1, last + 1))
 		self.console.print()
 		return BACK if number == last else items[number - 1][0]
 
@@ -763,7 +766,7 @@ class Shell:
 			if answer.isdigit() and int(answer) in allowed:
 				return int(answer)
 			choices = ", ".join(map(str, allowed))
-			self.console.print(f"Invalid choice: type one of these numbers: {choices}.")
+			self.console.print(t("Invalid choice: type one of these numbers: {choices}.", choices=choices))
 
 def complete_with(commands):
 	"""Tab completes `commands` from now on, if readline is in use."""
@@ -824,6 +827,6 @@ def main(full_screen=False, update_check=None):
 		if shell.restart:
 			restart()
 	except KeyboardInterrupt:
-		console.print("\nExam stopped (Ctrl-C): run ./42pal again to resume it.")
+		console.print("\n" + t("Exam stopped (Ctrl-C): run ./42pal again to resume it."))
 		return 130
 	return 0

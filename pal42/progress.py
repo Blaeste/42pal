@@ -9,6 +9,8 @@ the rest of the core, this module never prints.
 
 from dataclasses import dataclass
 
+from pal42.i18n import t
+
 @dataclass(frozen=True)
 class ExamRow:
 	"""An exam of the history: how many times it was taken, passed, and the best grade."""
@@ -67,13 +69,14 @@ def weak_themes(grades, limit=5):
 def summary(history, grades):
 	"""One line: the exams taken, the grademe made, how many passed, the best grade."""
 	if not grades and not history:
-		return "No grademe yet"
+		return t("No grademe yet")
 	fair = _fair(history)
 	oks = sum(1 for entry in grades if entry.get("passed"))
 	rate = f" ({round(100 * oks / len(grades))}%)" if grades else ""
-	parts = [f"{len(fair)} exam{'s' if len(fair) != 1 else ''}"] if fair else []
+	parts = [t("1 exam") if len(fair) == 1 else t("{count} exams", count=len(fair))] if fair else []
 	parts += [f"{len(grades)} grademe", f"{oks} OK{rate}"]
 	if fair:
 		best = max(fair, key=lambda entry: entry.get("grade", 0))
-		parts.append(f"best {round(best.get('grade', 0), 2):g}/100, {best.get('title', best['exam'])}")
+		parts.append(t("best {grade}/100, {exam}", grade=f"{round(best.get('grade', 0), 2):g}",
+			exam=best.get("title", best["exam"])))
 	return " · ".join(parts)

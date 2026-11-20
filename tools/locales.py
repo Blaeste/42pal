@@ -4,8 +4,8 @@
 	python3 tools/locales.py new <code> "<Name>"   pal42/locales/<code>.json with every text to fill
 	python3 tools/locales.py check [<code>...]     what each catalog lacks; exit code 1 if anything
 
-A text to translate is the first argument of t() in pal42/, written as a
-string. To add a language (docs/plans/languages.md): new, fill each empty
+A text to translate is the first argument of t() or N_() in pal42/,
+written as a string, or the skill of a theme in themes.json. To add a language (docs/plans/languages.md): new, fill each empty
 value, then check until it says nothing. An empty value stays in English.
 """
 
@@ -18,10 +18,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CODE_DIR = ROOT / "pal42"
 LOCALES_DIR = CODE_DIR / "locales"
+# The skill of each theme is shown in the menus of practice: translated too.
+THEMES_FILE = ROOT / "themes.json"
 
-def extract(folder=CODE_DIR):
-	"""The texts given to t() in the code of `folder`, sorted, each once."""
+def extract(folder=CODE_DIR, themes=None):
+	"""The texts to translate, sorted, each once: those given to t() or N_() in
+	the code of `folder`, and the skills of the themes (themes.json of 42pal,
+	when `folder` is its code)."""
 	texts = set()
+	themes = themes or (THEMES_FILE if Path(folder) == CODE_DIR else None)
+	if themes is not None and Path(themes).is_file():
+		texts |= {theme["skill"] for theme in json.loads(Path(themes).read_text(encoding="utf-8")).values()
+			if theme.get("skill")}
 	for path in sorted(Path(folder).rglob("*.py")):
 		tree = ast.parse(path.read_text(encoding="utf-8"))
 		for node in ast.walk(tree):
@@ -30,9 +38,13 @@ def extract(folder=CODE_DIR):
 				texts.add(node.args[0].value)
 	return sorted(texts)
 
+# t() translates; N_() marks a text that t() translates later (a constant).
+MARKERS = ("t", "N_")
+
 def _is_t(func):
-	"""t(...) or i18n.t(...)."""
-	return (isinstance(func, ast.Name) and func.id == "t") or (isinstance(func, ast.Attribute) and func.attr == "t")
+	"""t(...), N_(...), or the same as i18n.t(...)."""
+	return ((isinstance(func, ast.Name) and func.id in MARKERS)
+		or (isinstance(func, ast.Attribute) and func.attr in MARKERS))
 
 def fields(text):
 	"""The {fields} of `text`, or None when its braces are not fields but code."""
