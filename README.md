@@ -215,7 +215,7 @@ Choose **Testers** in the first menu of `./42pal`, then a tester:
 
 | Tester | Project | What it checks |
 |---|---|---|
-| [libfterator](https://github.com/Blaeste/libfterator) | libft, subject v19.3 | the subject (files, Makefile, header, README, norm), the 43 functions, leaks, overflows, failed `malloc` |
+| [libfterator](https://github.com/Blaeste/Libfterator) | libft, subject v19.3 | the subject (files, Makefile, header, README, norm), the 43 functions, leaks, overflows, failed `malloc` |
 
 The first time, 42pal asks before downloading the tester: it clones the
 version 42pal is made for (a tag) into `~/.42pal/testers/` and checks its

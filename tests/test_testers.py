@@ -100,7 +100,7 @@ class TestTheRegistry(unittest.TestCase):
 
 	def test_libfterator_at_a_tag_and_a_commit_of_its_repository(self):
 		tester = testers.find("libfterator")
-		self.assertEqual(tester.url, "https://github.com/Blaeste/libfterator.git")
+		self.assertEqual(tester.url, "https://github.com/Blaeste/Libfterator.git")
 		self.assertTrue(tester.tag.startswith("v2."))
 		self.assertRegex(tester.commit, r"^[0-9a-f]{40}$")
 		self.assertEqual(tester.launcher, "libfterator")
