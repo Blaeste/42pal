@@ -31,6 +31,8 @@ Un menu **Testers** dans le premier menu de `./42pal` : l'étudiant choisit un t
 
 Chaque étape en TDD.
 
+**Avancement (2026-11-24)** : les étapes 1 à 7 sont faites, en local. libfterator : commits 06029b2 et d0bd761, tag `v2.0.0` sur d0bd761, rien de poussé. 42pal : le registre pointe sur ce tag et ce commit ; rien de poussé non plus. **À faire après les essais de l'utilisateur** : pousser la branche `v2` et le tag de libfterator, puis 42pal (sans quoi le téléchargement échoue pour les étudiants). Les deux autres testeurs viendront ensuite, chacun avec son entrée dans le registre.
+
 1. **libfterator** : le JSON au format 1, écrit aussi en cas d'erreur ; `--version`. *Vérif* : `checks/`.
 2. **libfterator** : `--lang en` (messages Python, moteur C, tests). *Vérif* : `checks/`, run en anglais sur la référence.
 3. **libfterator** : tag local `v2.0.0`, non poussé.

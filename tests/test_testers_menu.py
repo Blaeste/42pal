@@ -234,6 +234,8 @@ class TestTheScreens(FullScreenTest, TestersTestCase):
 			self.assertIn("ft_strlcat", text)
 			self.assertIn("read 1 byte(s) past the end", text)
 			self.assertIn("✗ KO  subject 1/2 · tests 3/4", text)
+			# The verdict in the header too: the log opens at its top.
+			self.assertIn("✗ KO  subject 1/2 · tests 3/4", str(screen.query_one("#header").render()))
 			self.assertEqual(testers.state(self.tester, self.testers_root), testers.READY)
 			self.assertEqual(testers.last_project(self.tester, self.settings), str(self.project))
 			# Another folder: the one of the last time is offered.

@@ -209,6 +209,29 @@ A passed `grademe` (`g`) gives the next subject; `next` (`n`) skips to
 another one; `finish` (`f`) stops. It opens full screen too, unless `--plain`
 is given.
 
+## Test your projects
+
+Choose **Testers** in the first menu of `./42pal`, then a tester:
+
+| Tester | Project | What it checks |
+|---|---|---|
+| [libfterator](https://github.com/Blaeste/libfterator) | libft, subject v19.3 | the subject (files, Makefile, header, README, norm), the 43 functions, leaks, overflows, failed `malloc` |
+
+The first time, 42pal asks before downloading the tester: it clones the
+version 42pal is made for (a tag) into `~/.42pal/testers/` and checks its
+commit. A newer 42pal can bring a newer version; it asks again before
+updating. Nothing else uses the network.
+
+Then give the folder of your project (→ completes it in full screen, Tab in
+`--plain`): the tester runs on a copy, never on your files, and 42pal shows
+what it found in the language of 42pal: each check of the subject, each
+function with its failing tests, the undefined cases (not counted), the
+verdict and the full log. `r` runs it again, `f` tests another folder. The
+folder is offered again the next time.
+
+libfterator needs Linux (or WSL), `cc`, `make` and `git`. It works on its
+own too: `./libfterator /path/to/libft` in its own clone.
+
 ## What the catalog has today
 
 Nine exams: the four piscine exams, and the five ranks of the cursus. A
@@ -417,7 +440,7 @@ core changed. The same choice works on a machine:
 
 | Folder | What is in it |
 |---|---|
-| `pal42/` | the core: exercises, variants, subjects, grading (no display) |
+| `pal42/` | the core: exercises, variants, subjects, grading, the testers of projects (no display) |
 | `pal42/cli/` | the terminal: examshell, practice, check-catalog, and the full screen (`tui.py`, `tui.tcss`) |
 | `exercises/c/<name>/` | one exercise: `exercise.py`, its `ref.c` (and the header the student hands in, if any) |
 | `exercises/python/<name>/` | one Python exercise: `exercise.py` and its `ref.py`, which holds the function of every variant |
@@ -425,7 +448,12 @@ core changed. The same choice works on a machine:
 | `tests/` | the tests |
 
 The plan of the project, in French, is in
-[docs/plans/42pal.md](docs/plans/42pal.md).
+[docs/plans/42pal.md](docs/plans/42pal.md); the one of the testers in
+[docs/plans/testers.md](docs/plans/testers.md).
+
+To try a tester before its tag is pushed, point 42pal at a local clone:
+`PAL42_TESTER_LIBFTERATOR=/path/to/libfterator ./42pal`. The tag and its
+commit are in [pal42/testers.py](pal42/testers.py).
 
 ## License
 

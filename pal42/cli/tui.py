@@ -507,18 +507,25 @@ class TesterScreen(Screen):
 			("ctrl+q", N_("leave"))]), id="session-hints")
 
 	def on_mount(self):
-		header = self.query_one("#header", Static)
-		header.border_title = f" 42pal · {t('Testers')} "
-		text = Text(self.tester.name, style="bold #e0e7ff")
-		text.append("   " + display.short_path(self.project), style="#9ca3af")
-		header.update(text)
+		self.query_one("#header", Static).border_title = f" 42pal · {t('Testers')} "
+		self.refresh_header()
 		self.query_one("#log").border_title = " log "
 		self.action_again()
+
+	def refresh_header(self):
+		"""The tester, the folder, and the verdict once there is one: the log opens at its top."""
+		text = Text(self.tester.name, style="bold #e0e7ff")
+		text.append("   " + display.short_path(self.project), style="#9ca3af")
+		if self.report is not None and not self.busy:
+			text.append("   ")
+			text.append_text(display.tester_verdict(self.report))
+		self.query_one("#header", Static).update(text)
 
 	def action_again(self):
 		if self.busy:
 			return
 		self.busy = True
+		self.refresh_header()
 		self.query_one("#log", RichLog).clear()
 		activity = self.query_one("#activity", Static)
 		activity.set_class(True, "-busy")
@@ -539,6 +546,7 @@ class TesterScreen(Screen):
 			log.write(clickable(line) if isinstance(line, Text) else line)
 		log.scroll_home(animate=False)
 		self.busy = False
+		self.refresh_header()
 
 	def action_folder(self):
 		if not self.busy:
