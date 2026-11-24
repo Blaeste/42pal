@@ -15,7 +15,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+import threading
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from pal42 import settings
@@ -38,7 +39,7 @@ class Tester:
 	launcher: str
 	# Written before the name of each function of its results: ft_strlen.
 	prefix: str = ""
-	# A file at the root of the project: the folder of 42pal is offered when it has one.
+	# A file at the root of the project: the folders that have one are offered, marked with a ★.
 	marker: str = ""
 	# The values of sys.platform it runs on (libfterator needs ld --wrap: Linux).
 	platforms: tuple = ("linux",)
@@ -46,6 +47,8 @@ class Tester:
 	formats: tuple = (1,)
 	# The languages it speaks; the others get English.
 	languages: tuple = ("en", "fr")
+	# True when it gives its results as they come (--stream): 42pal shows them live.
+	streams: bool = False
 
 TESTERS = (
 	Tester(
@@ -53,11 +56,12 @@ TESTERS = (
 		project="libft",
 		summary=N_("libft, subject v19.3: the 43 functions, leaks and overflows"),
 		url="https://github.com/Blaeste/Libfterator.git",
-		tag="v2.0.0",
-		commit="d0bd761a03c429de19ba9acb749544e03cbc81d8",
+		tag="v2.1.0",
+		commit="bee11bcd4f6bf145f90405d0e46848406588ca30",
 		launcher="libfterator",
 		prefix="ft_",
 		marker="libft.h",
+		streams=True,
 	),
 )
 
@@ -231,6 +235,37 @@ class Report:
 		return (self.error is None and all(check.status != "KO" for check in self.checks)
 			and not any(test.bad for test in self.tests))
 
+@dataclass
+class Progress:
+	"""What a tester has done so far, from the events it gives with --stream."""
+	# "subject", "build" or "tests": what it is doing.
+	step: str = ""
+	checks: list = field(default_factory=list)
+	tests_total: int = 0
+	tests_done: int = 0
+	# The tests failed so far.
+	bad: list = field(default_factory=list)
+
+	def update(self, event):
+		"""Take one event into account; return the Check or the TestCase it gives, or None."""
+		kind = event.get("event")
+		if kind == "step":
+			self.step = event.get("step", "")
+		elif kind == "plan":
+			self.tests_total = event.get("tests", 0)
+		elif kind == "check":
+			check = Check(event.get("key", ""), event.get("group", ""), event.get("label", ""),
+				event.get("status", ""), event.get("detail") or "")
+			self.checks.append(check)
+			return check
+		elif kind == "test":
+			test = TestCase(event.get("name", ""), event.get("status", ""), event.get("detail") or "")
+			self.tests_done += 1
+			if test.bad:
+				self.bad.append(test)
+			return test
+		return None
+
 def failed(title, detail="", output=""):
 	"""A report with only an error."""
 	return Report([], [], error=(title, detail), output=output)
@@ -250,8 +285,14 @@ def parse(data, tester, output=""):
 		notes=list(data.get("notes") or []), log=data.get("log"), lang=data.get("lang", "en"), output=output,
 		data=data)
 
-def run(tester, project, lang="en", root=None, timeout=RUN_TIMEOUT):
-	"""Run the tester on the folder `project`, in the language `lang`; return its Report."""
+def run(tester, project, lang="en", root=None, timeout=RUN_TIMEOUT, on_progress=None):
+	"""Run the tester on the folder `project`, in the language `lang`; return its Report.
+
+	on_progress(progress, item), when given, is called at each event of a
+	tester that streams (a Progress, and the Check or TestCase of the event,
+	or None): the results can be shown as they come. The Report at the end
+	is the one of the JSON file.
+	"""
 	path = folder(tester, root)
 	launcher = path / tester.launcher
 	if not launcher.is_file():
@@ -259,22 +300,119 @@ def run(tester, project, lang="en", root=None, timeout=RUN_TIMEOUT):
 	with tempfile.TemporaryDirectory(prefix="42pal-tester-") as scratch:
 		results = Path(scratch) / "results.json"
 		command = [sys.executable, str(launcher), str(project), "--json", str(results), "--no-color", "--lang", lang]
+		# Only the version of 42pal is sure to know --stream: an older one kept gives its results at the end.
+		streaming = on_progress is not None and tester.streams and _commit(path) == tester.commit
 		try:
-			finished = subprocess.run(command, capture_output=True, text=True, errors="replace", timeout=timeout,
-				stdin=subprocess.DEVNULL, cwd=path)
+			if streaming:
+				output, timed_out = _stream(command + ["--stream"], path, timeout, on_progress)
+			else:
+				finished = subprocess.run(command, capture_output=True, text=True, errors="replace",
+					timeout=timeout, stdin=subprocess.DEVNULL, cwd=path)
+				output, timed_out = finished.stdout + finished.stderr, False
 		except subprocess.TimeoutExpired:
-			return failed(t("{tester} took more than {seconds} s.", tester=tester.name, seconds=timeout))
+			timed_out = True
 		except OSError as error:
 			return failed(t("{tester} could not start.", tester=tester.name), str(error))
-		output = finished.stdout + finished.stderr
+		if timed_out:
+			return failed(t("{tester} took more than {seconds} s.", tester=tester.name, seconds=timeout))
 		try:
 			data = json.loads(results.read_text(encoding="utf-8"))
 		except (OSError, ValueError):
 			return failed(t("{tester} gave no results.", tester=tester.name), _tail(output), output)
 	return parse(data, tester, output)
 
+def _stream(command, cwd, timeout, on_progress):
+	"""Run `command` and give its events to on_progress as they come; return (other output, timed out)."""
+	process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+		errors="replace", stdin=subprocess.DEVNULL, cwd=cwd)
+	killed = threading.Event()
+
+	def kill():
+		killed.set()
+		process.kill()
+
+	timer = threading.Timer(timeout, kill)
+	timer.start()
+	progress = Progress()
+	output = []
+	try:
+		on_progress(progress, None)
+		for line in process.stdout:
+			event = _event(line)
+			if event is None:
+				output.append(line)
+				continue
+			item = progress.update(event)
+			on_progress(progress, item)
+		process.wait()
+	finally:
+		timer.cancel()
+		if process.poll() is None:
+			process.kill()
+			process.wait()
+	return "".join(output), killed.is_set()
+
+def _event(line):
+	"""The event of a line of --stream, or None for any other line."""
+	if not line.startswith("{"):
+		return None
+	try:
+		event = json.loads(line)
+	except ValueError:
+		return None
+	return event if isinstance(event, dict) and "event" in event else None
+
 def _tail(text, lines=20):
 	return "\n".join(text.strip().splitlines()[-lines:])
+
+# Folders never looked into for a project: besides the hidden ones, those of tools.
+SKIPPED_FOLDERS = {"node_modules", "__pycache__", "venv", "snap", "Library", "go", "miniconda3", "anaconda3"}
+
+def find_projects(tester, root=None, depth=4, limit=5000):
+	"""The folders under `root` (the home folder) that have the marker of the tester, the nearest first."""
+	return list(iter_projects(tester, root, depth, limit))
+
+def iter_projects(tester, root=None, depth=4, limit=5000):
+	"""The folders that have the marker of the tester, each one as soon as it is found.
+
+	Breadth first, `depth` levels at most, `limit` folders read at most: a
+	big home folder stays quick. Hidden folders and SKIPPED_FOLDERS are not
+	looked into, nor folders that cannot be read.
+	"""
+	if not tester.marker:
+		return
+	level = [Path(root or Path.home())]
+	read = 0
+	for _ in range(depth + 1):
+		below = []
+		for folder in level:
+			try:
+				entries = sorted(os.scandir(folder), key=lambda entry: entry.name)
+			except OSError:
+				continue
+			read += 1
+			if any(entry.name == tester.marker for entry in entries):
+				yield folder
+			below += [Path(entry.path) for entry in entries if not entry.name.startswith(".")
+				and entry.name not in SKIPPED_FOLDERS and _is_folder(entry)]
+			if read >= limit:
+				return
+		level = below
+
+def _is_folder(entry):
+	try:
+		return entry.is_dir(follow_symlinks=False)
+	except OSError:
+		return False
+
+def project_choices(tester, settings_file=None, root=None):
+	"""The folders to offer: the last one tested (when it is still there), then those found."""
+	choices = []
+	last = last_project(tester, settings_file)
+	if last and Path(last).is_dir():
+		choices.append(Path(last))
+	choices += [path for path in find_projects(tester, root) if path not in choices]
+	return choices
 
 def tester_language(tester, code):
 	"""The language for the tester: the one of 42pal when the tester speaks it, else English."""

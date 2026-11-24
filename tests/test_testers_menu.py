@@ -8,6 +8,7 @@ import io
 import json
 import os
 import tempfile
+import threading
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -42,14 +43,16 @@ class TestersTestCase(unittest.TestCase):
 		self.settings = self.folder / "settings.json"
 		self.project = self.folder / "libft"
 		self.project.mkdir()
+		(self.project / "libft.h").write_text("")
 		(self.project / "result.json").write_text(json.dumps(results()))
 
 	def configure(self, shell, tester=None):
-		"""The testers of the test, kept in its folder; the settings too."""
+		"""The testers of the test, kept in its folder; the settings too; the projects looked for in it."""
 		shell.settings_file = self.settings
 		shell.testers_root = self.testers_root
 		shell.tester_list = (tester or self.tester,)
 		shell.testers_environ = {"PATH": os.environ["PATH"]}
+		shell.projects_root = self.folder
 
 class TestTheTextMenus(TestersTestCase):
 
@@ -91,7 +94,7 @@ class TestTheTextMenus(TestersTestCase):
 	def test_downloaded_then_run_on_the_folder_given(self):
 		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, "y", str(self.project), DONE, BACK, QUIT)
 		self.assertEqual(testers.state(self.tester, self.testers_root), testers.READY)
-		self.assertTrue(self.asked("Folder of your libft"))
+		self.assertIn("Where is your libft?", text)
 		self.assertIn("The subject 1/2", text)
 		self.assertIn("No useless relink", text)
 		self.assertIn("a second make rebuilds files", text)
@@ -117,11 +120,60 @@ class TestTheTextMenus(TestersTestCase):
 		self.assertIn("No folder here", text)
 		self.assertIn("✗ KO", text)
 
-	def test_no_folder_goes_back_to_the_testers(self):
+	def test_back_goes_back_to_the_testers(self):
 		testers.install(self.tester, self.testers_root, environ={})
-		with mock.patch("pal42.cli.shell.Path.cwd", return_value=self.folder):
-			text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, "", BACK, QUIT)
+		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, "back", BACK, QUIT)
 		self.assertEqual(text.count("1. libfterator"), 2)
+		self.assertNotIn("✗ KO", text)
+
+	def test_the_projects_found_by_their_number(self):
+		testers.install(self.tester, self.testers_root, environ={})
+		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, "1", DONE, BACK, QUIT)
+		self.assertIn("Where is your libft?", text)
+		self.assertIn("1. " + str(self.project), text)
+		self.assertIn("✗ KO", text)
+
+	def test_cd_ls_then_test(self):
+		testers.install(self.tester, self.testers_root, environ={})
+		(self.folder / "plain").mkdir()
+		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, f"cd {self.folder}", "ls", "cd libft", "ls", "test",
+			DONE, BACK, QUIT)
+		self.assertIn("★ libft/", text)
+		self.assertIn("plain/", text)
+		self.assertIn("✓ libft.h here", text)
+		self.assertTrue(self.asked(f"{self.project} $"))
+		self.assertIn("✗ KO", text)
+
+	def test_cd_up_and_test_a_folder_named(self):
+		testers.install(self.tester, self.testers_root, environ={})
+		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, f"cd {self.project}", "cd ..", "test libft",
+			DONE, BACK, QUIT)
+		self.assertTrue(self.asked(f"{self.folder} $"))
+		self.assertIn("✗ KO", text)
+
+	def test_enter_alone_tests_the_folder_of_the_project_you_are_in(self):
+		testers.install(self.tester, self.testers_root, environ={})
+		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, f"cd {self.project}", "", DONE, BACK, QUIT)
+		self.assertIn("✗ KO", text)
+
+	def test_it_starts_in_the_home_folder_with_no_folder_tested_yet(self):
+		testers.install(self.tester, self.testers_root, environ={})
+		with mock.patch("pal42.cli.shell.Path.home", return_value=self.folder):
+			text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, "ls", "back", BACK, QUIT)
+		self.assertTrue(self.asked("~ $"))
+		self.assertIn("★ libft/", text)
+
+	def test_a_number_not_in_the_list(self):
+		testers.install(self.tester, self.testers_root, environ={})
+		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, "7", "back", BACK, QUIT)
+		self.assertIn("No folder number 7", text)
+
+	def test_mistakes_are_said(self):
+		testers.install(self.tester, self.testers_root, environ={})
+		text = self.run_shell("", "pw", TESTERS, LIBFTERATOR, "cd nowhere", "dance", "help", "back", BACK, QUIT)
+		self.assertIn("No folder here", text)
+		self.assertIn("Unknown command: dance", text)
+		self.assertIn("ls", text)
 		self.assertNotIn("✗ KO", text)
 
 	def test_run_again_then_another_folder(self):
@@ -159,9 +211,9 @@ class TestTheTextMenus(TestersTestCase):
 		languages = []
 		real_run = testers.run
 
-		def run(tester, project, lang, root):
+		def run(tester, project, lang, root, on_progress=None):
 			languages.append(lang)
-			return real_run(tester, project, lang, root)
+			return real_run(tester, project, lang, root, on_progress=on_progress)
 
 		self.addCleanup(i18n.set_language, "en")
 		i18n.set_language("fr")
@@ -238,10 +290,10 @@ class TestTheScreens(FullScreenTest, TestersTestCase):
 			self.assertIn("✗ KO  subject 1/2 · tests 3/4", str(screen.query_one("#header").render()))
 			self.assertEqual(testers.state(self.tester, self.testers_root), testers.READY)
 			self.assertEqual(testers.last_project(self.tester, self.settings), str(self.project))
-			# Another folder: the one of the last time is offered.
+			# Another folder: the one of the last time comes first in the list.
 			await pilot.press("f")
 			folder = await self.wait_for(pilot, FolderScreen)
-			self.assertTrue(folder.query_one("#folder").value)
+			self.assertEqual(folder.entry_labels()[0][1], self.project)
 			await pilot.press("escape")
 			await pilot.pause()
 			self.assertEqual(app.screen.title, "Testers")
@@ -274,7 +326,7 @@ class TestTheScreens(FullScreenTest, TestersTestCase):
 			await pilot.press("enter")
 			await self.give_folder(pilot, self.folder / "nothing")
 			self.assertIsInstance(app.screen, FolderScreen)
-			self.assertIn("No folder here", str(app.screen.query_one("#folder-error").render()))
+			self.assertIn("No folder here", str(app.screen.query_one("#folder-status").render()))
 
 	@screen_test
 	async def test_the_download_refused(self):
@@ -314,6 +366,215 @@ class TestTheScreens(FullScreenTest, TestersTestCase):
 				await pilot.pause()
 				self.assertEqual(app.screen.title, "Testers")
 		self.assertFalse(self.testers_root.exists())
+
+class TestTheFolderScreen(FullScreenTest, TestersTestCase):
+	"""The folder: those found first, as they are found; then typed, with the folders below it, live."""
+
+	def setUp(self):
+		FullScreenTest.setUp(self)
+		TestersTestCase.setUp(self)
+		(self.project / "libft.h").write_text("")
+		(self.folder / "plain").mkdir()
+
+	async def open_screen(self, pilot, default=None):
+		await self.login(pilot)
+		screen = FolderScreen(self.tester, default, root=self.folder)
+		self.chosen = []
+		pilot.app.push_screen(screen, self.chosen.append)
+		await pilot.pause()
+		return screen
+
+	def entries(self, screen):
+		return [label for label, _ in screen.entry_labels()]
+
+	async def wait_entries(self, pilot, screen, label):
+		for _ in range(100):
+			await pilot.pause(0.05)
+			if any(label in entry for entry in self.entries(screen)):
+				return
+		self.fail(f"{label} never shown: {self.entries(screen)}")
+
+	@screen_test
+	async def test_the_projects_found_come_first_and_one_is_chosen(self):
+		async with self.exam_app().run_test(size=(100, 40)) as pilot:
+			screen = await self.open_screen(pilot)
+			await self.wait_entries(pilot, screen, "libft")
+			await pilot.press("down", "enter")
+			await pilot.pause()
+			self.assertEqual(self.chosen, [self.project])
+
+	@screen_test
+	async def test_typing_a_folder_shows_its_folders_live(self):
+		async with self.exam_app().run_test(size=(100, 40)) as pilot:
+			screen = await self.open_screen(pilot)
+			screen.query_one("#folder").value = f"{self.folder}/"
+			await pilot.pause()
+			entries = self.entries(screen)
+			self.assertEqual(entries[0], "..")
+			self.assertIn("★ libft/", entries)
+			self.assertIn("plain/", entries)
+			screen.query_one("#folder").value = f"{self.folder}/pl"
+			await pilot.pause()
+			self.assertEqual(self.entries(screen), ["plain/"])
+
+	@screen_test
+	async def test_enter_on_a_folder_opens_it_and_on_a_project_tests_it(self):
+		async with self.exam_app().run_test(size=(100, 40)) as pilot:
+			screen = await self.open_screen(pilot)
+			folder = screen.query_one("#folder")
+			folder.value = f"{self.folder}/"
+			await pilot.pause()
+			plain = self.entries(screen).index("plain/")
+			await pilot.press(*["down"] * (plain + 1), "enter")
+			await pilot.pause()
+			self.assertEqual(folder.value.rstrip("/"), str(self.folder / "plain"))
+			self.assertEqual(self.chosen, [])
+			# .. goes up, then the project is tested.
+			await pilot.press("down", "enter")
+			await pilot.pause()
+			self.assertEqual(folder.value.rstrip("/"), str(self.folder))
+			project = self.entries(screen).index("★ libft/")
+			await pilot.press(*["down"] * (project + 1), "enter")
+			await pilot.pause()
+			self.assertEqual(self.chosen, [self.project])
+
+	@screen_test
+	async def test_the_folder_typed_says_when_it_is_the_project(self):
+		async with self.exam_app().run_test(size=(100, 40)) as pilot:
+			screen = await self.open_screen(pilot)
+			screen.query_one("#folder").value = str(self.project)
+			await pilot.pause()
+			self.assertIn("libft.h", str(screen.query_one("#folder-status").render()))
+			await pilot.press("enter")
+			await pilot.pause()
+			self.assertEqual(self.chosen, [self.project])
+
+	@screen_test
+	async def test_tab_opens_the_folder_highlighted(self):
+		async with self.exam_app().run_test(size=(100, 40)) as pilot:
+			screen = await self.open_screen(pilot)
+			folder = screen.query_one("#folder")
+			folder.value = f"{self.folder}/pl"
+			await pilot.pause()
+			await pilot.press("tab")
+			await pilot.pause()
+			self.assertEqual(folder.value, f"{self.folder}/plain/")
+
+	@screen_test
+	async def test_escape_goes_back(self):
+		async with self.exam_app().run_test(size=(100, 40)) as pilot:
+			await self.open_screen(pilot)
+			await pilot.press("escape")
+			await pilot.pause()
+			self.assertEqual(self.chosen, [None])
+
+class TestLive(FullScreenTest, TestersTestCase):
+	"""The results of the tester as they come: a counter, the checks and the failed tests, then the report."""
+
+	def setUp(self):
+		FullScreenTest.setUp(self)
+		TestersTestCase.setUp(self)
+
+	@screen_test
+	async def test_the_results_come_as_they_are_found(self):
+		release = threading.Event()
+		self.addCleanup(release.set)
+
+		def run(tester, project, on_progress):
+			progress = testers.Progress()
+			for event in ({"event": "step", "step": "subject"},
+					{"event": "check", "key": "make.relink", "group": "Makefile", "label": "No useless relink",
+						"status": "KO", "detail": "a second make rebuilds"},
+					{"event": "plan", "tests": 4}, {"event": "step", "step": "tests"},
+					{"event": "test", "name": "strlcat/dst", "status": "OOB", "detail": "read 1 byte past", "ms": 1}):
+				on_progress(progress, progress.update(event))
+			release.wait(10)
+			return testers.parse(results(), tester)
+
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await self.login(pilot)
+			screen = TesterScreen(self.tester, self.project, run)
+			app.push_screen(screen)
+			for _ in range(100):
+				await pilot.pause(0.05)
+				if "1/4" in str(screen.query_one("#activity").render()):
+					break
+			activity = str(screen.query_one("#activity").render())
+			self.assertIn("1/4", activity)
+			self.assertIn("1 KO", activity)
+			text = log_text(screen)
+			self.assertIn("No useless relink", text)
+			self.assertIn("ft_strlcat", text)
+			self.assertIn("read 1 byte past", text)
+			self.assertTrue(screen.busy)
+			release.set()
+			for _ in range(100):
+				await pilot.pause(0.05)
+				if not screen.busy:
+					break
+			self.assertIn("✗ KO  subject 1/2 · tests 3/4", log_text(screen))
+
+class TestNoHorizontalScroll(FullScreenTest, TestersTestCase):
+	"""The long lines of the results wrap: no horizontal scroll bar, even in a narrow terminal."""
+
+	def setUp(self):
+		FullScreenTest.setUp(self)
+		TestersTestCase.setUp(self)
+
+	@screen_test
+	async def test_a_long_detail_wraps(self):
+		long = "word " * 60
+		data = results(tests=[{"name": "strlcat/long", "status": "FAIL", "detail": long, "ms": 1}])
+
+		def run(tester, project, on_progress):
+			return testers.parse(data, tester)
+
+		app = self.exam_app()
+		async with app.run_test(size=(70, 30)) as pilot:
+			await self.login(pilot)
+			screen = TesterScreen(self.tester, self.project, run)
+			app.push_screen(screen)
+			for _ in range(100):
+				await pilot.pause(0.05)
+				if not screen.busy:
+					break
+			log = screen.query_one("#log")
+			self.assertLessEqual(log.virtual_size.width, log.scrollable_content_region.width)
+			self.assertIn("word word", log_text(screen))
+
+class TestNoHorizontalScrollInTheExam(FullScreenTest):
+
+	@screen_test
+	async def test_a_long_command_wraps_in_the_log_of_the_exam(self):
+		app = self.exam_app()
+		async with app.run_test(size=(70, 30)) as pilot:
+			await self.login_to_exams(pilot)
+			await pilot.press("enter", "enter")
+			await pilot.pause()
+			await self.type(pilot, "x" * 150)
+			log = app.screen.query_one("#log")
+			self.assertLessEqual(log.virtual_size.width, log.scrollable_content_region.width)
+
+class TestTheProgressText(unittest.TestCase):
+
+	def test_what_the_tester_is_doing(self):
+		from pal42.cli import display
+		tester = testers.find("libfterator")
+		progress = testers.Progress()
+		self.assertIn("starting", display.tester_progress(tester, progress))
+		progress.update({"event": "step", "step": "subject"})
+		progress.update({"event": "check", "key": "a", "group": "g", "label": "l", "status": "OK", "detail": ""})
+		self.assertIn("the subject: 1 check", display.tester_progress(tester, progress))
+		progress.update({"event": "step", "step": "build"})
+		self.assertIn("building", display.tester_progress(tester, progress))
+		progress.update({"event": "plan", "tests": 4})
+		progress.update({"event": "step", "step": "tests"})
+		progress.update({"event": "test", "name": "a/b", "status": "PASS", "detail": "", "ms": 1})
+		text = display.tester_progress(tester, progress)
+		self.assertIn("tests 1/4", text)
+		self.assertIn("0 KO", text)
+		self.assertIn("━", text)
 
 class TestTheCompletionOfAFolder(unittest.TestCase):
 

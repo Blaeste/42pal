@@ -134,6 +134,8 @@ class Shell:
 		self.tester_list = None
 		self.testers_root = None
 		self.testers_environ = None
+		# Where the folders of a project are looked for (None: the home folder).
+		self.projects_root = None
 
 	def _reset(self):
 		"""No exam in progress: the state before an exam starts."""
@@ -454,29 +456,115 @@ class Shell:
 		return True
 
 	def _ask_project(self, tester):
-		"""The folder to test, asked until it exists; None (Enter with nothing offered) goes back."""
-		default = default_project(tester, self.settings_file)
-		prompt = t("Folder of your {project}:", project=tester.project)
-		if default is None:
-			prompt = t("Folder of your {project} (Enter alone: back):", project=tester.project)
+		"""The folder to test, in a small shell: the folders found by their number, cd, ls, test; None goes back.
+
+		It starts in the folder tested last, else here when it is the project,
+		else in the home folder. Enter alone tests the folder you are in when
+		it is the project; a path tests that folder.
+		"""
+		last = testers_core.last_project(tester, self.settings_file)
+		if last and Path(last).is_dir():
+			here = Path(last)
+		elif self._has_marker(tester, Path.cwd()):
+			here = Path.cwd()
+		else:
+			here = Path.home()
+		found = self._list_projects(tester, last)
+		self.console.print(t("Type its number, or move with cd and ls, then test. back goes back, help for more."),
+			markup=False)
 		while True:
-			with completing_paths():
-				answer = self.ask(prompt, default)
+			with completing_paths(here):
+				answer = self.ask(f"{display.short_path(here)} $", None).strip()
+			command, _, argument = answer.partition(" ")
+			argument = argument.strip()
 			if not answer:
+				if self._has_marker(tester, here):
+					return here
+				self.console.print(t("No {marker} here: cd to your {project}, or type its number.",
+					marker=tester.marker, project=tester.project), markup=False)
+			elif answer.isdigit():
+				if 1 <= int(answer) <= len(found):
+					return found[int(answer) - 1]
+				self.console.print(t("No folder number {number}: cd to yours, then test.", number=answer)
+					if not found else t("No folder number {number}: type a number from 1 to {count}.",
+					number=answer, count=len(found)), markup=False)
+			elif command in ("back", "b", "exit", "quit"):
 				self.console.print()
 				return None
-			project = Path(answer).expanduser()
-			project = (project if project.is_absolute() else Path.cwd() / project).resolve()
-			if project.is_dir():
-				return project
-			self.console.print(t("No folder here: {path}", path=display.short_path(project)), markup=False)
+			elif command == "ls":
+				self._list_folders(tester, folder_from(argument, here) if argument else here)
+			elif command == "cd":
+				target = folder_from(argument or "~", here)
+				if target.is_dir():
+					here = target
+				else:
+					self.console.print(t("No folder here: {path}", path=display.short_path(target)), markup=False)
+			elif command == "pwd":
+				self.console.print(str(here), markup=False)
+			elif command in ("test", "t"):
+				target = folder_from(argument, here) if argument else here
+				if target.is_dir():
+					return target
+				self.console.print(t("No folder here: {path}", path=display.short_path(target)), markup=False)
+			elif command in ("help", "?"):
+				self._print_lines([t("Commands:"),
+					"  " + t("ls [folder]     the folders here (★: the {project})", project=tester.project),
+					"  " + t("cd <folder>     go into a folder (cd .. goes up, cd alone goes home)"),
+					"  " + t("test [folder]   test the folder you are in (Enter alone does it too)"),
+					"  " + t("<number>        test a folder found"),
+					"  " + t("back            back to the testers")])
+			elif "/" in answer or answer.startswith(("~", ".")):
+				target = folder_from(answer, here)
+				if target.is_dir():
+					return target
+				self.console.print(t("No folder here: {path}", path=display.short_path(target)), markup=False)
+			else:
+				self.console.print(t("Unknown command: {command} (help lists them).", command=command),
+					markup=False)
+
+	def _has_marker(self, tester, folder):
+		return bool(tester.marker) and (Path(folder) / tester.marker).is_file()
+
+	def _list_projects(self, tester, last):
+		"""The folders of the project, each one printed as soon as it is found; return them."""
+		self.console.print(t("Where is your {project}?", project=tester.project), markup=False)
+		found = []
+		if last and Path(last).is_dir():
+			found.append(Path(last))
+			self.console.print(f"  1. {display.short_path(last)}   ({t('last tested')})", markup=False)
+		for path in testers_core.iter_projects(tester, self.projects_root):
+			if path in found:
+				continue
+			found.append(path)
+			self.console.print(f"  {len(found)}. {display.short_path(path)}", markup=False)
+		if not found:
+			self.console.print("  " + t("None found in your home folder."), markup=False)
+		return found
+
+	def _list_folders(self, tester, folder):
+		"""ls: the folders in `folder`, ★ for those of the project; said when `folder` is one."""
+		try:
+			names = sorted(name for name in os.listdir(folder) if not name.startswith(".")
+				and (Path(folder) / name).is_dir())
+		except OSError:
+			self.console.print(t("No folder here: {path}", path=display.short_path(folder)), markup=False)
+			return
+		for name in names[:200]:
+			star = "★ " if self._has_marker(tester, Path(folder) / name) else "  "
+			self.console.print(f"  {star}{name}/", markup=False)
+		if not names:
+			self.console.print("  " + t("(no folder)"), markup=False)
+		if self._has_marker(tester, folder):
+			self.console.print(t("✓ {marker} here: test (or Enter) runs {tester} on this folder.",
+				marker=tester.marker, tester=tester.name), markup=False)
 
 	def _show_tester_report(self, tester, project):
 		"""Run the tester on `project` and show what it found; the folder is kept for the next time."""
 		lang = testers_core.tester_language(tester, i18n.language())
 		with self._status(t("{tester} is testing {project}…", tester=tester.name,
-				project=display.short_path(project))):
-			report = testers_core.run(tester, project, lang, self.testers_root)
+				project=display.short_path(project))) as status:
+			report = testers_core.run(tester, project, lang, self.testers_root,
+				on_progress=lambda progress, item: status.update(display.tester_progress(tester, progress)))
 		testers_core.remember_project(tester, project, self.settings_file)
 		for line in display.tester_report(report, tester, project):
 			self.console.print(line)
@@ -925,35 +1013,32 @@ class Shell:
 			choices = ", ".join(map(str, allowed))
 			self.console.print(t("Invalid choice: type one of these numbers: {choices}.", choices=choices))
 
-def default_project(tester, settings_file=None):
-	"""The folder offered to a tester: the last one tested, or here when it looks like the project."""
-	last = testers_core.last_project(tester, settings_file)
-	if last and Path(last).is_dir():
-		return display.short_path(last)
-	here = Path.cwd()
-	if tester.marker and (here / tester.marker).is_file():
-		return display.short_path(here)
-	return None
+def folder_from(text, here):
+	"""The folder `text` names, from the folder `here` (~ is the home folder)."""
+	path = Path(text).expanduser()
+	return (path if path.is_absolute() else Path(here) / path).resolve()
 
-def folder_matches(text):
+def folder_matches(text, base=None):
 	"""The folders whose path starts with `text`, each ending with /, as typed (~ stays ~).
 
-	Hidden folders only when their dot is typed.
+	A relative path is read from `base` (the folder of the process when
+	None). Hidden folders only when their dot is typed.
 	"""
 	if not text:
 		return []
 	parent, start = os.path.split(text)
+	listed = os.path.join(base or ".", os.path.expanduser(parent or "."))
 	try:
-		names = sorted(os.listdir(os.path.expanduser(parent or ".")))
+		names = sorted(os.listdir(listed))
 	except OSError:
 		return []
 	return [text + name[len(start):] + "/" for name in names
 		if name.startswith(start) and (start.startswith(".") or not name.startswith("."))
-		and os.path.isdir(os.path.join(os.path.expanduser(parent or "."), name))]
+		and os.path.isdir(os.path.join(listed, name))]
 
-def complete_path(text, state):
+def complete_path(text, state, base=None):
 	"""readline's completer for a folder."""
-	matches = folder_matches(text)
+	matches = folder_matches(text, base)
 	return matches[state] if state < len(matches) else None
 
 def suggest_folder(text):
@@ -962,14 +1047,17 @@ def suggest_folder(text):
 	return matches[0] if matches else None
 
 class completing_paths:
-	"""While a folder is asked, Tab completes paths (a / does not cut the word); then the commands again."""
+	"""While a folder is asked, Tab completes paths from `base` (a / does not cut the word); then the commands again."""
+
+	def __init__(self, base=None):
+		self.base = base
 
 	def __enter__(self):
 		self.readline = sys.modules.get("readline")
 		if self.readline is not None:
 			self.completer = self.readline.get_completer()
 			self.delims = self.readline.get_completer_delims()
-			self.readline.set_completer(complete_path)
+			self.readline.set_completer(lambda text, state: complete_path(text, state, self.base))
 			self.readline.set_completer_delims(" \t\n")
 		return self
 

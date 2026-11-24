@@ -104,10 +104,15 @@ LoginScreen Input:focus, PassphraseScreen Input:focus, FolderScreen Input:focus 
 	padding: 0 1;
 }
 
-#folder-error {
-	color: #f87171;
+#folder-status {
 	padding: 0 1;
 	height: auto;
+}
+
+#folders, #folders:focus {
+	height: auto;
+	max-height: 12;
+	margin-bottom: 1;
 }
 
 /* --- exam and practice ------------------------------------------------- */

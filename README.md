@@ -222,12 +222,22 @@ version 42pal is made for (a tag) into `~/.42pal/testers/` and checks its
 commit. A newer 42pal can bring a newer version; it asks again before
 updating. Nothing else uses the network.
 
-Then give the folder of your project (→ completes it in full screen, Tab in
-`--plain`): the tester runs on a copy, never on your files, and 42pal shows
-what it found in the language of 42pal: each check of the subject, each
-function with its failing tests, the undefined cases (not counted), the
-verdict and the full log. `r` runs it again, `f` tests another folder. The
-folder is offered again the next time.
+Then choose the folder of your project. 42pal looks for it in your home
+folder (the folders with a `libft.h`), the one tested last first:
+
+- in full screen, the list below the path shows them as they are found;
+  type a path and the list follows it, with the folders in it (★ for a
+  libft, `..` to go up). ↑↓ move, Enter opens a folder or tests a libft,
+  Tab completes;
+- in `--plain`, a small shell: the folders found by their number, `ls`,
+  `cd`, `test` (or Enter in a libft), `help`, Tab completes.
+
+The tester runs on a copy, never on your files. 42pal shows it at work,
+live: the checks of the subject as they are done, a bar of the tests and
+the failures as they come. Then the whole report, in the language of
+42pal: each check of the subject, each function with its failing tests,
+the undefined cases (not counted), the verdict and the full log. `r` runs
+it again, `f` tests another folder.
 
 libfterator needs Linux (or WSL), `cc`, `make` and `git`. It works on its
 own too: `./libfterator /path/to/libft` in its own clone.

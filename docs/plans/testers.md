@@ -31,7 +31,9 @@ Un menu **Testers** dans le premier menu de `./42pal` : l'étudiant choisit un t
 
 Chaque étape en TDD.
 
-**Avancement (2026-11-24)** : les étapes 1 à 7 sont faites, en local. libfterator : commits 06029b2 et d0bd761, tag `v2.0.0` sur d0bd761, poussés le 2026-11-24 (le dépôt s'appelle désormais `Blaeste/Libfterator`). 42pal : le registre pointe sur ce tag et ce commit ; pas encore poussé. **À faire après les essais de l'utilisateur** : pousser 42pal. Les deux autres testeurs viendront ensuite, chacun avec son entrée dans le registre.
+**Avancement (2026-11-24)** : les étapes 1 à 7 sont faites, en local. libfterator : commits 06029b2 et d0bd761, tag `v2.0.0` sur d0bd761, poussés le 2026-11-24 (le dépôt s'appelle désormais `Blaeste/Libfterator`). 42pal : le registre pointe sur ce tag et ce commit ; pas encore poussé. **À faire après les essais de l'utilisateur** : pousser 42pal.
+
+**Suite (2026-11-24, à la demande de l'utilisateur)** : le choix du dossier simplifié et les résultats en direct. libfterator 2.1.0 (`--stream` : une ligne JSON par événement ; commit bee11bc, tag `v2.1.0`, local) ; 42pal épingle `v2.1.0`, cherche les dossiers qui ont un `libft.h` dans le home (largeur d'abord, 4 niveaux), les montre au fil de la recherche, propose en plein écran un chemin suivi d'une liste vivante (★, `..`, Tab) et en `--plain` un petit shell (`ls`, `cd`, `test`, numéros). Une version plus ancienne gardée tourne sans `--stream`. Les deux autres testeurs viendront ensuite, chacun avec son entrée dans le registre.
 
 1. **libfterator** : le JSON au format 1, écrit aussi en cas d'erreur ; `--version`. *Vérif* : `checks/`.
 2. **libfterator** : `--lang en` (messages Python, moteur C, tests). *Vérif* : `checks/`, run en anglais sur la référence.

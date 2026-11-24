@@ -12,10 +12,12 @@ back; then the session screen, until the exam ends.
 import asyncio
 import getpass
 import io
+import os
 import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -40,7 +42,7 @@ from pal42.i18n import N_, t
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
 from pal42.cli.shell import (BACK, COMMANDS, PRACTICE, PROGRESS, SETTINGS, SHORTCUTS, SIDE_CHOICES, TESTERS,
-	Shell, default_project, suggest_folder)
+	Shell, suggest_folder)
 from pal42.exam import AUDIENCES
 from pal42.progress import exam_rows, summary, weak_themes
 from pal42.session import SessionStore
@@ -435,17 +437,38 @@ class FolderSuggester(Suggester):
 		return suggest_folder(value)
 
 class FolderScreen(Screen):
-	"""The folder of the project to test, typed with completion.
+	"""The folder of the project to test: typed, or chosen in the list below, which follows what is typed.
 
+	With nothing typed, the list gives the folders of the project found in
+	`root` (the home folder), as they are found, the last one tested first.
+	With a path, it gives the folders in it that start with what is typed
+	(★ for those of the project, .. to go up). ↑↓ move in the list; Enter
+	opens the folder highlighted, or tests it when it is one of the project;
+	Enter after typing tests the folder typed. Tab (or →) completes.
 	Dismissed with the folder (a Path that exists), or None with Esc.
 	"""
 
-	BINDINGS = [("escape", "cancel", "Back")]
+	BINDINGS = [
+		("escape", "cancel", "Back"),
+		("up", "move(-1)", "Up"),
+		("down", "move(1)", "Down"),
+		("tab", "open", "Open"),
+	]
+	# The folders shown at most below the path.
+	SHOWN = 200
 
-	def __init__(self, tester, default=None):
+	def __init__(self, tester, default=None, root=None, last=None):
 		super().__init__()
 		self.tester = tester
 		self.default = default or ""
+		self.root = root
+		self.last = Path(last) if last else None
+		# (label, path, is the project) of each line of the list, and the projects found so far.
+		self.entries = []
+		self.found = [self.last] if self.last and self.last.is_dir() else []
+		self.searching = True
+		# True once ↑↓ moved in the list: Enter takes the line highlighted, not what is typed.
+		self.in_list = False
 
 	def compose(self) -> ComposeResult:
 		with Vertical(classes="root"):
@@ -453,23 +476,139 @@ class FolderScreen(Screen):
 			with Vertical(classes="card"):
 				yield Static(t("Folder of your {project}", project=self.tester.project), classes="field-label")
 				yield Input(value=self.default, id="folder", suggester=FolderSuggester())
-				yield Static("", id="folder-error")
-			yield Static(hints([("→", N_("complete")), ("⏎", N_("test it")), ("esc", N_("back"))]), classes="hints")
+				yield Static("", id="folder-status")
+				yield OptionList(id="folders")
+			yield Static(hints([("↑↓", N_("choose")), ("⏎", N_("open or test")), ("tab", N_("complete")),
+				("esc", N_("back"))]), classes="hints")
 
 	def on_mount(self):
 		self.query_one(".card").border_title = f" {self.tester.name} "
 		folder = self.query_one("#folder", Input)
 		folder.focus()
 		folder.cursor_position = len(folder.value)
+		self.refresh_list()
+		self.search()
+
+	@work(thread=True, exclusive=True, group="search")
+	def search(self):
+		"""Look for the folders of the project; each one shows as soon as it is found."""
+		for path in testers_core.iter_projects(self.tester, self.root):
+			self.app.call_from_thread(self.add_found, path)
+		self.app.call_from_thread(self.search_done)
+
+	def add_found(self, path):
+		if path not in self.found:
+			self.found.append(path)
+			if not self.query_one("#folder", Input).value.strip():
+				self.refresh_list()
+
+	def search_done(self):
+		self.searching = False
+		if not self.query_one("#folder", Input).value.strip():
+			self.refresh_list()
+
+	def entry_labels(self):
+		"""(label, path) of each line of the list, for the tests."""
+		return [(label, path) for label, path, _ in self.entries]
+
+	def has_marker(self, path):
+		return bool(self.tester.marker) and (path / self.tester.marker).is_file()
+
+	def refresh_list(self):
+		"""The list below the path, and the line that says what Enter does."""
+		typed = self.query_one("#folder", Input).value
+		status = ""
+		if not typed.strip():
+			self.entries = [(display.short_path(path), path, True) for path in self.found]
+			self.entries.append(("~/", Path.home(), False))
+			count = len(self.found)
+			if self.searching:
+				status = t("Looking for your {project}… {count} found", project=self.tester.project, count=count)
+			elif not count:
+				status = t("No {project} found: type its path, or browse from ~/.", project=self.tester.project)
+		else:
+			path = Path(typed).expanduser()
+			if typed.endswith("/") and path.is_dir():
+				parent, start = path, ""
+				self.entries = [("..", path.parent, False)] if path.parent != path else []
+			else:
+				parent, start = path.parent, path.name
+				self.entries = []
+			self.entries += [(("★ " if self.has_marker(child) else "") + child.name + "/", child,
+				self.has_marker(child)) for child in self.subfolders(parent, start)]
+			if path.is_dir() and self.has_marker(path):
+				status = t("✓ {marker} here: Enter tests this folder", marker=self.tester.marker)
+		menu = self.query_one("#folders", OptionList)
+		menu.clear_options()
+		menu.add_options([Option(Text(label, style="bold #a5b4fc" if project else ""), id=str(index))
+			for index, (label, _, project) in enumerate(self.entries)])
+		menu.highlighted = None
+		self.in_list = False
+		self.query_one("#folder-status", Static).update(Text(status, style="#86efac" if status.startswith("✓")
+			else "#9ca3af"))
+
+	def subfolders(self, parent, start):
+		"""The folders in `parent` whose name starts with `start` (hidden ones only when a dot is typed)."""
+		try:
+			names = sorted(os.listdir(parent))
+		except OSError:
+			return []
+		folders = [parent / name for name in names if name.startswith(start)
+			and (start.startswith(".") or not name.startswith(".")) and (parent / name).is_dir()]
+		return folders[:self.SHOWN]
+
+	def on_input_changed(self, event):
+		self.refresh_list()
+
+	def action_move(self, step):
+		menu = self.query_one("#folders", OptionList)
+		if not self.entries:
+			return
+		if menu.highlighted is None:
+			menu.highlighted = 0 if step > 0 else len(self.entries) - 1
+		else:
+			menu.highlighted = max(0, min(len(self.entries) - 1, menu.highlighted + step))
+		self.in_list = True
+
+	def highlighted_entry(self):
+		index = self.query_one("#folders", OptionList).highlighted
+		return self.entries[index] if index is not None and index < len(self.entries) else None
+
+	def action_open(self):
+		"""Tab: the folder highlighted (or the first one) goes in the path, to look into it."""
+		entry = self.highlighted_entry() or (self.entries[0] if self.entries and self.entries[0][0] != ".." else None)
+		if entry is not None:
+			self.open(entry[1])
+
+	def open(self, path):
+		folder = self.query_one("#folder", Input)
+		folder.value = display.short_path(path).rstrip("/") + "/" if str(path) != "/" else "/"
+		folder.cursor_position = len(folder.value)
+
+	def choose(self, entry):
+		"""A line of the list: tested when it is a folder of the project, else opened."""
+		_, path, project = entry
+		if project:
+			self.dismiss(path)
+		else:
+			self.open(path)
+
+	def on_option_list_option_selected(self, event):
+		self.choose(self.entries[int(event.option.id)])
 
 	def on_input_submitted(self, event):
+		entry = self.highlighted_entry()
+		if self.in_list and entry is not None:
+			self.choose(entry)
+			return
 		typed = event.value.strip()
 		if not typed:
 			return
 		path = Path(typed).expanduser()
 		path = (path if path.is_absolute() else Path.cwd() / path).resolve()
 		if not path.is_dir():
-			self.query_one("#folder-error", Static).update(t("No folder here: {path}", path=display.short_path(path)))
+			self.query_one("#folder-status", Static).update(Text(t("No folder here: {path}",
+				path=display.short_path(path)), style="#f87171"))
 			return
 		self.dismiss(path)
 
@@ -479,10 +618,14 @@ class FolderScreen(Screen):
 class TesterScreen(Screen):
 	"""A tester at work on a project, then its results in the log.
 
-	run(tester, project) runs it and returns its report, in a thread: the
-	screen stays alive. r runs it again, f asks another folder (dismissed
+	run(tester, project, on_progress) runs it and returns its report, in a
+	thread: the screen stays alive, and shows what the tester finds as it
+	comes (on_progress). r runs it again, f asks another folder (dismissed
 	with "folder"), Esc goes back (dismissed with None).
 	"""
+
+	# The counter changes at most this often (seconds); a check or a failure shows at once.
+	PROGRESS_EVERY = 0.1
 
 	BINDINGS = [
 		("escape", "back", "Back"),
@@ -498,10 +641,15 @@ class TesterScreen(Screen):
 		self.run = run
 		self.busy = False
 		self.report = None
+		self.shown_at = 0.0
+		# The group of the last check shown live, and whether the failures have their title yet.
+		self.live_group = None
+		self.live_failures = False
 
 	def compose(self) -> ComposeResult:
 		yield Static(id="header")
-		yield SelectableLog(id="log", wrap=False, markup=False, highlight=False)
+		# The long lines wrap: no horizontal scroll bar.
+		yield SelectableLog(id="log", wrap=True, min_width=0, markup=False, highlight=False)
 		yield Static(id="activity")
 		yield Static(hints([("r", N_("run again")), ("f", N_("another folder")), ("esc", N_("back")),
 			("ctrl+q", N_("leave"))]), id="session-hints")
@@ -527,6 +675,8 @@ class TesterScreen(Screen):
 		self.busy = True
 		self.refresh_header()
 		self.query_one("#log", RichLog).clear()
+		self.live_group = None
+		self.live_failures = False
 		activity = self.query_one("#activity", Static)
 		activity.set_class(True, "-busy")
 		activity.update("⠿ " + t("{tester} is testing {project}…", tester=self.tester.name,
@@ -535,8 +685,34 @@ class TesterScreen(Screen):
 
 	@work(thread=True, exclusive=True)
 	def run_in_background(self):
-		report = self.run(self.tester, self.project)
+		report = self.run(self.tester, self.project, self.progress_from_thread)
 		self.app.call_from_thread(self.show_report, report)
+
+	def progress_from_thread(self, progress, item):
+		"""From the thread of the tester: a check or a failure at once, the counter now and then."""
+		now = time.monotonic()
+		shows_lines = item is not None and (isinstance(item, testers_core.Check) or item.bad)
+		last = progress.tests_total and progress.tests_done == progress.tests_total
+		if not shows_lines and not last and now - self.shown_at < self.PROGRESS_EVERY:
+			return
+		self.shown_at = now
+		text = display.tester_progress(self.tester, progress)
+		self.app.call_from_thread(self.show_progress, text, item)
+
+	def show_progress(self, text, item):
+		"""The counter in the activity line; the check or the failed test in the log."""
+		self.query_one("#activity", Static).update("⠿ " + text)
+		if item is None:
+			return
+		log = self.query_one("#log", RichLog)
+		if isinstance(item, testers_core.Check) and self.live_group is None:
+			log.write(Text(t("The subject"), style="bold"))
+		if isinstance(item, testers_core.TestCase) and not self.live_failures:
+			self.live_failures = True
+			log.write(Text("\n" + t("Failed so far"), style="bold"))
+		lines, self.live_group = display.tester_live_lines(self.tester, item, self.live_group)
+		for line in lines:
+			log.write(line)
 
 	def show_report(self, report):
 		self.report = report
@@ -602,9 +778,10 @@ class SessionScreen(Screen):
 		with Container(id="body"):
 			with VerticalScroll(id="subject-pane"):
 				yield Static(id="subject")
-			# No wrap: the shell already prints at the width of the log (see
-			# fit_console); wrapping again would cut the frames at their spaces.
-			yield SelectableLog(id="log", wrap=False, markup=False, highlight=False)
+			# The shell already prints at the width of the log (see fit_console):
+			# only what is wider (a long command typed) wraps. No minimum width:
+			# no horizontal scroll bar when the log is narrow.
+			yield SelectableLog(id="log", wrap=True, min_width=0, markup=False, highlight=False)
 		yield Static(id="activity")
 		letters = ", ".join(f"{letter} {command}" for letter, command in self.shortcuts.items())
 		# max_length: a command is short, whatever is typed or pasted.
@@ -1059,7 +1236,8 @@ class Pal42App(App):
 	async def test_folders(self, tester):
 		"""The folder, then the results; another folder as many times as asked; None at the end."""
 		while True:
-			project = await self.push_screen(FolderScreen(tester, default_project(tester, self.settings_file)),
+			last = testers_core.last_project(tester, self.settings_file)
+			project = await self.push_screen(FolderScreen(tester, root=self.shell.projects_root, last=last),
 				wait_for_dismiss=True)
 			if project is None:
 				return
@@ -1067,10 +1245,10 @@ class Pal42App(App):
 			if again != "folder":
 				return
 
-	def run_tester(self, tester, project):
+	def run_tester(self, tester, project, on_progress=None):
 		"""Run the tester on `project` in the language of 42pal; the folder is kept for the next time."""
 		lang = testers_core.tester_language(tester, i18n.language())
-		report = testers_core.run(tester, project, lang, self.shell.testers_root)
+		report = testers_core.run(tester, project, lang, self.shell.testers_root, on_progress=on_progress)
 		testers_core.remember_project(tester, project, self.settings_file)
 		return report
 

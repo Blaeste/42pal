@@ -29,6 +29,22 @@ if not result.is_file():
 data = json.loads(result.read_text())
 data["lang"] = args[args.index("--lang") + 1]
 data["args"] = args
+if "--stream" in args:
+	def emit(event, **fields):
+		print(json.dumps(dict(event=event, **fields)), flush=True)
+	emit("start", tester="libfterator", version=data.get("version"), lang=data["lang"])
+	if data["conformity"]:
+		emit("step", step="subject")
+		for check in data["conformity"]:
+			emit("check", **check)
+	if data.get("error"):
+		emit("error", **data["error"])
+	else:
+		emit("step", step="build")
+		emit("plan", tests=len(data["tests"]))
+		emit("step", step="tests")
+		for test in data["tests"]:
+			emit("test", **test)
 Path(args[args.index("--json") + 1]).write_text(json.dumps(data))
 sys.exit(1)
 """
@@ -221,9 +237,99 @@ class TestRun(TesterTestCase):
 		self.assertEqual(report.log, "/tmp/out/libfterator_1.log")
 		self.assertEqual(report.notes, ["taken with make bonus"])
 
+	def test_in_real_time_with_stream(self):
+		(self.project / "result.json").write_text(json.dumps(results()))
+		self.install()
+		seen = []
+		report = testers.run(self.tester, self.project, "en", self.root,
+			on_progress=lambda progress, item: seen.append((progress.step, progress.tests_done, item)))
+		self.assertIn("--stream", report.data["args"])
+		steps = []
+		for step, _, _ in seen:
+			if not steps or steps[-1] != step:
+				steps.append(step)
+		self.assertEqual(steps, ["", "subject", "build", "tests"])
+		items = [item for _, _, item in seen if item is not None]
+		self.assertEqual([item.status for item in items], ["OK", "KO", "WARN", "SKIP", "PASS", "PASS", "PASS", "OOB", "INFO"])
+		self.assertEqual(seen[-1][1], 5)
+		# The report at the end is the one of the JSON file.
+		self.assertEqual(report.test_score, (3, 4))
+
+	def test_the_progress(self):
+		progress = testers.Progress()
+		progress.update({"event": "plan", "tests": 3})
+		progress.update({"event": "step", "step": "tests"})
+		progress.update({"event": "test", "name": "strlen/basic", "status": "FAIL", "detail": "got 1", "ms": 1})
+		progress.update({"event": "test", "name": "info/strlen_null", "status": "INFO", "detail": "SIGSEGV", "ms": 1})
+		self.assertEqual((progress.step, progress.tests_done, progress.tests_total), ("tests", 2, 3))
+		self.assertEqual([test.name for test in progress.bad], ["strlen/basic"])
+		self.assertIsNone(progress.update({"event": "nothing we know"}))
+
+	def test_an_older_version_kept_gets_no_stream(self):
+		"""Not updated: the version installed may not know --stream; its results come at the end."""
+		(self.project / "result.json").write_text(json.dumps(results()))
+		self.install()
+		newer = replace(self.tester, tag="v9.9.10", commit=new_tag(self.repo, "v9.9.10"))
+		report = testers.run(newer, self.project, "en", self.root, on_progress=lambda progress, item: None)
+		self.assertNotIn("--stream", report.data["args"])
+		self.assertEqual(report.test_score, (3, 4))
+
+	def test_without_progress_no_stream(self):
+		report = self.run_tester(results())
+		self.assertNotIn("--stream", report.data["args"])
+
 	def test_not_installed(self):
 		report = testers.run(self.tester, self.project, "en", self.root)
 		self.assertIn("not installed", report.error[0])
+
+class TestFindTheProjects(unittest.TestCase):
+	"""The folders that look like the project (libft.h for libfterator), found in the home folder."""
+
+	def setUp(self):
+		folder = tempfile.TemporaryDirectory()
+		self.addCleanup(folder.cleanup)
+		self.home = Path(folder.name)
+		self.tester = testers.find("libfterator")
+
+	def project(self, relative):
+		path = self.home / relative
+		path.mkdir(parents=True)
+		(path / "libft.h").write_text("")
+		return path
+
+	def test_the_nearest_first(self):
+		deep = self.project("42/common_core/rank0/libft")
+		near = self.project("libft")
+		printf = self.project("42/ft_printf/libft")
+		self.assertEqual(testers.find_projects(self.tester, self.home), [near, printf, deep])
+
+	def test_not_in_hidden_folders_nor_too_deep(self):
+		self.project(".cache/libft")
+		self.project("a/b/c/d/e/libft")
+		self.project("node_modules/libft")
+		self.assertEqual(testers.find_projects(self.tester, self.home), [])
+
+	def test_a_folder_that_cannot_be_read_is_skipped(self):
+		locked = self.home / "locked"
+		locked.mkdir()
+		locked.chmod(0)
+		self.addCleanup(locked.chmod, 0o755)
+		near = self.project("libft")
+		self.assertEqual(testers.find_projects(self.tester, self.home), [near])
+
+	def test_the_last_one_tested_first(self):
+		near = self.project("libft")
+		other = self.project("work/libft")
+		settings_file = self.home / "settings.json"
+		testers.remember_project(self.tester, other, settings_file)
+		self.assertEqual(testers.project_choices(self.tester, settings_file, self.home), [other, near])
+
+	def test_the_last_one_tested_even_without_the_marker(self):
+		elsewhere = self.home / "elsewhere"
+		elsewhere.mkdir()
+		settings_file = self.home / "settings.json"
+		testers.remember_project(self.tester, elsewhere, settings_file)
+		self.assertEqual(testers.project_choices(self.tester, settings_file, self.home), [elsewhere])
 
 class TestTheProjectRemembered(unittest.TestCase):
 

@@ -20,7 +20,9 @@ def short_path(path):
 	"""Write `path` with ~ for the home folder, like a shell does."""
 	path = Path(path)
 	home = Path.home()
-	if path == home or home in path.parents:
+	if path == home:
+		return "~"
+	if home in path.parents:
 		return "~/" + path.relative_to(home).as_posix()
 	return path.as_posix()
 
@@ -435,7 +437,7 @@ def tester_report(report, tester, project):
 		title, detail = report.error
 		lines.append(Text("✗ " + t("The tests could not run: {why}", why=title), style="bold red"))
 		if detail:
-			lines.append(Panel(Text(detail), border_style="red", width=84))
+			lines.append(Panel(Text(detail), border_style="red"))
 	if report.checks:
 		passed, counted = report.conformity_score
 		section = Text("\n" + t("The subject"), style="bold")
@@ -489,6 +491,50 @@ def tester_report(report, tester, project):
 		log.append(short_path(report.log), style=f"link {Path(report.log).resolve().as_uri()}")
 		lines.append(log)
 	return lines
+
+def progress_bar(done, total, width=24):
+	"""A bar of `width` characters, filled as `done` goes to `total`."""
+	filled = round(width * done / total) if total else 0
+	return "━" * filled + "─" * (width - filled)
+
+def tester_progress(tester, progress):
+	"""What the tester is doing, for the spinner: the step, then the tests done and failed."""
+	if progress.step == "subject":
+		count = len(progress.checks)
+		return t("{tester} · the subject: 1 check", tester=tester.name) if count == 1 else t(
+			"{tester} · the subject: {count} checks", tester=tester.name, count=count)
+	if progress.step == "build":
+		return t("{tester} · building the tests…", tester=tester.name)
+	if progress.step == "tests":
+		return t("{tester} · tests {done}/{total} {bar} {bad} KO", tester=tester.name, done=progress.tests_done,
+			total=progress.tests_total, bar=progress_bar(progress.tests_done, progress.tests_total),
+			bad=len(progress.bad))
+	return t("{tester} is starting…", tester=tester.name)
+
+def tester_live_lines(tester, item, group):
+	"""The lines of a check or of a failed test as it comes, and the group of checks now.
+
+	A check under the name of its group when the group changes; a failed
+	test with its function and the first line of its detail.
+	"""
+	lines = []
+	if hasattr(item, "label"):
+		if item.group != group:
+			group = item.group
+			lines.append(Text("  " + group, style="bold"))
+		line = Text("    ")
+		line.append_text(_status(item.status))
+		line.append(item.label)
+		lines.append(line)
+		if item.status != "OK" and item.detail:
+			lines += _details(item.detail, indent=14, lines=2)
+	elif item is not None and item.bad:
+		line = Text("    ")
+		line.append_text(_status(item.status))
+		line.append(f"{tester.prefix}{item.function} · {item.short_name}")
+		lines.append(line)
+		lines += _details(item.detail, lines=1)
+	return lines, group
 
 def tester_verdict(report):
 	"""✓ OK or ✗ KO, with the scores of the subject and of the tests."""
