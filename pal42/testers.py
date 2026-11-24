@@ -125,10 +125,11 @@ def install(tester, root=None, environ=None):
 	path.parent.mkdir(parents=True, exist_ok=True)
 	new = Path(tempfile.mkdtemp(prefix=f".{tester.name}-", dir=path.parent))
 	try:
-		ok, output = _git(["clone", "--quiet", "--depth", "1", "--branch", tester.tag, source(tester, environ),
-			str(new)], environ)
+		url = source(tester, environ)
+		ok, output = _git(["clone", "--quiet", "--depth", "1", "--branch", tester.tag, url, str(new)], environ)
 		if not ok:
-			return False, output.splitlines()[-1] if output else t("git clone failed.")
+			return False, t("{tester} {tag} not found at {url}: {why}", tester=tester.name, tag=tester.tag, url=url,
+				why=output.splitlines()[-1] if output else t("git clone failed."))
 		commit = _commit(new)
 		if commit != tester.commit:
 			return False, t("The tag {tag} is at the commit {commit}, not the one expected: nothing was installed.",

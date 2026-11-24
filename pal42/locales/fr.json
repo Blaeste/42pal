@@ -405,6 +405,7 @@
 	"{tester} is testing {project}…": "{tester} teste {project}…",
 	"{tester} runs on Linux only.": "{tester} ne tourne que sous Linux.",
 	"{tester} took more than {seconds} s.": "{tester} a pris plus de {seconds} s.",
+	"{tester} {tag} not found at {url}: {why}": "{tester} {tag} introuvable sur {url} : {why}",
 	"{tests} tests": "{tests} tests",
 	"{tests} tests passed": "{tests} tests réussis"
 }

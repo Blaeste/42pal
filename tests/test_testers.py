@@ -134,7 +134,10 @@ class TestInstall(TesterTestCase):
 	def test_a_tag_that_does_not_exist(self):
 		ok, why = testers.install(replace(self.tester, tag="v0.0.0"), self.root, environ={})
 		self.assertFalse(ok)
-		self.assertTrue(why)
+		# Where it was looked for, and the version: a tag not pushed yet is seen at once.
+		self.assertIn("v0.0.0", why)
+		self.assertIn(self.repo.as_uri(), why)
+		self.assertIn("not found", why)
 		self.assertEqual(testers.state(self.tester, self.root), testers.MISSING)
 
 	def test_without_git(self):
