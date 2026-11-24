@@ -293,11 +293,16 @@ PRACTICE_SUMMARY = N_("one theme, no timer")
 PROGRESS_TEXT = N_("Progress")
 PROGRESS_SUMMARY = N_("your exams and weak themes")
 
+# The choice of the first menu for the testers of projects (libfterator...).
+TESTERS_TEXT = N_("Testers")
+TESTERS_SUMMARY = N_("test your projects")
+
 # The choice of the first menu for the settings: the language, for now.
 SETTINGS_TEXT = N_("Settings")
 
-def audience_menu(exams_by_audience, first=True, practice=False, progress=False, settings=False, language=""):
-	"""The first menu: the exams of the piscine or of the students, then practice, progress, settings."""
+def audience_menu(exams_by_audience, first=True, practice=False, progress=False, settings=False, language="",
+		testers=False):
+	"""The first menu: the exams of the piscine or of the students, then practice, progress, testers, settings."""
 	lines = [t(FIRST_MENU_TITLE)]
 	for number, (audience, exams) in enumerate(exams_by_audience.items(), start=1):
 		leads_to = exams[0].title if len(exams) == 1 else t("{count} exams", count=len(exams))
@@ -309,6 +314,9 @@ def audience_menu(exams_by_audience, first=True, practice=False, progress=False,
 	if progress:
 		count += 1
 		lines.append(f"  {count}. {t(PROGRESS_TEXT):22}{t(PROGRESS_SUMMARY)}")
+	if testers:
+		count += 1
+		lines.append(f"  {count}. {t(TESTERS_TEXT):22}{t(TESTERS_SUMMARY)}")
 	if settings:
 		count += 1
 		lines.append(f"  {count}. {t(SETTINGS_TEXT):22}{settings_summary(language)}")
@@ -393,3 +401,103 @@ def no_more_levels(grade):
 	"""Said when the last playable level is passed but the grade is below 100."""
 	return ("[yellow]" + t("No more playable level for now: your grade is {grade}/100.", grade=points(grade))
 		+ "[/] " + t("The next levels have no exercise yet."))
+
+# The style of each status of a tester; any other one (FAIL, CRASH, LEAK...) is a failure.
+TESTER_STYLES = {"OK": "green", "PASS": "green", "KO": "red", "WARN": "yellow", "SKIP": "dim", "INFO": "cyan"}
+
+def _status(status):
+	return Text(f"{status:8}", style=TESTER_STYLES.get(status, "red"))
+
+def _leader(name, width=32):
+	"""`name` and dots up to `width`, like the lines of a tester."""
+	text = Text("  " + name + " ")
+	text.append("." * max(2, width - len(name)), style="dim")
+	return text
+
+def _details(text, indent=12, lines=6):
+	"""The lines of a detail, in grey, under the line they explain."""
+	return [Text(" " * indent + line, style="dim") for line in text.splitlines()[:lines]]
+
+def _score(passed, total):
+	return Text(f" {passed}/{total}", style="green" if passed == total else "red")
+
+def tester_report(report, tester, project):
+	"""The results of a tester in the style of 42pal: a list of what rich prints.
+
+	The subject (each check, with the detail of the bad ones), the functions
+	(each one, with its failing tests), the undefined cases (not counted),
+	then the verdict and the full log of the tester.
+	"""
+	head = Text(tester.name, style="bold #a5b4fc")
+	head.append(f" · {short_path(project)}", style="dim")
+	lines = [head]
+	if report.error is not None:
+		title, detail = report.error
+		lines.append(Text("✗ " + t("The tests could not run: {why}", why=title), style="bold red"))
+		if detail:
+			lines.append(Panel(Text(detail), border_style="red", width=84))
+	if report.checks:
+		passed, counted = report.conformity_score
+		section = Text("\n" + t("The subject"), style="bold")
+		section.append_text(_score(passed, counted))
+		lines.append(section)
+		group = None
+		for check in report.checks:
+			if check.group != group:
+				group = check.group
+				lines.append(Text("  " + group, style="bold"))
+			line = Text("    ")
+			line.append_text(_status(check.status))
+			line.append(check.label)
+			lines.append(line)
+			if check.status != "OK" and check.detail:
+				lines += _details(check.detail, indent=14)
+	if report.functions:
+		passed, total = report.test_score
+		section = Text("\n" + t("The functions"), style="bold")
+		section.append_text(_score(passed, total))
+		lines.append(section)
+		for function in report.functions:
+			line = _leader(tester.prefix + function.name)
+			line.append_text(_score(function.passed, function.total))
+			lines.append(line)
+			bad = function.bad
+			# A function absent from the library: once, not for each of its tests.
+			if bad and all(test.status == "MISSING" for test in function.tests):
+				line = Text("    ")
+				line.append_text(_status("MISSING"))
+				line.append(bad[0].detail)
+				lines.append(line)
+				continue
+			for test in bad:
+				line = Text("    ")
+				line.append_text(_status(test.status))
+				line.append(test.short_name)
+				lines.append(line)
+				lines += _details(test.detail)
+	if report.info:
+		lines.append(Text("\n" + t("Undefined cases, not counted"), style="bold"))
+		for test in report.info:
+			line = _leader(test.short_name)
+			line.append(" " + (test.detail.splitlines() or [""])[0], style="cyan")
+			lines.append(line)
+	lines += [Text("! " + note, style="yellow") for note in report.notes or ()]
+	lines.append(Text())
+	lines.append(tester_verdict(report))
+	if report.log:
+		log = Text(t("Full log:") + " ", style="dim")
+		log.append(short_path(report.log), style=f"link {Path(report.log).resolve().as_uri()}")
+		lines.append(log)
+	return lines
+
+def tester_verdict(report):
+	"""✓ OK or ✗ KO, with the scores of the subject and of the tests."""
+	verdict = Text("✓ OK" if report.passed else "✗ KO", style="bold green" if report.passed else "bold red")
+	scores = []
+	if report.checks:
+		scores.append(t("subject {passed}/{total}", passed=report.conformity_score[0], total=report.conformity_score[1]))
+	if report.functions:
+		scores.append(t("tests {passed}/{total}", passed=report.test_score[0], total=report.test_score[1]))
+	if scores:
+		verdict.append("  " + " · ".join(scores))
+	return verdict

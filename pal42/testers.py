@@ -36,6 +36,10 @@ class Tester:
 	commit: str
 	# The program at the root of its repository.
 	launcher: str
+	# Written before the name of each function of its results: ft_strlen.
+	prefix: str = ""
+	# A file at the root of the project: the folder of 42pal is offered when it has one.
+	marker: str = ""
 	# The values of sys.platform it runs on (libfterator needs ld --wrap: Linux).
 	platforms: tuple = ("linux",)
 	# The formats of JSON 42pal can read from it.
@@ -47,11 +51,13 @@ TESTERS = (
 	Tester(
 		name="libfterator",
 		project="libft",
-		summary=N_("libft, subject v19.3: the subject, the 43 functions, leaks and overflows"),
+		summary=N_("libft, subject v19.3: the 43 functions, leaks and overflows"),
 		url="https://github.com/Blaeste/libfterator.git",
 		tag="v2.0.0",
 		commit="d0bd761a03c429de19ba9acb749544e03cbc81d8",
 		launcher="libfterator",
+		prefix="ft_",
+		marker="libft.h",
 	),
 )
 

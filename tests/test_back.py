@@ -138,8 +138,8 @@ class TestBackInText(unittest.TestCase):
 		return any(words in prompt for prompt in self.script.prompts)
 
 	def test_back_and_yes_goes_to_the_first_menu_and_forgets_the_exam(self):
-		# Login, students, revision, level 1, then back, y, and 4: quit.
-		shell, text = self.run_shell("", "pw", "1", "2", "", "back", "y", "4")
+		# Login, students, revision, level 1, then back, y, and 5: quit.
+		shell, text = self.run_shell("", "pw", "1", "2", "", "back", "y", "5")
 		self.assertTrue(self.asked("Back to the menus? Nothing is kept: no grademe was made yet."))
 		self.assertEqual(text.count("What do you want to do?"), 2)
 		self.assertIsNone(shell.exam)
@@ -152,14 +152,14 @@ class TestBackInText(unittest.TestCase):
 		self.assertIn("Time spent", text)
 
 	def test_back_from_a_practice_goes_to_the_first_menu(self):
-		# Login, Practice (2), a theme (1), then back, y, then 4: quit.
-		shell, text = self.run_shell("", "pw", "2", "1", "back", "y", "4")
+		# Login, Practice (2), a theme (1), then back, y, then 5: quit.
+		shell, text = self.run_shell("", "pw", "2", "1", "back", "y", "5")
 		self.assertEqual(text.count("What do you want to do?"), 2)
 		self.assertIn("Goodbye!", text)
 
 	def test_back_after_a_grademe_keeps_the_exam_as_abandoned(self):
 		(self.root / "exam" / "rendu" / "echo_first").mkdir(parents=True)
-		# Quit is 5 then: the first menu offers Progress after a grademe.
-		shell, text = self.run_shell("", "pw", "1", "2", "", "grademe", "back", "y", "5")
+		# Quit is 6 then: the first menu offers Progress after a grademe.
+		shell, text = self.run_shell("", "pw", "1", "2", "", "grademe", "back", "y", "6")
 		self.assertTrue(self.asked("abandoned"))
 		self.assertEqual([entry["end"] for entry in self.store.history()], ["abandoned"])

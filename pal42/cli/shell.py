@@ -7,15 +7,18 @@ keyboard and terminal.
 
 import getpass
 import math
+import os
 import random
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 from rich.console import Console
 from rich.markup import escape
 
 from pal42 import cheat, i18n, settings
+from pal42 import testers as testers_core
 from pal42.i18n import N_, t
 from pal42.catalog import load_catalog
 from pal42.cli import display
@@ -79,6 +82,10 @@ PRACTICE = "practice"
 PROGRESS = "progress"
 # Settings, in the first menu: the language of 42pal.
 SETTINGS = "settings"
+# Testers, in the first menu: the testers of projects (pal42/testers.py).
+TESTERS = "testers"
+# The choices of the first menu that come back to it.
+SIDE_CHOICES = (PRACTICE, PROGRESS, SETTINGS, TESTERS)
 
 class Shell:
 	"""One exam session in the terminal.
@@ -121,6 +128,12 @@ class Shell:
 		self.settings_file = None
 		# True once back was confirmed: the commands stop, the menus come again.
 		self.back_requested = False
+		# The testers offered (None: those of pal42/testers.py this system runs),
+		# where they are kept (None: ~/.42pal/testers) and the environment of
+		# their download (None: the one of 42pal). The tests give their own.
+		self.tester_list = None
+		self.testers_root = None
+		self.testers_environ = None
 
 	def _reset(self):
 		"""No exam in progress: the state before an exam starts."""
@@ -177,9 +190,11 @@ class Shell:
 		"""The menus until an exam begins (True); False once the session is over (quit, a practice done)."""
 		try:
 			start = self.choose_start()
-			while start in (PRACTICE, PROGRESS, SETTINGS):
+			while start in SIDE_CHOICES:
 				if start == SETTINGS:
 					self.choose_settings()
+				elif start == TESTERS:
+					self.choose_tester()
 				else:
 					theme = self.show_progress() if start == PROGRESS else None
 					if (start == PRACTICE or theme is not None) and self.practise(theme):
@@ -338,7 +353,7 @@ class Shell:
 					chosen.pop()
 				chosen.pop()
 				continue
-			if answer in (PRACTICE, PROGRESS, SETTINGS):
+			if answer in SIDE_CHOICES:
 				return answer
 			chosen.append(answer)
 			shown.append(self.menus_shown > menus_before)
@@ -357,9 +372,11 @@ class Shell:
 			if audience in by_audience}
 		choices = list(by_audience) + ([PRACTICE] if self._can_practise() else [])
 		choices += [PROGRESS] if self.store and self.store.grades() else []
+		choices.append(TESTERS)
 		choices.append(SETTINGS)
 		self._print_lines(display.audience_menu(by_audience, first, practice=PRACTICE in choices,
-			progress=PROGRESS in choices, settings=True, language=i18n.languages()[i18n.language()]))
+			progress=PROGRESS in choices, settings=True, language=i18n.languages()[i18n.language()],
+			testers=True))
 		last = len(choices) + 1
 		number = self._ask_choice(t("Your choice:"), range(1, last + 1))
 		self.console.print()
@@ -375,6 +392,95 @@ class Shell:
 		self.console.print()
 		if number != last:
 			settings.choose_language(codes[number - 1], self.settings_file)
+
+	def _testers(self):
+		"""The testers offered: all of them, even those this system cannot run (said when chosen)."""
+		return list(self.tester_list or testers_core.TESTERS)
+
+	def choose_tester(self):
+		"""Testers: the testers of projects; the one chosen runs, then this menu again until Back."""
+		while True:
+			items = [(tester, tester.name, t(tester.summary) if testers_core.available(tester)
+				else t("{summary} (Linux only)", summary=t(tester.summary)), "") for tester in self._testers()]
+			tester = self._numbered_menu((t("Testers:"), items), first=False)
+			if tester is BACK:
+				return
+			self.use_tester(tester)
+
+	def use_tester(self, tester):
+		"""Download the tester if needed, ask the folder, run it, show the results; again until Back."""
+		if not testers_core.available(tester):
+			self.console.print(t("{tester} runs on Linux only.", tester=tester.name), markup=False)
+			self.console.print()
+			return
+		if not self._tester_ready(tester):
+			return
+		project = self._ask_project(tester)
+		while project is not None:
+			self._show_tester_report(tester, project)
+			items = [("again", t("Run again"), t("same folder"), ""),
+				("another", t("Another folder"), "", "")]
+			choice = self._numbered_menu((t("What now?"), items), first=False)
+			if choice is BACK:
+				return
+			if choice == "another":
+				project = self._ask_project(tester)
+
+	def _tester_ready(self, tester):
+		"""Download the tester, or its new version, when the student agrees; True when it can run."""
+		state = testers_core.state(tester, self.testers_root)
+		if state == testers_core.READY:
+			return True
+		if state == testers_core.MISSING:
+			self.console.print(t("{tester} is not downloaded yet: it comes from {url}, version {tag}.",
+				tester=tester.name, url=testers_core.source(tester, self.testers_environ), tag=tester.tag),
+				markup=False)
+			question = t("Download it now?")
+		else:
+			self.console.print(t("A new version of {tester} comes with this 42pal: {tag}.", tester=tester.name,
+				tag=tester.tag), markup=False)
+			question = t("Update it now?")
+		if self.ask(question + " (y/n)", "y").strip().lower().startswith("n"):
+			self.console.print()
+			# Not updated: the version already there runs.
+			return state == testers_core.OUTDATED
+		with self._status(t("Downloading {tester}…", tester=tester.name)):
+			ok, why = testers_core.install(tester, self.testers_root, self.testers_environ)
+		if not ok:
+			self.console.print(f"[red]{t('The download failed:')}[/] {escape(why)}")
+			self.console.print()
+			return state == testers_core.OUTDATED
+		self.console.print(f"[green]{t('{tester} is ready ({tag}).', tester=escape(tester.name), tag=tester.tag)}[/]")
+		return True
+
+	def _ask_project(self, tester):
+		"""The folder to test, asked until it exists; None (Enter with nothing offered) goes back."""
+		default = default_project(tester, self.settings_file)
+		prompt = t("Folder of your {project}:", project=tester.project)
+		if default is None:
+			prompt = t("Folder of your {project} (Enter alone: back):", project=tester.project)
+		while True:
+			with completing_paths():
+				answer = self.ask(prompt, default)
+			if not answer:
+				self.console.print()
+				return None
+			project = Path(answer).expanduser()
+			project = (project if project.is_absolute() else Path.cwd() / project).resolve()
+			if project.is_dir():
+				return project
+			self.console.print(t("No folder here: {path}", path=display.short_path(project)), markup=False)
+
+	def _show_tester_report(self, tester, project):
+		"""Run the tester on `project` and show what it found; the folder is kept for the next time."""
+		lang = testers_core.tester_language(tester, i18n.language())
+		with self._status(t("{tester} is testing {project}…", tester=tester.name,
+				project=display.short_path(project))):
+			report = testers_core.run(tester, project, lang, self.testers_root)
+		testers_core.remember_project(tester, project, self.settings_file)
+		for line in display.tester_report(report, tester, project):
+			self.console.print(line)
+		self.console.print()
 
 	def _can_practise(self):
 		"""Practice is offered when the catalog has exercises."""
@@ -818,6 +924,59 @@ class Shell:
 				return int(answer)
 			choices = ", ".join(map(str, allowed))
 			self.console.print(t("Invalid choice: type one of these numbers: {choices}.", choices=choices))
+
+def default_project(tester, settings_file=None):
+	"""The folder offered to a tester: the last one tested, or here when it looks like the project."""
+	last = testers_core.last_project(tester, settings_file)
+	if last and Path(last).is_dir():
+		return display.short_path(last)
+	here = Path.cwd()
+	if tester.marker and (here / tester.marker).is_file():
+		return display.short_path(here)
+	return None
+
+def folder_matches(text):
+	"""The folders whose path starts with `text`, each ending with /, as typed (~ stays ~).
+
+	Hidden folders only when their dot is typed.
+	"""
+	if not text:
+		return []
+	parent, start = os.path.split(text)
+	try:
+		names = sorted(os.listdir(os.path.expanduser(parent or ".")))
+	except OSError:
+		return []
+	return [text + name[len(start):] + "/" for name in names
+		if name.startswith(start) and (start.startswith(".") or not name.startswith("."))
+		and os.path.isdir(os.path.join(os.path.expanduser(parent or "."), name))]
+
+def complete_path(text, state):
+	"""readline's completer for a folder."""
+	matches = folder_matches(text)
+	return matches[state] if state < len(matches) else None
+
+def suggest_folder(text):
+	"""The first folder whose path starts with `text`, or None: the completion of the full screen."""
+	matches = folder_matches(text)
+	return matches[0] if matches else None
+
+class completing_paths:
+	"""While a folder is asked, Tab completes paths (a / does not cut the word); then the commands again."""
+
+	def __enter__(self):
+		self.readline = sys.modules.get("readline")
+		if self.readline is not None:
+			self.completer = self.readline.get_completer()
+			self.delims = self.readline.get_completer_delims()
+			self.readline.set_completer(complete_path)
+			self.readline.set_completer_delims(" \t\n")
+		return self
+
+	def __exit__(self, *error):
+		if self.readline is not None:
+			self.readline.set_completer(self.completer)
+			self.readline.set_completer_delims(self.delims)
 
 def complete_with(commands):
 	"""Tab completes `commands` from now on, if readline is in use."""

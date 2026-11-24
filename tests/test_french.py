@@ -27,7 +27,7 @@ class TestFrenchText(FrenchTestCase):
 
 	def test_the_first_menu_and_the_login_in_french(self):
 		console = Console(file=io.StringIO(), width=100, color_system=None)
-		script = Script("", "pw", "4")
+		script = Script("", "pw", "5")
 		with tempfile.TemporaryDirectory() as root:
 			shell = Shell(console, script.ask, script.ask_password, Workspace(root), rng=Random(1), clock=FakeClock(),
 				sleep=lambda seconds: None, catalog=ECHO_CATALOG, themes=ECHO_THEMES)
@@ -36,9 +36,10 @@ class TestFrenchText(FrenchTestCase):
 		self.assertIn("Bienvenue", text)
 		self.assertIn("Que veux-tu faire ?", text)
 		self.assertIn("2. Entraînement", text)
-		self.assertIn("3. Réglages", text)
+		self.assertIn("3. Testeurs", text)
+		self.assertIn("4. Réglages", text)
 		self.assertIn("langue : Français", text)
-		self.assertIn("4. Quitter", text)
+		self.assertIn("5. Quitter", text)
 		self.assertIn("Au revoir !", text)
 		self.assertIn("login :", script.prompts)
 
@@ -72,7 +73,7 @@ class TestFrenchScreen(FullScreenTest, FrenchTestCase):
 			await self.login(pilot)
 			screen = pilot.app.screen
 			self.assertEqual(screen.title, "Que veux-tu faire ?")
-			self.assertEqual([item[1] for item in screen.items][-2:], ["Entraînement", "Réglages"])
+			self.assertEqual([item[1] for item in screen.items][-3:], ["Entraînement", "Testeurs", "Réglages"])
 			self.assertEqual(screen.last_label, "Quit")
 
 class TestFrenchTraces(FrenchTestCase):

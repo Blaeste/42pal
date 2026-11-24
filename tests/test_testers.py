@@ -60,6 +60,27 @@ def results(**fields):
 	data.update(fields)
 	return data
 
+def fake_tester(folder):
+	"""The fake tester in a git repository in `folder`, tagged v9.9.9; return (tester, repository)."""
+	repo = Path(folder) / "repo"
+	repo.mkdir()
+	launcher = repo / "libfterator"
+	launcher.write_text(LAUNCHER)
+	launcher.chmod(0o755)
+	git(repo, "init", "-q")
+	git(repo, "add", ".")
+	git(repo, "commit", "-q", "-m", "first")
+	git(repo, "tag", "v9.9.9")
+	return replace(testers.TESTERS[0], url=repo.as_uri(), tag="v9.9.9", commit=git(repo, "rev-parse", "HEAD")), repo
+
+def new_tag(repo, tag):
+	"""A new commit in the repository of the fake tester, tagged `tag`; return its commit."""
+	(repo / tag).write_text("new\n")
+	git(repo, "add", ".")
+	git(repo, "commit", "-q", "-m", tag)
+	git(repo, "tag", tag)
+	return git(repo, "rev-parse", "HEAD")
+
 class TesterTestCase(unittest.TestCase):
 
 	def setUp(self):
@@ -67,17 +88,7 @@ class TesterTestCase(unittest.TestCase):
 		self.addCleanup(folder.cleanup)
 		self.tmp = Path(folder.name)
 		self.root = self.tmp / "testers"
-		repo = self.tmp / "repo"
-		repo.mkdir()
-		launcher = repo / "libfterator"
-		launcher.write_text(LAUNCHER)
-		launcher.chmod(0o755)
-		git(repo, "init", "-q")
-		git(repo, "add", ".")
-		git(repo, "commit", "-q", "-m", "first")
-		git(repo, "tag", "v9.9.9")
-		self.repo = repo
-		self.tester = replace(testers.TESTERS[0], url=repo.as_uri(), tag="v9.9.9", commit=git(repo, "rev-parse", "HEAD"))
+		self.tester, self.repo = fake_tester(self.tmp)
 		self.project = self.tmp / "libft"
 		self.project.mkdir()
 
@@ -133,16 +144,12 @@ class TestInstall(TesterTestCase):
 
 	def test_a_new_tag_in_42pal_makes_it_outdated_then_installed_again(self):
 		self.install()
-		(self.repo / "NEW").write_text("new\n")
-		git(self.repo, "add", ".")
-		git(self.repo, "commit", "-q", "-m", "second")
-		git(self.repo, "tag", "v9.9.10")
-		newer = replace(self.tester, tag="v9.9.10", commit=git(self.repo, "rev-parse", "HEAD"))
+		newer = replace(self.tester, tag="v9.9.10", commit=new_tag(self.repo, "v9.9.10"))
 		self.assertEqual(testers.state(newer, self.root), testers.OUTDATED)
 		ok, why = testers.install(newer, self.root, environ={})
 		self.assertTrue(ok, why)
 		self.assertEqual(testers.state(newer, self.root), testers.READY)
-		self.assertTrue((self.root / "libfterator" / "NEW").is_file())
+		self.assertTrue((self.root / "libfterator" / "v9.9.10").is_file())
 
 	def test_a_failed_update_keeps_the_tester_installed(self):
 		self.install()

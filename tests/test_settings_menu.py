@@ -52,10 +52,10 @@ class TestTextSettings(SettingsTestCase):
 		return self.console.file.getvalue()
 
 	def test_settings_is_the_last_choice_of_the_first_menu(self):
-		# The login, then 3 (Settings: after the students and practice), 2 (Français), then 4: quit.
-		text = self.run_shell("", "pw", "3", "2", "4")
-		self.assertIn("3. Settings", text)
-		self.assertIn("4. Quit", text)
+		# The login, then 4 (Settings: after the students, practice and testers), 2 (Français), then 5: quit.
+		text = self.run_shell("", "pw", "4", "2", "5")
+		self.assertIn("4. Settings", text)
+		self.assertIn("5. Quit", text)
 		self.assertIn("1. English", text)
 		self.assertIn("2. Français", text)
 		self.assertEqual(i18n.language(), "fr")
@@ -64,7 +64,7 @@ class TestTextSettings(SettingsTestCase):
 		self.assertEqual(text.count("What do you want to do?"), 2)
 
 	def test_back_in_the_language_menu_changes_nothing(self):
-		self.run_shell("", "pw", "3", "3", "4")
+		self.run_shell("", "pw", "4", "3", "5")
 		self.assertEqual(i18n.language(), "en")
 		self.assertFalse(self.settings_file.exists())
 

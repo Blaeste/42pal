@@ -16,6 +16,7 @@ import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from rich.console import Console
@@ -29,15 +30,17 @@ from textual.containers import Container, Vertical, VerticalScroll
 from textual.css.scalar import ScalarOffset
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.suggester import SuggestFromList
+from textual.suggester import SuggestFromList, Suggester
 from textual.widgets import Input, OptionList, RichLog, Static
 from textual.widgets.option_list import Option
 
 from pal42 import cheat, i18n, settings
+from pal42 import testers as testers_core
 from pal42.i18n import N_, t
 from pal42.cli import display
 from pal42.cli.practice import PRACTICE_COMMANDS, PRACTICE_SHORTCUTS, PracticeShell
-from pal42.cli.shell import BACK, COMMANDS, PRACTICE, PROGRESS, SETTINGS, SHORTCUTS, Shell
+from pal42.cli.shell import (BACK, COMMANDS, PRACTICE, PROGRESS, SETTINGS, SHORTCUTS, SIDE_CHOICES, TESTERS,
+	Shell, default_project, suggest_folder)
 from pal42.exam import AUDIENCES
 from pal42.progress import exam_rows, summary, weak_themes
 from pal42.session import SessionStore
@@ -421,6 +424,130 @@ class CommandLine(Input):
 
 # What the session screen ends with when the student goes back to the menus.
 BACK_TO_MENUS = object()
+
+class FolderSuggester(Suggester):
+	"""Completes a folder as it is typed (→ takes it), like Tab in a shell."""
+
+	def __init__(self):
+		super().__init__(use_cache=False, case_sensitive=True)
+
+	async def get_suggestion(self, value):
+		return suggest_folder(value)
+
+class FolderScreen(Screen):
+	"""The folder of the project to test, typed with completion.
+
+	Dismissed with the folder (a Path that exists), or None with Esc.
+	"""
+
+	BINDINGS = [("escape", "cancel", "Back")]
+
+	def __init__(self, tester, default=None):
+		super().__init__()
+		self.tester = tester
+		self.default = default or ""
+
+	def compose(self) -> ComposeResult:
+		with Vertical(classes="root"):
+			yield Static(t(self.tester.summary), classes="tagline")
+			with Vertical(classes="card"):
+				yield Static(t("Folder of your {project}", project=self.tester.project), classes="field-label")
+				yield Input(value=self.default, id="folder", suggester=FolderSuggester())
+				yield Static("", id="folder-error")
+			yield Static(hints([("→", N_("complete")), ("⏎", N_("test it")), ("esc", N_("back"))]), classes="hints")
+
+	def on_mount(self):
+		self.query_one(".card").border_title = f" {self.tester.name} "
+		folder = self.query_one("#folder", Input)
+		folder.focus()
+		folder.cursor_position = len(folder.value)
+
+	def on_input_submitted(self, event):
+		typed = event.value.strip()
+		if not typed:
+			return
+		path = Path(typed).expanduser()
+		path = (path if path.is_absolute() else Path.cwd() / path).resolve()
+		if not path.is_dir():
+			self.query_one("#folder-error", Static).update(t("No folder here: {path}", path=display.short_path(path)))
+			return
+		self.dismiss(path)
+
+	def action_cancel(self):
+		self.dismiss(None)
+
+class TesterScreen(Screen):
+	"""A tester at work on a project, then its results in the log.
+
+	run(tester, project) runs it and returns its report, in a thread: the
+	screen stays alive. r runs it again, f asks another folder (dismissed
+	with "folder"), Esc goes back (dismissed with None).
+	"""
+
+	BINDINGS = [
+		("escape", "back", "Back"),
+		("r", "again", "Run again"),
+		("f", "folder", "Another folder"),
+		("ctrl+shift+c", "screen.copy_text", "Copy"),
+	]
+
+	def __init__(self, tester, project, run):
+		super().__init__()
+		self.tester = tester
+		self.project = project
+		self.run = run
+		self.busy = False
+		self.report = None
+
+	def compose(self) -> ComposeResult:
+		yield Static(id="header")
+		yield SelectableLog(id="log", wrap=False, markup=False, highlight=False)
+		yield Static(id="activity")
+		yield Static(hints([("r", N_("run again")), ("f", N_("another folder")), ("esc", N_("back")),
+			("ctrl+q", N_("leave"))]), id="session-hints")
+
+	def on_mount(self):
+		header = self.query_one("#header", Static)
+		header.border_title = f" 42pal · {t('Testers')} "
+		text = Text(self.tester.name, style="bold #e0e7ff")
+		text.append("   " + display.short_path(self.project), style="#9ca3af")
+		header.update(text)
+		self.query_one("#log").border_title = " log "
+		self.action_again()
+
+	def action_again(self):
+		if self.busy:
+			return
+		self.busy = True
+		self.query_one("#log", RichLog).clear()
+		activity = self.query_one("#activity", Static)
+		activity.set_class(True, "-busy")
+		activity.update("⠿ " + t("{tester} is testing {project}…", tester=self.tester.name,
+			project=display.short_path(self.project)))
+		self.run_in_background()
+
+	@work(thread=True, exclusive=True)
+	def run_in_background(self):
+		report = self.run(self.tester, self.project)
+		self.app.call_from_thread(self.show_report, report)
+
+	def show_report(self, report):
+		self.report = report
+		self.query_one("#activity", Static).set_class(False, "-busy")
+		log = self.query_one("#log", RichLog)
+		for line in display.tester_report(report, self.tester, self.project):
+			log.write(clickable(line) if isinstance(line, Text) else line)
+		log.scroll_home(animate=False)
+		self.busy = False
+
+	def action_folder(self):
+		if not self.busy:
+			self.dismiss("folder")
+
+	def action_back(self):
+		# Not while the tester runs: its thread writes to this screen at the end.
+		if not self.busy:
+			self.dismiss(None)
 
 class SessionScreen(Screen):
 	"""An exam (or a practice): the header, the subject, the log, the command line.
@@ -840,9 +967,13 @@ class Pal42App(App):
 		"""The menus until an exam or a practice starts (True); False when the app quits."""
 		shell = self.shell
 		start = await self.choose_start()
-		while start in (PRACTICE, PROGRESS, SETTINGS):
+		while start in SIDE_CHOICES:
 			if start == SETTINGS:
 				await self.settings_flow()
+				start = await self.choose_start()
+				continue
+			if start == TESTERS:
+				await self.testers_flow()
 				start = await self.choose_start()
 				continue
 			practice = self.practice_shell()
@@ -872,6 +1003,68 @@ class Pal42App(App):
 		code = await self.ask(t("Language"), items, first=False, highlight=list(languages).index(current))
 		if code is not BACK:
 			settings.choose_language(code, self.settings_file)
+
+	async def testers_flow(self):
+		"""Testers: a tester (downloaded when the student agrees), the folder, its results; Back comes here again."""
+		shell = self.shell
+		while True:
+			items = [(tester, tester.name, tester.project if testers_core.available(tester) else t("Linux only"),
+				t(tester.summary)) for tester in shell._testers()]
+			tester = await self.ask(t("Testers"), items, first=False)
+			if tester is BACK:
+				return
+			if not testers_core.available(tester):
+				self.notify(t("{tester} runs on Linux only.", tester=tester.name), severity="warning")
+				continue
+			if await self.tester_ready(tester):
+				await self.test_folders(tester)
+
+	async def tester_ready(self, tester):
+		"""Download the tester, or its new version, when the student agrees; True when it can run."""
+		shell = self.shell
+		state = testers_core.state(tester, shell.testers_root)
+		if state == testers_core.READY:
+			return True
+		where = f"{testers_core.source(tester, shell.testers_environ)} · {tester.tag}"
+		if state == testers_core.MISSING:
+			choice = await self.ask(t("Download {tester}?", tester=tester.name), [
+				("download", t("Download"), tester.tag,
+					t("Once, from {where}; 42pal checks it is the version expected.", where=where)),
+			], first=False, last=(t("Back"), t("Back to the testers.")))
+		else:
+			choice = await self.ask(t("A new version of {tester}", tester=tester.name), [
+				("download", t("Update now"), tester.tag, where),
+				("later", t("Not now"), t("keep the version installed"), t("You will be asked again next time.")),
+			], first=False)
+		if choice is BACK:
+			return False
+		if choice == "later":
+			return True
+		self.notify(t("Downloading {tester}…", tester=tester.name), timeout=3)
+		ok, why = await asyncio.to_thread(testers_core.install, tester, shell.testers_root, shell.testers_environ)
+		if not ok:
+			self.notify(f"{t('The download failed:')} {why}", severity="error", timeout=10)
+			return state == testers_core.OUTDATED
+		self.notify(t("{tester} is ready ({tag}).", tester=tester.name, tag=tester.tag), timeout=3)
+		return True
+
+	async def test_folders(self, tester):
+		"""The folder, then the results; another folder as many times as asked; None at the end."""
+		while True:
+			project = await self.push_screen(FolderScreen(tester, default_project(tester, self.settings_file)),
+				wait_for_dismiss=True)
+			if project is None:
+				return
+			again = await self.push_screen(TesterScreen(tester, project, self.run_tester), wait_for_dismiss=True)
+			if again != "folder":
+				return
+
+	def run_tester(self, tester, project):
+		"""Run the tester on `project` in the language of 42pal; the folder is kept for the next time."""
+		lang = testers_core.tester_language(tester, i18n.language())
+		report = testers_core.run(tester, project, lang, self.shell.testers_root)
+		testers_core.remember_project(tester, project, self.settings_file)
+		return report
 
 	def practice_shell(self):
 		"""A practice shell with the console, workspace and catalog of the examshell."""
@@ -942,7 +1135,7 @@ class Pal42App(App):
 		shown = []
 		while len(chosen) < len(steps):
 			answer, asked = await steps[len(chosen)](chosen, not any(shown))
-			if answer in (PRACTICE, PROGRESS, SETTINGS):
+			if answer in SIDE_CHOICES:
 				return answer
 			if answer is BACK:
 				if not any(shown):
@@ -973,6 +1166,8 @@ class Pal42App(App):
 		if self.shell.store and self.shell.store.grades():
 			items.append((PROGRESS, t(display.PROGRESS_TEXT), t(display.PROGRESS_SUMMARY),
 				t("How your exams went, and the themes that fail the most, to practise them.")))
+		items.append((TESTERS, t(display.TESTERS_TEXT), t(display.TESTERS_SUMMARY),
+			t("Download a tester of your projects and run it here: libfterator for the libft.")))
 		items.append((SETTINGS, t(display.SETTINGS_TEXT), display.settings_summary(i18n.languages()[i18n.language()]),
 			t("The language of 42pal: the menus, the messages, the traces and the subjects.")))
 		return await self.ask(t(display.FIRST_MENU_TITLE), items, first), True
