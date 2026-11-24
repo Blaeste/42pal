@@ -1038,7 +1038,7 @@ class TestCompletion(unittest.TestCase):
 		while (command := complete_command("", state)) is not None:
 			found.append(command)
 			state += 1
-		self.assertCountEqual(found, ["status", "grademe", "report", "finish", "help"])
+		self.assertCountEqual(found, ["status", "grademe", "report", "finish", "back", "help"])
 
 class TestPractice(unittest.TestCase):
 	"""./42pal practice: subjects of one theme, no timer, no wait."""

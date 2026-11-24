@@ -22,11 +22,12 @@ PRACTICE_COMMANDS = {
 	"next": N_("another subject of the same theme"),
 	"report": N_("write a report for an issue: subject, your code, last trace"),
 	"finish": N_("stop practising"),
+	"back": N_("back to the menus (asks first)"),
 	"help": N_("show this help"),
 }
 
-# One letter (then Enter) for each command: g, n, r, f and ?.
-PRACTICE_SHORTCUTS = {"g": "grademe", "n": "next", "r": "report", "f": "finish", "?": "help"}
+# One letter (then Enter) for each command: g, n, r, f, b and ?.
+PRACTICE_SHORTCUTS = {"g": "grademe", "n": "next", "r": "report", "f": "finish", "b": "back", "?": "help"}
 
 class PracticeShell(Shell):
 	"""Practising one theme: the grading and display of the examshell, no exam."""
@@ -66,10 +67,22 @@ class PracticeShell(Shell):
 				return 1
 			self.theme = theme
 			self.next_subject()
+			while True:
+				self.command_loop()
+				if not self.back_requested:
+					return 0
+				# back: from the first menu of the examshell, to it; alone, to the themes.
+				self.back_requested = False
+				if not first:
+					return BACK
+				theme = self.choose_language_and_theme(first)
+				if theme is None:
+					self.console.print(t("Goodbye!"))
+					return 0
+				self.theme = theme
+				self.next_subject()
 		except EOFError:
 			return 0
-		self.command_loop()
-		return 0
 
 	def exercises_of(self, theme):
 		"""The exercises of `theme`: a theme is the style of one real subject, in one language."""
@@ -169,6 +182,10 @@ class PracticeShell(Shell):
 			if self.handle(command):
 				return
 
+	def back_consequence(self):
+		"""Going back to the menus loses nothing in a practice."""
+		return t("The practice stops; nothing is lost.")
+
 	def handle(self, command):
 		"""Run one practice command; return True when the practice is over."""
 		command = PRACTICE_SHORTCUTS.get(command.strip(), command.strip())
@@ -182,6 +199,10 @@ class PracticeShell(Shell):
 			self.next_subject()
 		elif command == "report":
 			self.write_report()
+		elif command == "back":
+			if self.confirm_back():
+				self.back_requested = True
+				return True
 		elif command == "grademe":
 			# None: the default command of the language (cc -Wall -Wextra -Werror, python3).
 			if self._grade_and_show(None).passed:

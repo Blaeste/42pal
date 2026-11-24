@@ -105,7 +105,11 @@ with a Ctrl+click, if it knows links.
 | `grademe` | `g` | grades your work |
 | `status` | `s` | exam, level, subject, time spent and left, next grademe |
 | `finish` | `f` | ends the exam, with a summary |
+| `back` | `b` | back to the menus, after a wrong click in them (it asks first; Escape in full screen) |
 | `help` | `?` | lists the commands |
+
+`back` forgets an exam with no grademe yet; after a grademe, the exam goes to
+your history as abandoned. In a practice, it loses nothing.
 
 Type the command (or its letter), then Enter. The up and down arrows bring
 back the commands you typed: up then Enter runs the last one again. The

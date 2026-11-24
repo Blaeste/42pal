@@ -406,6 +406,22 @@ class ScreenShell(ScreenShellMixin, Shell):
 class ScreenPracticeShell(ScreenShellMixin, PracticeShell):
 	"""The practice shell, for the full-screen interface."""
 
+class CommandLine(Input):
+	"""The command line of a session: one line at a time, even when pasting.
+
+	Ctrl+V pastes the clipboard of the app, which holds the whole report
+	after r: only its first line, like a paste from the terminal.
+	"""
+
+	def action_paste(self):
+		lines = self.app.clipboard.splitlines()
+		if lines:
+			start, end = self.selection
+			self.replace(lines[0], start, end)
+
+# What the session screen ends with when the student goes back to the menus.
+BACK_TO_MENUS = object()
+
 class SessionScreen(Screen):
 	"""An exam (or a practice): the header, the subject, the log, the command line.
 
@@ -425,6 +441,8 @@ class SessionScreen(Screen):
 		# Copies the selection like Ctrl+C, in the terminals that let it through;
 		# with nothing selected, it does nothing (Ctrl+C would leave).
 		("ctrl+shift+c", "screen.copy_text", "Copy"),
+		# Back to the menus, after a wrong click in them (asks first).
+		("escape", "back", "Back to the menus"),
 	]
 
 	def __init__(self, shell, practice=False):
@@ -454,11 +472,14 @@ class SessionScreen(Screen):
 			yield SelectableLog(id="log", wrap=False, markup=False, highlight=False)
 		yield Static(id="activity")
 		letters = ", ".join(f"{letter} {command}" for letter, command in self.shortcuts.items())
-		yield Input(id="command", placeholder=t("{prompt} type a command ({letters})", prompt=self.prompt, letters=letters),
+		# max_length: a command is short, whatever is typed or pasted.
+		yield CommandLine(id="command", max_length=200,
+			placeholder=t("{prompt} type a command ({letters})", prompt=self.prompt, letters=letters),
 			suggester=SuggestFromList(list(self.commands), case_sensitive=False))
 		# The one-letter commands are in the placeholder of the command line.
 		yield Static(hints([("↑↓", N_("history")), ("→", N_("complete")), ("pgup pgdn", N_("subject")),
-			("ctrl+c ctrl+shift+c", N_("copy")), ("r", N_("report")), ("ctrl+q", N_("leave"))]), id="session-hints")
+			("ctrl+c ctrl+shift+c", N_("copy")), ("r", N_("report")), ("esc", N_("back")), ("ctrl+q", N_("leave"))]),
+			id="session-hints")
 
 	def on_mount(self):
 		self.query_one("#log").border_title = " log "
@@ -603,6 +624,8 @@ class SessionScreen(Screen):
 			self.busy = True
 			event.input.disabled = True
 			self.grade_in_background(command)
+		elif self.shortcuts.get(command, command) == "back":
+			self.action_back()
 		elif command == "cheat" and not self.practice:
 			# Hidden: the menus of the cheat menu are screens of the app.
 			self.app.cheat_flow(self)
@@ -612,6 +635,19 @@ class SessionScreen(Screen):
 			# A new report goes to the clipboard too, ready to paste in an issue.
 			if self.shell.last_report is not None and self.shell.last_report != before:
 				self.app.copy_to_clipboard(self.shell.last_report.read_text(encoding="utf-8"))
+
+	def action_back(self):
+		"""Escape (or back): back to the menus once the student says so; Escape again stays."""
+		if self.busy or self.over:
+			return
+
+		def answer(value):
+			if value == "menus":
+				self.dismiss(BACK_TO_MENUS)
+
+		item = ("menus", t("Back to the menus"), t("to choose again"), self.shell.back_consequence())
+		self.app.push_screen(MenuScreen(t("Back to the menus?"), [item], first=False,
+			last=(t("Stay here"), t("Go on where you were."))), answer)
 
 	@work(thread=True, exclusive=True)
 	def grade_in_background(self, command):
@@ -776,17 +812,33 @@ class Pal42App(App):
 			self.notify(Text.from_ansi(printed).plain.strip(), timeout=8)
 		return result
 
+	# The examshell, when a practice took its place (Back gives it back).
+	exam_shell = None
+
 	@work
 	async def exam_flow(self):
-		shell = self.shell
+		shell = self.exam_shell = self.shell
 		shell.user = await self.push_screen(LoginScreen(self.user), wait_for_dismiss=True)
 		if await self.offer_update():
 			return
+		resumed = False
 		if self.run_quietly(shell.restore_saved):
-			if await self.ask_resume() == "resume":
-				shell.show_subject()
-				await self.run_session()
+			choice = await self.ask_resume()
+			if choice is BACK:
 				return
+			resumed = choice == "resume"
+		while True:
+			if resumed:
+				self.shell.show_subject()
+			elif not await self.start_from_menus():
+				return
+			resumed = False
+			if not await self.run_session():
+				return
+
+	async def start_from_menus(self):
+		"""The menus until an exam or a practice starts (True); False when the app quits."""
+		shell = self.shell
 		start = await self.choose_start()
 		while start in (PRACTICE, PROGRESS, SETTINGS):
 			if start == SETTINGS:
@@ -803,14 +855,13 @@ class Pal42App(App):
 				self.shell, self.practice = practice, True
 				practice.theme = theme
 				self.run_quietly(practice.next_subject)
-				await self.run_session()
-				return
+				return True
 			start = await self.choose_start()
 		if start is None:
 			self.exit()
-			return
+			return False
 		self.run_quietly(lambda: shell.begin(*start))
-		await self.run_session()
+		return True
 
 	async def settings_flow(self):
 		"""Settings: the language of 42pal, each one under its own name; the choice is kept."""
@@ -960,16 +1011,20 @@ class Pal42App(App):
 
 	@work
 	async def practice_flow(self):
+		"""./42pal practice: a theme, the subjects; Back comes to the themes again."""
 		shell = self.shell
 		theme = self.practice_theme
-		if theme is None:
-			theme = await self.choose_practice_theme(shell)
+		while True:
 			if theme is None:
-				self.exit()
+				theme = await self.choose_practice_theme(shell)
+				if theme is None:
+					self.exit()
+					return
+			shell.theme = theme
+			self.run_quietly(shell.next_subject)
+			if not await self.run_session():
 				return
-		shell.theme = theme
-		self.run_quietly(shell.next_subject)
-		await self.run_session()
+			theme = None
 
 	async def choose_practice_theme(self, shell, first=True):
 		"""The language (when there are several), then a theme of it; None to leave.
@@ -1001,9 +1056,20 @@ class Pal42App(App):
 				return None
 
 	async def run_session(self):
-		"""The session screen until the end; then leave with what it printed last."""
+		"""The session screen until the end, then leave with what it printed last; True after Back."""
 		final = await self.push_screen(SessionScreen(self.shell, self.practice), wait_for_dismiss=True)
+		if final is BACK_TO_MENUS:
+			self.back_to_menus()
+			return True
 		self.exit(final)
+		return False
+
+	def back_to_menus(self):
+		"""After Back: the exam is left (forgotten, or abandoned after a grademe); a practice just stops."""
+		if not self.practice:
+			self.run_quietly(self.shell.leave_exam)
+		elif self.exam_shell is not None:
+			self.shell, self.practice = self.exam_shell, False
 
 def finish_in_terminal(final, shell, practice=False):
 	"""After the full screen: the summary stays in the terminal, or how to resume."""

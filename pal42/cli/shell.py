@@ -38,11 +38,12 @@ COMMANDS = {
 	"grademe": N_("grade your work"),
 	"report": N_("write a report for an issue: subject, your code, last trace"),
 	"finish": N_("end the exam"),
+	"back": N_("back to the menus (asks first)"),
 	"help": N_("show this help"),
 }
 
-# One letter (then Enter) for each command: g, s, r, f and ?.
-SHORTCUTS = {"g": "grademe", "s": "status", "r": "report", "f": "finish", "?": "help"}
+# One letter (then Enter) for each command: g, s, r, f, b and ?.
+SHORTCUTS = {"g": "grademe", "s": "status", "r": "report", "f": "finish", "b": "back", "?": "help"}
 
 # The two modes and the waits each one takes from the exam file: the exam
 # mode is 42_EXAM's (hard waits, the real duration), the revision mode is
@@ -118,6 +119,8 @@ class Shell:
 		self.cheat_pack = None
 		# Where Settings keeps the language (None: ~/.42pal/settings.json).
 		self.settings_file = None
+		# True once back was confirmed: the commands stop, the menus come again.
+		self.back_requested = False
 
 	def _reset(self):
 		"""No exam in progress: the state before an exam starts."""
@@ -145,30 +148,74 @@ class Shell:
 		self.last_report = None
 
 	def run(self):
-		"""The whole session: login, exam (or the saved one), then the commands."""
+		"""The whole session: login, exam (or the saved one), then the commands.
+
+		back during an exam (after a wrong click in the menus) comes to the
+		first menu again.
+		"""
 		try:
 			self.login()
 			if self.offer_update():
 				return
-			if not self.resume():
-				start = self.choose_start()
-				while start in (PRACTICE, PROGRESS, SETTINGS):
-					if start == SETTINGS:
-						self.choose_settings()
-					else:
-						theme = self.show_progress() if start == PROGRESS else None
-						if (start == PRACTICE or theme is not None) and self.practise(theme):
-							return
-					start = self.choose_start()
-				if start is None:
-					self.console.print(t("Goodbye!"))
-					return
-				self.begin(*start)
+			resumed = self.resume()
 		# Ctrl-D before the exam has started: just leave.
 		except EOFError:
 			self.console.print("\n" + t("Goodbye!"))
 			return
-		self.command_loop()
+		while True:
+			if not resumed and not self._start_from_menus():
+				return
+			resumed = False
+			self.command_loop()
+			if not self.back_requested:
+				return
+			self.back_requested = False
+			self.leave_exam()
+			self.console.print()
+
+	def _start_from_menus(self):
+		"""The menus until an exam begins (True); False once the session is over (quit, a practice done)."""
+		try:
+			start = self.choose_start()
+			while start in (PRACTICE, PROGRESS, SETTINGS):
+				if start == SETTINGS:
+					self.choose_settings()
+				else:
+					theme = self.show_progress() if start == PROGRESS else None
+					if (start == PRACTICE or theme is not None) and self.practise(theme):
+						return False
+				start = self.choose_start()
+			if start is None:
+				self.console.print(t("Goodbye!"))
+				return False
+			self.begin(*start)
+			return True
+		# Ctrl-D in a menu: just leave.
+		except EOFError:
+			self.console.print("\n" + t("Goodbye!"))
+			return False
+
+	def back_consequence(self):
+		"""What going back to the menus does to the exam: said before the student confirms."""
+		if self.attempts:
+			return t("This exam goes to your history as abandoned.")
+		return t("Nothing is kept: no grademe was made yet.")
+
+	def confirm_back(self):
+		"""Ask before going back to the menus; True when the student says yes."""
+		answer = self.ask(f"{t('Back to the menus?')} {self.back_consequence()} (y/n)", "n")
+		return answer.strip().lower().startswith("y")
+
+	def leave_exam(self):
+		"""Leave the exam for the menus: kept as abandoned after a grademe, else forgotten."""
+		if self.exam is None:
+			return
+		if self.store and self.attempts:
+			self._forget("abandoned")
+			return
+		if self.store:
+			self.store.clear()
+		self._reset()
 
 	def login(self):
 		"""Fake login, like at the exam: any password, never checked or kept."""
@@ -503,6 +550,10 @@ class Shell:
 				return True
 		elif command == "report":
 			self.write_report()
+		elif command == "back":
+			if self.confirm_back():
+				self.back_requested = True
+				return True
 		elif command == "cheat":
 			# Hidden: in no help nor completion, for the owner of 42pal only.
 			if self.cheat():
