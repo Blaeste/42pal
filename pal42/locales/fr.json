@@ -96,7 +96,7 @@
 	"Display the first given letter found in a string": "Afficher la première lettre donnée trouvée dans une chaîne",
 	"Display the words of a string in another order": "Afficher les mots d'une chaîne dans un autre ordre",
 	"Download": "Télécharger",
-	"Download a tester of your projects and run it here: libfterator for the libft.": "Télécharge un testeur de tes projets et lance-le ici : libfterator pour la libft.",
+	"Download a tester of your projects and run it here: libfterator for the libft, Pushterator for push_swap.": "Télécharge un testeur de tes projets et lance-le ici : libfterator pour la libft, Pushterator pour push_swap.",
 	"Download it now?": "Le télécharger maintenant ?",
 	"Download {tester}?": "Télécharger {tester} ?",
 	"Downloading {tester}…": "Téléchargement de {tester}…",
