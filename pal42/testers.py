@@ -87,6 +87,20 @@ TESTERS = (
 		tests_title=N_("The tests"),
 		visualizer=("--visualize",),
 	),
+	Tester(
+		name="linerator",
+		project="get_next_line",
+		summary=N_("get_next_line: every BUFFER_SIZE, read and malloc failures, the bonus"),
+		url="https://github.com/Blaeste/Linerator.git",
+		tag="v1.0.1",
+		commit="c822018156d68d35a0ab98e87eea91810f7ee57d",
+		launcher="linerator",
+		marker="get_next_line.c",
+		streams=True,
+		python=False,
+		tests_title=N_("The tests"),
+		visualizer=("--visualize",),
+	),
 )
 
 # What state() says.

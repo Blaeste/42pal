@@ -1384,7 +1384,7 @@ class Pal42App(App):
 			items.append((PROGRESS, t(display.PROGRESS_TEXT), t(display.PROGRESS_SUMMARY),
 				t("How your exams went, and the themes that fail the most, to practise them.")))
 		items.append((TESTERS, t(display.TESTERS_TEXT), t(display.TESTERS_SUMMARY),
-			t("Download a tester of your projects and run it here: libfterator for the libft, Pushterator for push_swap.")))
+			t("Download a tester of your projects and run it here: libfterator for the libft, Pushterator for push_swap, Linerator for get_next_line.")))
 		items.append((SETTINGS, t(display.SETTINGS_TEXT), display.settings_summary(i18n.languages()[i18n.language()]),
 			t("The language of 42pal: the menus, the messages, the traces and the subjects.")))
 		return await self.ask(t(display.FIRST_MENU_TITLE), items, first), True

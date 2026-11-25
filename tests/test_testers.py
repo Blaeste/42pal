@@ -141,6 +141,19 @@ class TestTheRegistry(unittest.TestCase):
 		self.assertTrue(testers.available(tester, "darwin"))
 		self.assertTrue(tester.streams)
 
+	def test_linerator_for_get_next_line(self):
+		tester = testers.find("linerator")
+		self.assertEqual(tester.url, "https://github.com/Blaeste/Linerator.git")
+		self.assertTrue(tester.tag.startswith("v1."))
+		self.assertRegex(tester.commit, r"^[0-9a-f]{40}$")
+		self.assertEqual((tester.launcher, tester.project), ("linerator", "get_next_line"))
+		# Its launcher is a shell script; it needs ld --wrap (Linux); it has a visualizer.
+		self.assertFalse(tester.python)
+		self.assertEqual(tester.visualizer, ("--visualize",))
+		self.assertTrue(testers.available(tester, "linux"))
+		self.assertFalse(testers.available(tester, "darwin"))
+		self.assertTrue(tester.streams)
+
 	def test_only_on_linux(self):
 		tester = testers.find("libfterator")
 		self.assertTrue(testers.available(tester, "linux"))
@@ -343,6 +356,10 @@ class TestTheMarker(unittest.TestCase):
 			self.assertFalse(testers.has_marker(pushterator, folder))
 			(folder / "Makefile").write_text("NAME = push_swap\n")
 			self.assertTrue(testers.has_marker(pushterator, folder))
+			linerator = testers.find("linerator")
+			self.assertFalse(testers.has_marker(linerator, folder))
+			(folder / "get_next_line.c").write_text("")
+			self.assertTrue(testers.has_marker(linerator, folder))
 
 class TestFindTheProjects(unittest.TestCase):
 	"""The folders that look like the project (libft.h for libfterator), found in the home folder."""
