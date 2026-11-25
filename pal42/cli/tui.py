@@ -27,7 +27,7 @@ from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
 from textual import work
-from textual.app import App, ComposeResult
+from textual.app import App, ComposeResult, SuspendNotSupported
 from textual.containers import Container, Vertical, VerticalScroll
 from textual.css.scalar import ScalarOffset
 from textual.screen import Screen
@@ -631,6 +631,7 @@ class TesterScreen(Screen):
 		("escape", "back", "Back"),
 		("r", "again", "Run again"),
 		("f", "folder", "Another folder"),
+		("v", "visualize", "Visualizer"),
 		("ctrl+shift+c", "screen.copy_text", "Copy"),
 	]
 
@@ -651,8 +652,14 @@ class TesterScreen(Screen):
 		# The long lines wrap: no horizontal scroll bar.
 		yield SelectableLog(id="log", wrap=True, min_width=0, markup=False, highlight=False)
 		yield Static(id="activity")
-		yield Static(hints([("r", N_("run again")), ("f", N_("another folder")), ("esc", N_("back")),
-			("ctrl+q", N_("leave"))]), id="session-hints")
+		keys = [("r", N_("run again")), ("f", N_("another folder"))]
+		# A tester with a visualizer: v opens it.
+		keys += [("v", N_("visualize"))] if self.tester.visualizer else []
+		yield Static(hints(keys + [("esc", N_("back")), ("ctrl+q", N_("leave"))]), id="session-hints")
+
+	def action_visualize(self):
+		if not self.busy and self.tester.visualizer:
+			self.app.open_visualizer(self.tester, self.project)
 
 	def on_mount(self):
 		self.query_one("#header", Static).border_title = f" 42pal · {t('Testers')} "
@@ -1244,6 +1251,22 @@ class Pal42App(App):
 			again = await self.push_screen(TesterScreen(tester, project, self.run_tester), wait_for_dismiss=True)
 			if again != "folder":
 				return
+
+	def open_visualizer(self, tester, project):
+		"""The visualizer of the tester on `project`, in the terminal: 42pal pauses, then comes back."""
+		if testers_core.state(tester, self.shell.testers_root) != testers_core.READY:
+			self.notify(t("Update {tester} to get its visualizer.", tester=tester.name), severity="warning")
+			return
+		lang = testers_core.tester_language(tester, i18n.language())
+		self.run_in_terminal(testers_core.visualizer_command(tester, project, lang, self.shell.testers_root))
+
+	def run_in_terminal(self, command):
+		"""Run `command` on the terminal of 42pal, the screen put aside until it ends."""
+		try:
+			with self.suspend():
+				subprocess.run(command, stdin=None)
+		except (SuspendNotSupported, OSError) as error:
+			self.notify(t("Cannot open it here: {why}", why=error), severity="error")
 
 	def run_tester(self, tester, project, on_progress=None):
 		"""Run the tester on `project` in the language of 42pal; the folder is kept for the next time."""

@@ -239,7 +239,9 @@ live: the checks of the subject as they are done, a bar of the tests and
 the failures as they come. Then the whole report, in the language of
 42pal: each check of the subject, each function with its failing tests,
 the undefined cases (not counted), the verdict and the full log. `r` runs
-it again, `f` tests another folder.
+it again, `f` tests another folder. With Pushterator, `v` opens its
+visualizer of the sort (`Visualize` in `--plain`): 42pal steps aside, and
+comes back when it is left.
 
 libfterator needs Linux (or WSL), `cc`, `make` and `git`; Pushterator runs on
 macOS too. Each one works on its own too, in its own clone: `./libfterator

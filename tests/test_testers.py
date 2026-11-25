@@ -135,8 +135,9 @@ class TestTheRegistry(unittest.TestCase):
 		self.assertTrue(tester.tag.startswith("v1."))
 		self.assertRegex(tester.commit, r"^[0-9a-f]{40}$")
 		self.assertEqual((tester.launcher, tester.project), ("pushterator", "push_swap"))
-		# Its launcher is a shell script; it runs on macOS too.
+		# Its launcher is a shell script; it runs on macOS too; it has a visualizer.
 		self.assertFalse(tester.python)
+		self.assertEqual(tester.visualizer, ("--visualize",))
 		self.assertTrue(testers.available(tester, "darwin"))
 		self.assertTrue(tester.streams)
 
@@ -315,6 +316,14 @@ class TestRun(TesterTestCase):
 		medium = report.functions[-1]
 		self.assertEqual((medium.name, medium.bad, [test.name for test in medium.warnings]),
 			("complexity", [], ["complexity/medium"]))
+
+	def test_the_command_of_the_visualizer(self):
+		self.install()
+		self.assertIsNone(testers.visualizer_command(self.tester, self.project, "en", self.root))
+		tester = replace(self.tester, visualizer=("--visualize",))
+		command = testers.visualizer_command(tester, self.project, "fr", self.root)
+		self.assertEqual(command[-5:], [str(self.root / "libfterator" / "libfterator"), str(self.project), "--visualize",
+			"--lang", "fr"])
 
 	def test_not_installed(self):
 		report = testers.run(self.tester, self.project, "en", self.root)

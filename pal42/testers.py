@@ -55,6 +55,8 @@ class Tester:
 	python: bool = True
 	# The title of its tests in the report.
 	tests_title: str = N_("The functions")
+	# The arguments after the project that open its visualizer, if it has one.
+	visualizer: tuple = ()
 
 TESTERS = (
 	Tester(
@@ -74,8 +76,8 @@ TESTERS = (
 		project="push_swap",
 		summary=N_("push_swap, subject of 2026: the strategies, --bench, the benchmarks"),
 		url="https://github.com/Blaeste/Pushterator.git",
-		tag="v1.0.0",
-		commit="9e2656a5310e768a896ecdb66f5479847ea6abd1",
+		tag="v1.1.0",
+		commit="a4858754b990569f5fe916b6f648b175a72d152b",
 		launcher="pushterator",
 		marker="Makefile",
 		marker_text="push_swap",
@@ -83,6 +85,7 @@ TESTERS = (
 		streams=True,
 		python=False,
 		tests_title=N_("The tests"),
+		visualizer=("--visualize",),
 	),
 )
 
@@ -347,6 +350,14 @@ def run(tester, project, lang="en", root=None, timeout=RUN_TIMEOUT, on_progress=
 		except (OSError, ValueError):
 			return failed(t("{tester} gave no results.", tester=tester.name), _tail(output), output)
 	return parse(data, tester, output)
+
+def visualizer_command(tester, project, lang="en", root=None):
+	"""The command that opens the visualizer of the tester on `project`, or None (no visualizer, not installed)."""
+	launcher = folder(tester, root) / tester.launcher
+	if not tester.visualizer or not launcher.is_file():
+		return None
+	return ([sys.executable] if tester.python else []) + [str(launcher), str(project), *tester.visualizer,
+		"--lang", lang]
 
 def _stream(command, cwd, timeout, on_progress):
 	"""Run `command` and give its events to on_progress as they come; return (other output, timed out)."""

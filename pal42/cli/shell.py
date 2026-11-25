@@ -9,6 +9,7 @@ import getpass
 import math
 import os
 import random
+import subprocess
 import sys
 import time
 from datetime import datetime
@@ -134,6 +135,8 @@ class Shell:
 		self.tester_list = None
 		self.testers_root = None
 		self.testers_environ = None
+		# How a command runs on the terminal (the visualizer of a tester; the tests give their own).
+		self.run_command = subprocess.run
 		# Where the folders of a project are looked for (None: the home folder).
 		self.projects_root = None
 
@@ -422,11 +425,24 @@ class Shell:
 			self._show_tester_report(tester, project)
 			items = [("again", t("Run again"), t("same folder"), ""),
 				("another", t("Another folder"), "", "")]
+			if tester.visualizer:
+				items.append(("visualize", t("Visualize"), t("the sort, operation by operation"), ""))
 			choice = self._numbered_menu((t("What now?"), items), first=False)
 			if choice is BACK:
 				return
 			if choice == "another":
 				project = self._ask_project(tester)
+			elif choice == "visualize":
+				self._visualize(tester, project)
+
+	def _visualize(self, tester, project):
+		"""The visualizer of the tester on `project`, on this terminal, until it is left."""
+		if testers_core.state(tester, self.testers_root) != testers_core.READY:
+			self.console.print(t("Update {tester} to get its visualizer.", tester=tester.name), markup=False)
+			return
+		lang = testers_core.tester_language(tester, i18n.language())
+		self.run_command(testers_core.visualizer_command(tester, project, lang, self.testers_root))
+		self.console.print()
 
 	def _tester_ready(self, tester):
 		"""Download the tester, or its new version, when the student agrees; True when it can run."""

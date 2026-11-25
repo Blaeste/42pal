@@ -595,6 +595,74 @@ class TestTheCompletionOfAFolder(unittest.TestCase):
 if __name__ == "__main__":
 	unittest.main()
 
+class TestTheVisualizerOfATester(FullScreenTest, TestersTestCase):
+	"""v in the results: 42pal pauses and opens the visualizer of the tester in the terminal, then comes back."""
+
+	def setUp(self):
+		FullScreenTest.setUp(self)
+		TestersTestCase.setUp(self)
+		self.tester = replace(self.tester, visualizer=("--visualize",))
+		testers.install(self.tester, self.testers_root, environ={})
+
+	async def results(self, pilot, app):
+		await self.login(pilot)
+		app.push_screen(TesterScreen(self.tester, self.project, app.run_tester))
+		for _ in range(200):
+			await pilot.pause(0.05)
+			if isinstance(app.screen, TesterScreen) and not app.screen.busy and app.screen.report is not None:
+				return app.screen
+		self.fail("no results")
+
+	@screen_test
+	async def test_v_opens_the_visualizer_in_the_terminal(self):
+		app = self.exam_app()
+		self.configure(app.shell, self.tester)
+		app.settings_file = self.settings
+		commands = []
+		app.run_in_terminal = commands.append
+		async with app.run_test(size=(100, 40)) as pilot:
+			screen = await self.results(pilot, app)
+			self.assertIn("visualize", str(screen.query_one("#session-hints").render()))
+			await pilot.press("v")
+			await pilot.pause()
+			self.assertEqual(len(commands), 1)
+			self.assertIn("--visualize", commands[0])
+			self.assertIn(str(self.project), commands[0])
+			self.assertIs(app.screen, screen)
+
+	@screen_test
+	async def test_no_visualizer_no_v(self):
+		self.tester = replace(self.tester, visualizer=())
+		app = self.exam_app()
+		self.configure(app.shell, self.tester)
+		commands = []
+		app.run_in_terminal = commands.append
+		async with app.run_test(size=(100, 40)) as pilot:
+			screen = await self.results(pilot, app)
+			self.assertNotIn("visualize", str(screen.query_one("#session-hints").render()))
+			await pilot.press("v")
+			await pilot.pause()
+			self.assertEqual(commands, [])
+
+class TestTheVisualizerInText(TestersTestCase):
+
+	def test_visualize_in_the_menu_after_the_results(self):
+		tester = replace(self.tester, visualizer=("--visualize",))
+		testers.install(tester, self.testers_root, environ={})
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		script = Script("", "pw", TESTERS, LIBFTERATOR, str(self.project), "3", "4", BACK, QUIT)
+		shell = Shell(console, script.ask, script.ask_password, Workspace(self.folder / "exam"), rng=Random(1),
+			clock=FakeClock(), sleep=lambda seconds: None, catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+		self.configure(shell, tester)
+		commands = []
+		shell.run_command = commands.append
+		shell.run()
+		text = console.file.getvalue()
+		# What now? 1 Run again, 2 Another folder, 3 Visualize, 4 Back.
+		self.assertIn("3. Visualize", text)
+		self.assertEqual(len(commands), 1)
+		self.assertIn("--visualize", commands[0])
+
 class TestTheReportOfATester(unittest.TestCase):
 	"""What 42pal shows of the results of a tester: its own title, and the same failure once."""
 
