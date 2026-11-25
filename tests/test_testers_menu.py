@@ -515,6 +515,108 @@ class TestLive(FullScreenTest, TestersTestCase):
 					break
 			self.assertIn("✗ KO  subject 1/2 · tests 3/4", log_text(screen))
 
+# The suites as a tester like Linerator names and draws them.
+GNL_SUITES = [
+	{"key": "buffer_1", "name": "BUFFER_SIZE=1", "group": "BUFFER_SIZE", "label": "1", "tests": 3},
+	{"key": "read_errors", "name": "read() fails", "group": "The other tests", "label": "read() fails", "tests": 2},
+]
+GNL_TESTS = [
+	{"name": "buffer_1/one_line", "status": "PASS", "detail": "1 line", "ms": 1},
+	{"name": "buffer_1/empty", "status": "PASS", "detail": "0 lines", "ms": 1},
+	{"name": "buffer_1/long_line", "status": "LEAK", "detail": "1 block(s) not freed", "ms": 1},
+	{"name": "read_errors/first_read", "status": "PASS", "detail": "NULL", "ms": 1},
+	{"name": "read_errors/reopen", "status": "PASS", "detail": "NULL", "ms": 1},
+]
+
+class TestTheSuitesOfATester(FullScreenTest, TestersTestCase):
+	"""A tester that names and draws its suites: 42pal shows the same names and the same panel as the tester."""
+
+	def setUp(self):
+		FullScreenTest.setUp(self)
+		TestersTestCase.setUp(self)
+
+	@screen_test
+	async def test_the_panel_and_the_names_live_then_in_the_report(self):
+		release = threading.Event()
+		self.addCleanup(release.set)
+
+		def run(tester, project, on_progress):
+			progress = testers.Progress()
+			for event in ({"event": "plan", "tests": 5, "suites": GNL_SUITES}, {"event": "step", "step": "tests"},
+					*({"event": "test", **test} for test in GNL_TESTS[:3])):
+				on_progress(progress, progress.update(event))
+			release.wait(10)
+			return testers.parse(results(conformity=[], tests=GNL_TESTS, suites=GNL_SUITES), tester)
+
+		app = self.exam_app()
+		async with app.run_test(size=(120, 40)) as pilot:
+			await self.login(pilot)
+			screen = TesterScreen(self.tester, self.project, run)
+			app.push_screen(screen)
+			for _ in range(100):
+				await pilot.pause(0.05)
+				panel = getattr(screen, "suites_panel", None)
+				if panel is not None and "2/3" in str(panel.render()):
+					break
+			self.assertTrue(panel.has_class("-shown"))
+			self.assertIn("BUFFER_SIZE", str(panel.render()))
+			self.assertIn("BUFFER_SIZE=1 · long_line", log_text(screen))
+			release.set()
+			for _ in range(100):
+				await pilot.pause(0.05)
+				if not screen.busy:
+					break
+			text = log_text(screen)
+			self.assertIn("BUFFER_SIZE=1", text)
+			self.assertIn("read() fails", text)
+			self.assertNotIn("buffer_1 ", text)
+			self.assertIn("2/2", str(panel.render()))
+			# The report takes the place of what came live.
+			self.assertEqual(text.count("long_line"), 1)
+
+	@screen_test
+	async def test_no_panel_for_a_tester_that_gives_no_suites(self):
+		def run(tester, project, on_progress):
+			return testers.parse(results(), tester)
+
+		app = self.exam_app()
+		async with app.run_test(size=(120, 40)) as pilot:
+			await self.login(pilot)
+			screen = TesterScreen(self.tester, self.project, run)
+			app.push_screen(screen)
+			for _ in range(100):
+				await pilot.pause(0.05)
+				if not screen.busy:
+					break
+			self.assertFalse(screen.suites_panel.has_class("-shown"))
+
+	@screen_test
+	async def test_no_title_of_failures_while_everything_passes(self):
+		release = threading.Event()
+		self.addCleanup(release.set)
+
+		def run(tester, project, on_progress):
+			progress = testers.Progress()
+			for event in ({"event": "plan", "tests": 5}, {"event": "step", "step": "tests"},
+					*({"event": "test", **test} for test in GNL_TESTS[:2])):
+				on_progress(progress, progress.update(event))
+			release.wait(10)
+			return testers.parse(results(), tester)
+
+		app = self.exam_app()
+		async with app.run_test(size=(120, 40)) as pilot:
+			await self.login(pilot)
+			screen = TesterScreen(self.tester, self.project, run)
+			screen.PROGRESS_EVERY = 0
+			app.push_screen(screen)
+			for _ in range(100):
+				await pilot.pause(0.05)
+				if "2/5" in str(screen.query_one("#activity").render()):
+					break
+			self.assertIn("2/5", str(screen.query_one("#activity").render()))
+			self.assertNotIn("Failed so far", log_text(screen))
+			release.set()
+
 class TestNoHorizontalScroll(FullScreenTest, TestersTestCase):
 	"""The long lines of the results wrap: no horizontal scroll bar, even in a narrow terminal."""
 
@@ -713,6 +815,29 @@ class TestTheReportOfATester(unittest.TestCase):
 		text = self.text(self.report(tests), testers.find("pushterator"))
 		self.assertIn("all 8", text)
 		self.assertEqual(text.count("Error with --simple"), 1)
+
+	def test_the_names_the_tester_gives_its_suites(self):
+		data = results(conformity=[], tests=GNL_TESTS, suites=GNL_SUITES)
+		report = testers.parse(data, testers.find("linerator"))
+		text = self.text(report, testers.find("linerator"))
+		self.assertIn("BUFFER_SIZE=1", text)
+		self.assertIn("read() fails", text)
+		self.assertNotIn("buffer_1", text.replace("buffer_1/", ""))
+
+	def test_an_undefined_case_in_a_suite_is_not_counted(self):
+		tests = [{"name": "malloc_failures/malloc_1", "status": "PASS", "detail": "", "ms": 0},
+			{"name": "malloc_failures/malloc_9", "status": "INFO", "detail": "only 8 calls to malloc", "ms": 0}]
+		report = self.report(tests)
+		self.assertEqual(report.test_score, (1, 1))
+		self.assertEqual((report.functions[0].passed, report.functions[0].total), (1, 1))
+
+	def test_the_suites_checked(self):
+		data = {"suites": [{"key": "a", "tests": 3}, {"name": "no key"}, "nonsense", {"key": "b", "tests": -1}]}
+		self.assertEqual(testers.suites_of(data), [
+			{"key": "a", "name": "a", "group": "", "label": "a", "tests": 3},
+			{"key": "b", "name": "b", "group": "", "label": "b", "tests": 0}])
+		self.assertEqual(testers.suites_of({"suites": "nonsense"}), [])
+		self.assertEqual(testers.suites_of({}), [])
 
 	def test_different_failures_each_shown(self):
 		tests = [{"name": f"size_5/case_{n}", "status": "FAIL", "detail": f"not sorted {n}", "ms": 0} for n in range(3)]

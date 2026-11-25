@@ -28,7 +28,7 @@ from rich.style import Style
 from rich.text import Text
 from textual import work
 from textual.app import App, ComposeResult, SuspendNotSupported
-from textual.containers import Container, Vertical, VerticalScroll
+from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.css.scalar import ScalarOffset
 from textual.screen import Screen
 from textual.strip import Strip
@@ -621,12 +621,16 @@ class TesterScreen(Screen):
 
 	run(tester, project, on_progress) runs it and returns its report, in a
 	thread: the screen stays alive, and shows what the tester finds as it
-	comes (on_progress). r runs it again, f asks another folder (dismissed
-	with "folder"), Esc goes back (dismissed with None).
+	comes (on_progress), then the report in place of it. A tester that
+	names and draws its suites gets its panel on the side, like on its own.
+	r runs it again, f asks another folder (dismissed with "folder"), Esc
+	goes back (dismissed with None).
 	"""
 
 	# The counter changes at most this often (seconds); a check or a failure shows at once.
 	PROGRESS_EVERY = 0.1
+	# The panel of the suites shows from this width of the terminal.
+	PANEL_FROM = 100
 
 	BINDINGS = [
 		("escape", "back", "Back"),
@@ -650,8 +654,16 @@ class TesterScreen(Screen):
 
 	def compose(self) -> ComposeResult:
 		yield Static(id="header")
-		# The long lines wrap: no horizontal scroll bar.
-		yield SelectableLog(id="log", wrap=True, min_width=0, markup=False, highlight=False)
+		# Kept at hand: the widgets inside the body may mount after the screen does.
+		self.log_view = SelectableLog(id="log", wrap=True, min_width=0, markup=False, highlight=False)
+		self.log_view.border_title = " log "
+		self.suites_panel = Static(id="tester-panel")
+		self.suites_panel.border_title = f" {t(self.tester.tests_title)} "
+		with Horizontal(id="tester-body"):
+			# The long lines wrap: no horizontal scroll bar.
+			yield self.log_view
+			# The suites drawn test after test, when the tester gives them (display.tester_panel).
+			yield self.suites_panel
 		yield Static(id="activity")
 		keys = [("r", N_("run again")), ("f", N_("another folder"))]
 		# A tester with a visualizer: v opens it.
@@ -665,8 +677,17 @@ class TesterScreen(Screen):
 	def on_mount(self):
 		self.query_one("#header", Static).border_title = f" 42pal · {t('Testers')} "
 		self.refresh_header()
-		self.query_one("#log").border_title = " log "
 		self.action_again()
+
+	def on_resize(self, event):
+		# A narrow terminal keeps the whole width for the log.
+		self.set_class(event.size.width < self.PANEL_FROM, "-narrow")
+
+	def show_panel(self, rows, done):
+		"""The panel of the suites, shown only when the tester gives them."""
+		self.suites_panel.set_class(bool(rows), "-shown")
+		if rows:
+			self.suites_panel.update(display.tester_panel(rows, done))
 
 	def refresh_header(self):
 		"""The tester, the folder, and the verdict once there is one: the log opens at its top."""
@@ -682,7 +703,8 @@ class TesterScreen(Screen):
 			return
 		self.busy = True
 		self.refresh_header()
-		self.query_one("#log", RichLog).clear()
+		self.log_view.clear()
+		self.show_panel([], {})
 		self.live_group = None
 		self.live_failures = False
 		activity = self.query_one("#activity", Static)
@@ -705,27 +727,37 @@ class TesterScreen(Screen):
 			return
 		self.shown_at = now
 		text = display.tester_progress(self.tester, progress)
-		self.app.call_from_thread(self.show_progress, text, item)
+		# A copy of the suites so far: the thread of the tester goes on changing them.
+		done = {suite: list(results) for suite, results in progress.results.items()}
+		self.app.call_from_thread(self.show_progress, text, item, list(progress.suites), done)
 
-	def show_progress(self, text, item):
-		"""The counter in the activity line; the check or the failed test in the log."""
+	def show_progress(self, text, item, suites=(), done=None):
+		"""The counter in the activity line, the panel; the check or the failed test in the log."""
 		self.query_one("#activity", Static).update("⠿ " + text)
+		self.show_panel(suites, done or {})
 		if item is None:
 			return
-		log = self.query_one("#log", RichLog)
+		log = self.log_view
 		if isinstance(item, testers_core.Check) and self.live_group is None:
 			log.write(Text(t("The subject"), style="bold"))
-		if isinstance(item, testers_core.TestCase) and not self.live_failures:
+		if isinstance(item, testers_core.TestCase) and item.bad and not self.live_failures:
 			self.live_failures = True
 			log.write(Text("\n" + t("Failed so far"), style="bold"))
-		lines, self.live_group = display.tester_live_lines(self.tester, item, self.live_group)
+		names = {row["key"]: row["name"] for row in suites}
+		lines, self.live_group = display.tester_live_lines(self.tester, item, self.live_group, names)
 		for line in lines:
 			log.write(line)
 
 	def show_report(self, report):
 		self.report = report
 		self.query_one("#activity", Static).set_class(False, "-busy")
-		log = self.query_one("#log", RichLog)
+		done = {}
+		for test in report.tests:
+			done.setdefault(test.function, []).append(not test.bad)
+		self.show_panel(report.suites or [], done)
+		log = self.log_view
+		# The report takes the place of what came live, like in the tester on its own.
+		log.clear()
 		for line in display.tester_report(report, self.tester, self.project):
 			log.write(clickable(line) if isinstance(line, Text) else line)
 		log.scroll_home(animate=False)

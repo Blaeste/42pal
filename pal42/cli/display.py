@@ -462,8 +462,9 @@ def tester_report(report, tester, project):
 		section = Text("\n" + t(tester.tests_title), style="bold")
 		section.append_text(_score(passed, total))
 		lines.append(section)
+		names = report.names
 		for function in report.functions:
-			line = _leader(tester.prefix + function.name)
+			line = _leader(names.get(function.name) or tester.prefix + function.name)
 			line.append_text(_score(function.passed, function.total))
 			lines.append(line)
 			bad = function.bad
@@ -475,7 +476,7 @@ def tester_report(report, tester, project):
 				lines.append(line)
 				continue
 			# A whole suite failing the same way: once.
-			if len(bad) > 2 and len(bad) == len(function.tests) and len({test.detail for test in bad}) == 1:
+			if len(bad) > 2 and len(bad) == function.total and len({test.detail for test in bad}) == 1:
 				line = Text("    ")
 				line.append_text(_status(bad[0].status))
 				line.append(t("all {count}", count=len(bad)))
@@ -505,6 +506,47 @@ def tester_report(report, tester, project):
 	lines.append(Text("\n" + t(DISCLAIMER), style="dim italic"))
 	return lines
 
+# The colors of the cells of the panel of a tester.
+CELL_GOOD, CELL_BAD, CELL_WAITING = "#4ade80", "#f87171", "#2a2f3a"
+
+def tester_panel(rows, done, width=44, label_width=22):
+	"""The panel of the suites of a tester: a group of rows, each its label, a cell a test, its score.
+
+	rows: the suites the tester gives (testers.suites_of); done: {suite: [True
+	when it passed, ...]}. A cell is green when its test passed, red when it
+	failed, dim while waiting; with more tests than room, a cell stands for
+	several (red when one failed). The tester draws the same on its own.
+	"""
+	text, group = Text(), None
+	for row in rows:
+		if row["group"] != group:
+			group = row["group"]
+			if text:
+				text.append("\n\n")
+			text.append(group, style="bold")
+			label_room = min(label_width, max(len(other["label"]) for other in rows if other["group"] == group))
+		results = done.get(row["key"], [])
+		label = row["label"] if len(row["label"]) <= label_room else row["label"][:label_room - 1] + "…"
+		text.append("\n " + label.ljust(label_room) + " ", style="#d1d5db")
+		tests = max(row["tests"], len(results), 1)
+		cells = min(tests, max(4, width - label_room - 10))
+		for cell in range(cells):
+			part = results[cell * tests // cells:(cell + 1) * tests // cells]
+			covered = (cell + 1) * tests // cells - cell * tests // cells
+			if False in part:
+				style = CELL_BAD
+			elif part and len(part) == covered:
+				style = CELL_GOOD
+			else:
+				style = CELL_WAITING
+			text.append("■", style=style)
+		if results:
+			bad = results.count(False)
+			finished = len(results) >= row["tests"]
+			text.append(f" {len(results) - bad}/{len(results)}",
+				style=CELL_BAD if bad else CELL_GOOD if finished else "#9ca3af")
+	return text
+
 def progress_bar(done, total, width=24):
 	"""A bar of `width` characters, filled as `done` goes to `total`."""
 	filled = round(width * done / total) if total else 0
@@ -524,11 +566,12 @@ def tester_progress(tester, progress):
 			bad=len(progress.bad))
 	return t("{tester} is starting…", tester=tester.name)
 
-def tester_live_lines(tester, item, group):
+def tester_live_lines(tester, item, group, names=None):
 	"""The lines of a check or of a failed test as it comes, and the group of checks now.
 
 	A check under the name of its group when the group changes; a failed
-	test with its function and the first line of its detail.
+	test with its function (or the name of its suite, from names) and the
+	first line of its detail.
 	"""
 	lines = []
 	if hasattr(item, "label"):
@@ -544,7 +587,8 @@ def tester_live_lines(tester, item, group):
 	elif item is not None and item.bad:
 		line = Text("    ")
 		line.append_text(_status(item.status))
-		line.append(f"{tester.prefix}{item.function} · {item.short_name}")
+		suite = (names or {}).get(item.function) or f"{tester.prefix}{item.function}"
+		line.append(f"{suite} · {item.short_name}")
 		lines.append(line)
 		lines += _details(item.detail, lines=1)
 	return lines, group

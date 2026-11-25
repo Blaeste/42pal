@@ -92,8 +92,8 @@ TESTERS = (
 		project="get_next_line",
 		summary=N_("get_next_line: every BUFFER_SIZE, read and malloc failures, the bonus"),
 		url="https://github.com/Blaeste/Linerator.git",
-		tag="v1.0.1",
-		commit="c822018156d68d35a0ab98e87eea91810f7ee57d",
+		tag="v1.1.0",
+		commit="c150771b384342a8072a3005a6f18ab46a222c6e",
 		launcher="linerator",
 		marker="get_next_line.c",
 		streams=True,
@@ -228,7 +228,8 @@ class Function:
 
 	@property
 	def total(self):
-		return len(self.tests)
+		"""The tests counted: an undefined case (INFO) is not."""
+		return sum(test.status != "INFO" for test in self.tests)
 
 	@property
 	def passed(self):
@@ -246,6 +247,13 @@ class Report:
 	# What the tester printed, and its JSON as it is.
 	output: str = ""
 	data: dict = None
+	# The suites as the tester names and draws them (suites_of), when it gives them.
+	suites: list = None
+
+	@property
+	def names(self):
+		"""{suite: its name}: BUFFER_SIZE=1 for buffer_1, when the tester gives its names."""
+		return {row["key"]: row["name"] for row in self.suites or ()}
 
 	@property
 	def functions(self):
@@ -270,7 +278,8 @@ class Report:
 
 	@property
 	def test_score(self):
-		counted = [test for test in self.tests if test.function != "info"]
+		"""The tests passed out of those counted: the undefined cases (INFO) are not."""
+		counted = [test for test in self.tests if test.function != "info" and test.status != "INFO"]
 		return sum(not test.bad for test in counted), len(counted)
 
 	@property
@@ -288,6 +297,9 @@ class Progress:
 	tests_done: int = 0
 	# The tests failed so far.
 	bad: list = field(default_factory=list)
+	# The suites as the tester draws them (from its plan), and for each one whether each test passed.
+	suites: list = field(default_factory=list)
+	results: dict = field(default_factory=dict)
 
 	def update(self, event):
 		"""Take one event into account; return the Check or the TestCase it gives, or None."""
@@ -296,6 +308,7 @@ class Progress:
 			self.step = event.get("step", "")
 		elif kind == "plan":
 			self.tests_total = event.get("tests", 0)
+			self.suites = suites_of(event) or self.suites
 		elif kind == "check":
 			check = Check(event.get("key", ""), event.get("group", ""), event.get("label", ""),
 				event.get("status", ""), event.get("detail") or "")
@@ -304,10 +317,28 @@ class Progress:
 		elif kind == "test":
 			test = TestCase(event.get("name", ""), event.get("status", ""), event.get("detail") or "")
 			self.tests_done += 1
+			self.results.setdefault(test.function, []).append(not test.bad)
 			if test.bad:
 				self.bad.append(test)
 			return test
 		return None
+
+def suites_of(data):
+	"""The suites a tester names and draws ("suites" of its JSON or of its plan), checked.
+
+	Each one: {key, name, group, label, tests}: its key in the names of the
+	tests, its name for the report, its group and its label in the panel, and
+	how many tests it has. Nothing when the tester gives none.
+	"""
+	rows = []
+	for row in data.get("suites") or () if isinstance(data.get("suites"), list) else ():
+		if not isinstance(row, dict) or not isinstance(row.get("key"), str):
+			continue
+		tests = row.get("tests")
+		rows.append({"key": row["key"], "name": str(row.get("name") or row["key"]), "group": str(row.get("group") or ""),
+			"label": str(row.get("label") or row.get("name") or row["key"]),
+			"tests": tests if isinstance(tests, int) and tests >= 0 else 0})
+	return rows
 
 def failed(title, detail="", output=""):
 	"""A report with only an error."""
@@ -326,7 +357,7 @@ def parse(data, tester, output=""):
 	error = data.get("error")
 	return Report(checks, tests, error=(error.get("title", ""), error.get("detail") or "") if error else None,
 		notes=list(data.get("notes") or []), log=data.get("log"), lang=data.get("lang", "en"), output=output,
-		data=data)
+		data=data, suites=suites_of(data))
 
 def run(tester, project, lang="en", root=None, timeout=RUN_TIMEOUT, on_progress=None):
 	"""Run the tester on the folder `project`, in the language `lang`; return its Report.

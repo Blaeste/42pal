@@ -27,6 +27,14 @@ Un menu **Testers** dans le premier menu de `./42pal` : l'étudiant choisit un t
 
 `error` vaut `{"title", "detail"}` quand le testeur n'a pas pu tourner (dossier introuvable, outil manquant, libft.a impossible à construire) ; le JSON est écrit dans tous les cas.
 
+**Facultatif, `suites`** (Linerator, 2026-11-25) : le nom et le panneau de chaque suite, dans la langue demandée, aussi dans l'événement `plan` de `--stream` (qui peut revenir, plus petit) :
+
+```json
+"suites": [{"key": "buffer_1", "name": "BUFFER_SIZE=1", "group": "BUFFER_SIZE", "label": "1", "tests": 16}]
+```
+
+`key` est le début du nom des tests (`buffer_1/…`) ; `name` remplace la clé dans le rapport et les échecs en direct ; `group` et `label` rangent la ligne dans le panneau, `tests` dit combien de cases elle a. Avec `suites`, 42pal montre le panneau à côté du log (à partir de 100 colonnes), comme le testeur seul ; sans, rien ne change. Un `INFO` n'est compté nulle part, un `WARN` passe.
+
 ## Étapes
 
 Chaque étape en TDD.

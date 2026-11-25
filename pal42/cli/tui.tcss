@@ -130,9 +130,34 @@ SessionScreen, TesterScreen {
 	layout: vertical;
 }
 
-/* The results of a tester take the whole height. */
-TesterScreen #log {
+/* The results of a tester take the whole height; its panel of suites, when it gives one, is on the side. */
+#tester-body {
 	height: 1fr;
+	layout: horizontal;
+}
+
+TesterScreen #log {
+	width: 1fr;
+	height: 100%;
+}
+
+#tester-panel {
+	display: none;
+	width: 50;
+	height: 100%;
+	border: round #2a2f3a;
+	border-title-color: #a5b4fc;
+	border-title-style: bold;
+	background: #151821;
+	padding: 1 2;
+}
+
+#tester-panel.-shown {
+	display: block;
+}
+
+.-narrow #tester-panel {
+	display: none;
 }
 
 #header {
