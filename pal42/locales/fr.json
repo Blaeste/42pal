@@ -7,6 +7,7 @@
 	"1 theme": "1 thème",
 	"42pal is updated: it starts again.": "42pal est à jour : il redémarre.",
 	"<number>        test a folder found": "<numéro>        teste un dossier trouvé",
+	"A helper tool, not an oracle: it does not cover every test of the evaluation. Test your project yourself too.": "Un outil d'aide, pas un oracle : il ne couvre pas tous les tests de la correction. Teste aussi ton projet toi-même.",
 	"A new version of 42pal": "Une nouvelle version de 42pal",
 	"A new version of 42pal is available: 1 new commit.": "Une nouvelle version de 42pal est disponible : 1 nouveau commit.",
 	"A new version of 42pal is available: {count} new commits.": "Une nouvelle version de 42pal est disponible : {count} nouveaux commits.",

@@ -719,3 +719,30 @@ class TestTheReportOfATester(unittest.TestCase):
 		text = self.text(self.report(tests), testers.find("pushterator"))
 		self.assertNotIn("all 3", text)
 		self.assertIn("not sorted 2", text)
+
+class TestTheDisclaimer(FullScreenTest):
+	"""Each launcher says it is a helper tool: it does not cover every test of the evaluation."""
+
+	@screen_test
+	async def test_at_the_bottom_of_the_login(self):
+		app = self.exam_app()
+		async with app.run_test(size=(100, 40)) as pilot:
+			await pilot.pause()
+			self.assertIn("not an oracle", str(app.screen.query_one(".disclaimer").render()))
+
+	def test_in_the_text_interface(self):
+		console = Console(file=io.StringIO(), width=120, color_system=None)
+		script = Script("", "pw", "5")
+		with tempfile.TemporaryDirectory() as root:
+			shell = Shell(console, script.ask, script.ask_password, Workspace(root), rng=Random(1), clock=FakeClock(),
+				sleep=lambda seconds: None, catalog=ECHO_CATALOG, themes=ECHO_THEMES)
+			shell.run()
+		self.assertIn("not an oracle", console.file.getvalue())
+
+	def test_at_the_end_of_the_results_of_a_tester(self):
+		from pal42.cli import display
+		report = testers.parse(results(), testers.find("libfterator"))
+		console = Console(file=io.StringIO(), width=120, color_system=None)
+		for line in display.tester_report(report, testers.find("libfterator"), Path("/tmp/libft")):
+			console.print(line)
+		self.assertIn("not an oracle", console.file.getvalue().splitlines()[-1])

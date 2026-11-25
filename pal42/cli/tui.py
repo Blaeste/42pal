@@ -216,6 +216,7 @@ class LoginScreen(IntroScreen):
 				yield Static(t("password"), classes="field-label")
 				yield Input(password=True, id="password")
 			yield Static(hints([("⏎", N_("next")), ("esc", N_("quit"))]), classes="hints")
+			yield Static(t(display.DISCLAIMER), classes="disclaimer")
 
 	def on_mount(self):
 		# A Logo widget for the logo: the placeholder was only for the layout.

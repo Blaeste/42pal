@@ -284,6 +284,9 @@ def last_choice(number, first):
 	"""The last choice of a menu: back to the menu before, or quit in the first one."""
 	return f"  {number}. {t('Quit') if first else t('Back (previous menu)')}"
 
+# Said at the bottom of each launcher, and at the end of the results of a tester.
+DISCLAIMER = N_("A helper tool, not an oracle: it does not cover every test of the evaluation. Test your project yourself too.")
+
 # The first menu: its title, and the choice that leads to practice.
 # N_: marked to be translated where they are shown, with t() (the language
 # can change after these lines run).
@@ -499,6 +502,7 @@ def tester_report(report, tester, project):
 		log = Text(t("Full log:") + " ", style="dim")
 		log.append(short_path(report.log), style=f"link {Path(report.log).resolve().as_uri()}")
 		lines.append(log)
+	lines.append(Text("\n" + t(DISCLAIMER), style="dim italic"))
 	return lines
 
 def progress_bar(done, total, width=24):

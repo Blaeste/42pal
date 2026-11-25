@@ -89,6 +89,15 @@ OptionList > .option-list--separator {
 	color: #4b5563;
 }
 
+.disclaimer {
+	width: 100%;
+	content-align: center middle;
+	text-align: center;
+	margin-top: 1;
+	color: #4b5563;
+	text-style: italic;
+}
+
 LoginScreen Input, PassphraseScreen Input, FolderScreen Input {
 	margin-bottom: 1;
 	background: #0f1117;

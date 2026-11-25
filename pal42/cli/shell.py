@@ -240,6 +240,7 @@ class Shell:
 	def login(self):
 		"""Fake login, like at the exam: any password, never checked or kept."""
 		display.typewriter(self.console, "42pal · examshell", sleep=self.sleep)
+		self.console.print(t(display.DISCLAIMER), style="dim italic", markup=False, highlight=False)
 		self.user = self.ask(t("login:"), getpass.getuser())
 		# The password is read, then dropped at once: not checked, not stored.
 		self.ask_password(t("password: "))
