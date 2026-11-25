@@ -53,3 +53,7 @@ Chaque étape en TDD.
 
 - Les testeurs de tiers (licences à vérifier un par un).
 - `--valgrind`, `--asan`, `--gdb` depuis 42pal (restent pour l'usage seul).
+
+## Pushterator (2026-11-25)
+
+Le deuxième testeur : [Pushterator](https://github.com/Blaeste/Pushterator), pour push_swap (sujet de 2026), créé à part avec l'interface de 42pal (son plan est dans son dépôt). Dans le registre : tag `v1.0.0`, son lanceur est un script shell (`python=False`), un projet se reconnaît à son Makefile qui parle de push_swap (`marker="Makefile"`, `marker_text="push_swap"`), il tourne aussi sous macOS. 42pal ne compte plus les `WARN` comme des échecs (la complexité des stratégies) et les montre, donne à chaque testeur le titre de ses tests, et résume une suite qui échoue toute de la même façon.

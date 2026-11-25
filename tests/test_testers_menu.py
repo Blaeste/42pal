@@ -140,7 +140,7 @@ class TestTheTextMenus(TestersTestCase):
 			DONE, BACK, QUIT)
 		self.assertIn("★ libft/", text)
 		self.assertIn("plain/", text)
-		self.assertIn("✓ libft.h here", text)
+		self.assertIn("✓ a libft here", text)
 		self.assertTrue(self.asked(f"{self.project} $"))
 		self.assertIn("✗ KO", text)
 
@@ -444,7 +444,7 @@ class TestTheFolderScreen(FullScreenTest, TestersTestCase):
 			screen = await self.open_screen(pilot)
 			screen.query_one("#folder").value = str(self.project)
 			await pilot.pause()
-			self.assertIn("libft.h", str(screen.query_one("#folder-status").render()))
+			self.assertIn("a libft here", str(screen.query_one("#folder-status").render()))
 			await pilot.press("enter")
 			await pilot.pause()
 			self.assertEqual(self.chosen, [self.project])
@@ -594,3 +594,35 @@ class TestTheCompletionOfAFolder(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+class TestTheReportOfATester(unittest.TestCase):
+	"""What 42pal shows of the results of a tester: its own title, and the same failure once."""
+
+	def report(self, tests):
+		data = results(conformity=[], tests=tests)
+		return testers.parse(data, testers.find("pushterator"))
+
+	def text(self, report, tester):
+		from pal42.cli import display
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		for line in display.tester_report(report, tester, Path("/tmp/push_swap")):
+			console.print(line)
+		return console.file.getvalue()
+
+	def test_the_title_of_the_tests_of_each_tester(self):
+		tests = results()["tests"][:3]
+		self.assertIn("The functions", self.text(self.report(tests), testers.find("libfterator")))
+		self.assertIn("The tests", self.text(self.report(tests), testers.find("pushterator")))
+
+	def test_the_same_failure_of_a_whole_suite_once(self):
+		tests = [{"name": f"strategy_simple/case_{n}", "status": "FAIL", "detail": "Error with --simple", "ms": 0}
+			for n in range(8)]
+		text = self.text(self.report(tests), testers.find("pushterator"))
+		self.assertIn("all 8", text)
+		self.assertEqual(text.count("Error with --simple"), 1)
+
+	def test_different_failures_each_shown(self):
+		tests = [{"name": f"size_5/case_{n}", "status": "FAIL", "detail": f"not sorted {n}", "ms": 0} for n in range(3)]
+		text = self.text(self.report(tests), testers.find("pushterator"))
+		self.assertNotIn("all 3", text)
+		self.assertIn("not sorted 2", text)

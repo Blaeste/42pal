@@ -512,7 +512,7 @@ class FolderScreen(Screen):
 		return [(label, path) for label, path, _ in self.entries]
 
 	def has_marker(self, path):
-		return bool(self.tester.marker) and (path / self.tester.marker).is_file()
+		return testers_core.has_marker(self.tester, path)
 
 	def refresh_list(self):
 		"""The list below the path, and the line that says what Enter does."""
@@ -537,7 +537,7 @@ class FolderScreen(Screen):
 			self.entries += [(("★ " if self.has_marker(child) else "") + child.name + "/", child,
 				self.has_marker(child)) for child in self.subfolders(parent, start)]
 			if path.is_dir() and self.has_marker(path):
-				status = t("✓ {marker} here: Enter tests this folder", marker=self.tester.marker)
+				status = t("✓ a {project} here: Enter tests it", project=self.tester.project)
 		menu = self.query_one("#folders", OptionList)
 		menu.clear_options()
 		menu.add_options([Option(Text(label, style="bold #a5b4fc" if project else ""), id=str(index))

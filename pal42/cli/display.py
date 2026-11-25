@@ -456,7 +456,7 @@ def tester_report(report, tester, project):
 				lines += _details(check.detail, indent=14)
 	if report.functions:
 		passed, total = report.test_score
-		section = Text("\n" + t("The functions"), style="bold")
+		section = Text("\n" + t(tester.tests_title), style="bold")
 		section.append_text(_score(passed, total))
 		lines.append(section)
 		for function in report.functions:
@@ -471,7 +471,16 @@ def tester_report(report, tester, project):
 				line.append(bad[0].detail)
 				lines.append(line)
 				continue
-			for test in bad:
+			# A whole suite failing the same way: once.
+			if len(bad) > 2 and len(bad) == len(function.tests) and len({test.detail for test in bad}) == 1:
+				line = Text("    ")
+				line.append_text(_status(bad[0].status))
+				line.append(t("all {count}", count=len(bad)))
+				lines.append(line)
+				lines += _details(bad[0].detail)
+				continue
+			# The failures, then the warnings (not counted, but to look at).
+			for test in bad + function.warnings:
 				line = Text("    ")
 				line.append_text(_status(test.status))
 				line.append(test.short_name)

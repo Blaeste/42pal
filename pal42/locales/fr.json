@@ -186,8 +186,8 @@
 	"No timer, no wait: grademe, next, finish": "Pas de chrono, pas d'attente : grademe, next, finish",
 	"No weak theme": "Aucun thème faible",
 	"No weak theme: every theme you met passed its last grademe.": "Aucun thème faible : chaque thème rencontré a réussi son dernier grademe.",
-	"No {marker} here: cd to your {project}, or type its number.": "Pas de {marker} ici : fais cd vers ta {project}, ou tape son numéro.",
 	"No {project} found: type its path, or browse from ~/.": "Aucune {project} trouvée : tape son chemin, ou parcours depuis ~/.",
+	"No {project} here: cd to yours, or type its number.": "Pas de {project} ici : fais cd vers ton projet, ou tape son numéro.",
 	"None found in your home folder.": "Aucune trouvée dans ton dossier personnel.",
 	"Not now": "Pas maintenant",
 	"Nothing is kept: no grademe was made yet.": "Rien n'est gardé : aucun grademe n'a encore été fait.",
@@ -270,6 +270,7 @@
 	"The subject": "Le sujet",
 	"The tag {tag} is at the commit {commit}, not the one expected: nothing was installed.": "Le tag {tag} pointe sur le commit {commit}, pas sur celui attendu : rien n'a été installé.",
 	"The test main is given by the moulinette.": "Le main de test est fourni par la moulinette.",
+	"The tests": "Les tests",
 	"The tests could not run: {why}": "Les tests n'ont pas pu tourner : {why}",
 	"The update failed, nothing was changed: {why}": "La mise à jour a échoué, rien n'a été changé : {why}",
 	"The update failed: {why}": "La mise à jour a échoué : {why}",
@@ -310,6 +311,7 @@
 	"Your files contain a main: for a function, hand in the function only.": "Tes fichiers contiennent un main : pour une fonction, rends la fonction seulement.",
 	"Your last exam ({exam}) time ran out while you were away: it is kept in your history.": "Le temps de ton dernier exam ({exam}) s'est écoulé pendant ton absence : il est gardé dans ton historique.",
 	"Your last exam cannot be resumed: its subject {subject} is gone.": "Ton dernier exam ne peut pas être repris : son sujet {subject} n'existe plus.",
+	"all {count}": "tous les {count}",
 	"another folder": "autre dossier",
 	"another subject of the same theme": "un autre sujet du même thème",
 	"back": "retour",
@@ -365,6 +367,7 @@
 	"password": "mot de passe",
 	"password: ": "mot de passe : ",
 	"practice": "entraînement",
+	"push_swap, subject of 2026: the strategies, --bench, the benchmarks": "push_swap, sujet de 2026 : les stratégies, --bench, les benchmarks",
 	"quit": "quitter",
 	"report": "rapport",
 	"revision": "révision",
@@ -429,6 +432,6 @@
 	"{tester} · the subject: {count} checks": "{tester} · le sujet : {count} contrôles",
 	"{tests} tests": "{tests} tests",
 	"{tests} tests passed": "{tests} tests réussis",
-	"✓ {marker} here: Enter tests this folder": "✓ {marker} ici : Entrée teste ce dossier",
-	"✓ {marker} here: test (or Enter) runs {tester} on this folder.": "✓ {marker} ici : test (ou Entrée) lance {tester} sur ce dossier."
+	"✓ a {project} here: Enter tests it": "✓ {project} ici : Entrée le teste",
+	"✓ a {project} here: test (or Enter) runs {tester} on it.": "✓ {project} ici : test (ou Entrée) lance {tester} dessus."
 }

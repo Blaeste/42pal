@@ -76,18 +76,26 @@ def results(**fields):
 	data.update(fields)
 	return data
 
-def fake_tester(folder):
-	"""The fake tester in a git repository in `folder`, tagged v9.9.9; return (tester, repository)."""
+def fake_tester(folder, shell=False):
+	"""The fake tester in a git repository in `folder`, tagged v9.9.9; return (tester, repository).
+
+	shell: its launcher is a shell script (like the one of pushterator), not a Python one.
+	"""
 	repo = Path(folder) / "repo"
 	repo.mkdir()
 	launcher = repo / "libfterator"
-	launcher.write_text(LAUNCHER)
+	if shell:
+		(repo / "fake.py").write_text(LAUNCHER)
+		launcher.write_text('#!/bin/sh\nexec python3 "$(dirname "$0")/fake.py" "$@"\n')
+	else:
+		launcher.write_text(LAUNCHER)
 	launcher.chmod(0o755)
 	git(repo, "init", "-q")
 	git(repo, "add", ".")
 	git(repo, "commit", "-q", "-m", "first")
 	git(repo, "tag", "v9.9.9")
-	return replace(testers.TESTERS[0], url=repo.as_uri(), tag="v9.9.9", commit=git(repo, "rev-parse", "HEAD")), repo
+	return replace(testers.TESTERS[0], url=repo.as_uri(), tag="v9.9.9", commit=git(repo, "rev-parse", "HEAD"),
+		python=not shell), repo
 
 def new_tag(repo, tag):
 	"""A new commit in the repository of the fake tester, tagged `tag`; return its commit."""
@@ -120,6 +128,17 @@ class TestTheRegistry(unittest.TestCase):
 		self.assertTrue(tester.tag.startswith("v2."))
 		self.assertRegex(tester.commit, r"^[0-9a-f]{40}$")
 		self.assertEqual(tester.launcher, "libfterator")
+
+	def test_pushterator_for_push_swap(self):
+		tester = testers.find("pushterator")
+		self.assertEqual(tester.url, "https://github.com/Blaeste/Pushterator.git")
+		self.assertTrue(tester.tag.startswith("v1."))
+		self.assertRegex(tester.commit, r"^[0-9a-f]{40}$")
+		self.assertEqual((tester.launcher, tester.project), ("pushterator", "push_swap"))
+		# Its launcher is a shell script; it runs on macOS too.
+		self.assertFalse(tester.python)
+		self.assertTrue(testers.available(tester, "darwin"))
+		self.assertTrue(tester.streams)
 
 	def test_only_on_linux(self):
 		tester = testers.find("libfterator")
@@ -278,9 +297,43 @@ class TestRun(TesterTestCase):
 		report = self.run_tester(results())
 		self.assertNotIn("--stream", report.data["args"])
 
+	def test_a_launcher_that_is_a_shell_script(self):
+		(self.tmp / "shell").mkdir()
+		tester, _ = fake_tester(self.tmp / "shell", shell=True)
+		(self.project / "result.json").write_text(json.dumps(results()))
+		ok, why = testers.install(tester, self.root, environ={})
+		self.assertTrue(ok, why)
+		report = testers.run(tester, self.project, "en", self.root)
+		self.assertIsNone(report.error)
+		self.assertEqual(report.test_score, (3, 4))
+
+	def test_a_warning_is_not_a_failure(self):
+		data = results(conformity=results()["conformity"][:1], tests=results()["tests"][:3] + [
+			{"name": "complexity/medium", "status": "WARN", "detail": "more than O(n√n)", "ms": 0}])
+		report = self.run_tester(data)
+		self.assertTrue(report.passed)
+		medium = report.functions[-1]
+		self.assertEqual((medium.name, medium.bad, [test.name for test in medium.warnings]),
+			("complexity", [], ["complexity/medium"]))
+
 	def test_not_installed(self):
 		report = testers.run(self.tester, self.project, "en", self.root)
 		self.assertIn("not installed", report.error[0])
+
+class TestTheMarker(unittest.TestCase):
+	"""A folder is a project of the tester when it has its marker file (with its text, when there is one)."""
+
+	def test_a_file_or_a_file_that_speaks_of_the_project(self):
+		with tempfile.TemporaryDirectory() as folder:
+			folder = Path(folder)
+			libfterator, pushterator = testers.find("libfterator"), testers.find("pushterator")
+			(folder / "libft.h").write_text("")
+			self.assertTrue(testers.has_marker(libfterator, folder))
+			self.assertFalse(testers.has_marker(pushterator, folder))
+			(folder / "Makefile").write_text("NAME = libft.a\n")
+			self.assertFalse(testers.has_marker(pushterator, folder))
+			(folder / "Makefile").write_text("NAME = push_swap\n")
+			self.assertTrue(testers.has_marker(pushterator, folder))
 
 class TestFindTheProjects(unittest.TestCase):
 	"""The folders that look like the project (libft.h for libfterator), found in the home folder."""

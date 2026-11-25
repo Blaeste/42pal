@@ -480,8 +480,8 @@ class Shell:
 			if not answer:
 				if self._has_marker(tester, here):
 					return here
-				self.console.print(t("No {marker} here: cd to your {project}, or type its number.",
-					marker=tester.marker, project=tester.project), markup=False)
+				self.console.print(t("No {project} here: cd to yours, or type its number.", project=tester.project),
+					markup=False)
 			elif answer.isdigit():
 				if 1 <= int(answer) <= len(found):
 					return found[int(answer) - 1]
@@ -523,7 +523,7 @@ class Shell:
 					markup=False)
 
 	def _has_marker(self, tester, folder):
-		return bool(tester.marker) and (Path(folder) / tester.marker).is_file()
+		return testers_core.has_marker(tester, folder)
 
 	def _list_projects(self, tester, last):
 		"""The folders of the project, each one printed as soon as it is found; return them."""
@@ -555,8 +555,8 @@ class Shell:
 		if not names:
 			self.console.print("  " + t("(no folder)"), markup=False)
 		if self._has_marker(tester, folder):
-			self.console.print(t("✓ {marker} here: test (or Enter) runs {tester} on this folder.",
-				marker=tester.marker, tester=tester.name), markup=False)
+			self.console.print(t("✓ a {project} here: test (or Enter) runs {tester} on it.", project=tester.project,
+				tester=tester.name), markup=False)
 
 	def _show_tester_report(self, tester, project):
 		"""Run the tester on `project` and show what it found; the folder is kept for the next time."""

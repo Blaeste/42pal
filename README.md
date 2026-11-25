@@ -216,6 +216,7 @@ Choose **Testers** in the first menu of `./42pal`, then a tester:
 | Tester | Project | What it checks |
 |---|---|---|
 | [libfterator](https://github.com/Blaeste/Libfterator) | libft, subject v19.3 | the subject (files, Makefile, header, README, norm), the 43 functions, leaks, overflows, failed `malloc` |
+| [Pushterator](https://github.com/Blaeste/Pushterator) | push_swap, subject of 2026 | the Makefile, the code, the README, errors, sorting, the four strategies and their complexity, `--bench`, the benchmarks of 100 and 500, the checker of the bonus, leaks |
 
 The first time, 42pal asks before downloading the tester: it clones the
 version 42pal is made for (a tag) into `~/.42pal/testers/` and checks its
@@ -223,7 +224,8 @@ commit. A newer 42pal can bring a newer version; it asks again before
 updating. Nothing else uses the network.
 
 Then choose the folder of your project. 42pal looks for it in your home
-folder (the folders with a `libft.h`), the one tested last first:
+folder (the folders with a `libft.h` for libfterator, with a Makefile that
+builds push_swap for Pushterator), the one tested last first:
 
 - in full screen, the list below the path shows them as they are found;
   type a path and the list follows it, with the folders in it (★ for a
@@ -239,8 +241,10 @@ the failures as they come. Then the whole report, in the language of
 the undefined cases (not counted), the verdict and the full log. `r` runs
 it again, `f` tests another folder.
 
-libfterator needs Linux (or WSL), `cc`, `make` and `git`. It works on its
-own too: `./libfterator /path/to/libft` in its own clone.
+libfterator needs Linux (or WSL), `cc`, `make` and `git`; Pushterator runs on
+macOS too. Each one works on its own too, in its own clone: `./libfterator
+/path/to/libft`, or `./pushterator`, which has the same look as 42pal and a
+visualizer of the sort.
 
 ## What the catalog has today
 

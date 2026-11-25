@@ -39,8 +39,10 @@ class Tester:
 	launcher: str
 	# Written before the name of each function of its results: ft_strlen.
 	prefix: str = ""
-	# A file at the root of the project: the folders that have one are offered, marked with a ★.
+	# A file at the root of the project: the folders that have one are offered, marked with a ★;
+	# with marker_text, the file must speak of it too (a Makefile that builds push_swap).
 	marker: str = ""
+	marker_text: str = ""
 	# The values of sys.platform it runs on (libfterator needs ld --wrap: Linux).
 	platforms: tuple = ("linux",)
 	# The formats of JSON 42pal can read from it.
@@ -49,6 +51,10 @@ class Tester:
 	languages: tuple = ("en", "fr")
 	# True when it gives its results as they come (--stream): 42pal shows them live.
 	streams: bool = False
+	# True when its launcher is a Python script (run with the Python of 42pal); else it runs as it is.
+	python: bool = True
+	# The title of its tests in the report.
+	tests_title: str = N_("The functions")
 
 TESTERS = (
 	Tester(
@@ -62,6 +68,21 @@ TESTERS = (
 		prefix="ft_",
 		marker="libft.h",
 		streams=True,
+	),
+	Tester(
+		name="pushterator",
+		project="push_swap",
+		summary=N_("push_swap, subject of 2026: the strategies, --bench, the benchmarks"),
+		url="https://github.com/Blaeste/Pushterator.git",
+		tag="v1.0.0",
+		commit="9e2656a5310e768a896ecdb66f5479847ea6abd1",
+		launcher="pushterator",
+		marker="Makefile",
+		marker_text="push_swap",
+		platforms=("linux", "darwin"),
+		streams=True,
+		python=False,
+		tests_title=N_("The tests"),
 	),
 )
 
@@ -171,7 +192,8 @@ class TestCase:
 
 	@property
 	def bad(self):
-		return self.status not in ("PASS", "INFO")
+		"""A failure: WARN (to look at) and INFO are not counted."""
+		return self.status not in ("PASS", "INFO", "WARN")
 
 @dataclass
 class Function:
@@ -182,6 +204,10 @@ class Function:
 	@property
 	def bad(self):
 		return [test for test in self.tests if test.bad]
+
+	@property
+	def warnings(self):
+		return [test for test in self.tests if test.status == "WARN"]
 
 	@property
 	def total(self):
@@ -299,7 +325,8 @@ def run(tester, project, lang="en", root=None, timeout=RUN_TIMEOUT, on_progress=
 		return failed(t("{tester} is not installed.", tester=tester.name))
 	with tempfile.TemporaryDirectory(prefix="42pal-tester-") as scratch:
 		results = Path(scratch) / "results.json"
-		command = [sys.executable, str(launcher), str(project), "--json", str(results), "--no-color", "--lang", lang]
+		command = ([sys.executable] if tester.python else []) + [str(launcher), str(project), "--json", str(results),
+			"--no-color", "--lang", lang]
 		# Only the version of 42pal is sure to know --stream: an older one kept gives its results at the end.
 		streaming = on_progress is not None and tester.streams and _commit(path) == tester.commit
 		try:
@@ -368,6 +395,21 @@ def _tail(text, lines=20):
 # Folders never looked into for a project: besides the hidden ones, those of tools.
 SKIPPED_FOLDERS = {"node_modules", "__pycache__", "venv", "snap", "Library", "go", "miniconda3", "anaconda3"}
 
+def has_marker(tester, folder):
+	"""True when `folder` looks like a project of the tester: its marker file, speaking of the project if need be."""
+	if not tester.marker:
+		return False
+	path = Path(folder) / tester.marker
+	if not path.is_file():
+		return False
+	if not tester.marker_text:
+		return True
+	try:
+		with open(path, encoding="utf-8", errors="replace") as marker:
+			return tester.marker_text in marker.read(20000)
+	except OSError:
+		return False
+
 def find_projects(tester, root=None, depth=4, limit=5000):
 	"""The folders under `root` (the home folder) that have the marker of the tester, the nearest first."""
 	return list(iter_projects(tester, root, depth, limit))
@@ -391,7 +433,7 @@ def iter_projects(tester, root=None, depth=4, limit=5000):
 			except OSError:
 				continue
 			read += 1
-			if any(entry.name == tester.marker for entry in entries):
+			if any(entry.name == tester.marker for entry in entries) and has_marker(tester, folder):
 				yield folder
 			below += [Path(entry.path) for entry in entries if not entry.name.startswith(".")
 				and entry.name not in SKIPPED_FOLDERS and _is_folder(entry)]
