@@ -49,7 +49,7 @@ No `pip`, no virtual environment: the libraries of the display,
 ```
 
 <p align="center">
-  <img src="docs/images/menu.png" alt="The first menu: the exams of the piscine, those of the students, or practice" width="760">
+  <img src="docs/images/menu.png" alt="The first menu: the exams of the piscine and of the students, practice, the testers, the settings" width="760">
 </p>
 
 In a terminal, 42pal opens **full screen**: move in the menus with the arrow
@@ -218,6 +218,10 @@ Choose **Testers** in the first menu of `./42pal`, then a tester:
 | [libfterator](https://github.com/Blaeste/Libfterator) | libft, subject v19.3 | the subject (files, Makefile, header, README, norm), the 43 functions, leaks, overflows, failed `malloc` |
 | [Pushterator](https://github.com/Blaeste/Pushterator) | push_swap, subject of 2026 | the Makefile, the code, the README, errors, sorting, the four strategies and their complexity, `--bench`, the benchmarks of 100 and 500, the checker of the bonus, leaks |
 
+<p align="center">
+  <img src="docs/images/testers.png" alt="The results of Pushterator: the tests by suite, the warnings, the undefined cases" width="760">
+</p>
+
 The first time, 42pal asks before downloading the tester: it clones the
 version 42pal is made for (a tag) into `~/.42pal/testers/` and checks its
 commit. A newer 42pal can bring a newer version; it asks again before
@@ -243,10 +247,13 @@ it again, `f` tests another folder. With Pushterator, `v` opens its
 visualizer of the sort (`Visualize` in `--plain`): 42pal steps aside, and
 comes back when it is left.
 
+<p align="center">
+  <img src="docs/images/visualizer.png" alt="The visualizer of Pushterator: the stacks a and b, the operation now, the counts and the recap" width="760">
+</p>
+
 libfterator needs Linux (or WSL), `cc`, `make` and `git`; Pushterator runs on
 macOS too. Each one works on its own too, in its own clone: `./libfterator
-/path/to/libft`, or `./pushterator`, which has the same look as 42pal and a
-visualizer of the sort.
+/path/to/libft`, `./pushterator /path/to/push_swap`.
 
 ## What the catalog has today
 
