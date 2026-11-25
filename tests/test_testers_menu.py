@@ -556,6 +556,31 @@ class TestNoHorizontalScrollInTheExam(FullScreenTest):
 			log = app.screen.query_one("#log")
 			self.assertLessEqual(log.virtual_size.width, log.scrollable_content_region.width)
 
+class TestTheFramesOfTheExam(FullScreenTest):
+	"""The frames the shell prints (a trace) keep their lines in the log: none is cut in two."""
+
+	@screen_test
+	async def test_a_trace_in_the_log_of_the_exam(self):
+		from pal42.cli import display
+		app = self.exam_app()
+		async with app.run_test(size=(176, 42)) as pilot:
+			await self.login_to_exams(pilot)
+			await pilot.press("enter", "enter")
+			await pilot.pause()
+			screen = app.screen
+			screen.fit_console()
+			trace = "= Test 4 " + "=" * 71 + "\n$> ./x \"Hello World\" | cat -e\n--- student\n+++ moulinette\nDiff KO\n"
+			console = screen.shell.console
+			console.begin_capture()
+			console.print(display.trace_panel(trace))
+			screen.finish_command(False, console.end_capture())
+			await pilot.pause()
+			lines = [line.text.rstrip() for line in screen.query_one("#log").lines if line.text.strip()]
+			frame = [line for line in lines if line.startswith(("│", "╭", "╰"))]
+			self.assertTrue(frame[0].startswith("╭") and frame[-1].startswith("╰"), frame)
+			self.assertTrue(all(line.endswith(("│", "╮", "╯")) for line in frame), frame)
+			self.assertIn("Diff KO", "\n".join(frame))
+
 class TestTheProgressText(unittest.TestCase):
 
 	def test_what_the_tester_is_doing(self):

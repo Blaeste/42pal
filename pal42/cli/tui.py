@@ -785,10 +785,11 @@ class SessionScreen(Screen):
 		with Container(id="body"):
 			with VerticalScroll(id="subject-pane"):
 				yield Static(id="subject")
-			# The shell already prints at the width of the log (see fit_console):
-			# only what is wider (a long command typed) wraps. No minimum width:
-			# no horizontal scroll bar when the log is narrow.
-			yield SelectableLog(id="log", wrap=True, min_width=0, markup=False, highlight=False)
+			# No wrap: the shell already prints at the width of the log (see
+			# fit_console), and wrapping again cuts its frames (a trace) in two.
+			# No minimum width: no horizontal scroll bar when the log is narrow;
+			# the command typed is cut to the width by hand (see echo).
+			yield SelectableLog(id="log", wrap=False, min_width=0, markup=False, highlight=False)
 		yield Static(id="activity")
 		letters = ", ".join(f"{letter} {command}" for letter, command in self.shortcuts.items())
 		# max_length: a command is short, whatever is typed or pasted.
@@ -936,7 +937,7 @@ class SessionScreen(Screen):
 			self.history.append(command)
 		self.history_place = None
 		log = self.query_one("#log", RichLog)
-		log.write(Text(f"{self.prompt} {command}", style="bold #a5b4fc"))
+		self.echo(log, Text(f"{self.prompt} {command}", style="bold #a5b4fc"))
 		# Here, not in the grading thread: the widgets belong to the screen.
 		self.fit_console()
 		if self.shortcuts.get(command, command) == "grademe":
@@ -954,6 +955,12 @@ class SessionScreen(Screen):
 			# A new report goes to the clipboard too, ready to paste in an issue.
 			if self.shell.last_report is not None and self.shell.last_report != before:
 				self.app.copy_to_clipboard(self.shell.last_report.read_text(encoding="utf-8"))
+
+	def echo(self, log, text):
+		"""Write `text` cut to the width of the log: a long command never makes it scroll sideways."""
+		width = max(10, log.scrollable_content_region.width)
+		for start in range(0, max(1, len(text.plain)), width):
+			log.write(text[start:start + width])
 
 	def action_back(self):
 		"""Escape (or back): back to the menus once the student says so; Escape again stays."""
@@ -1376,7 +1383,7 @@ class Pal42App(App):
 			items.append((PROGRESS, t(display.PROGRESS_TEXT), t(display.PROGRESS_SUMMARY),
 				t("How your exams went, and the themes that fail the most, to practise them.")))
 		items.append((TESTERS, t(display.TESTERS_TEXT), t(display.TESTERS_SUMMARY),
-			t("Download a tester of your projects and run it here: libfterator for the libft.")))
+			t("Download a tester of your projects and run it here: libfterator for the libft, Pushterator for push_swap.")))
 		items.append((SETTINGS, t(display.SETTINGS_TEXT), display.settings_summary(i18n.languages()[i18n.language()]),
 			t("The language of 42pal: the menus, the messages, the traces and the subjects.")))
 		return await self.ask(t(display.FIRST_MENU_TITLE), items, first), True
