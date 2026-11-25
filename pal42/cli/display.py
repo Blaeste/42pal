@@ -463,7 +463,11 @@ def tester_report(report, tester, project):
 		section.append_text(_score(passed, total))
 		lines.append(section)
 		names = report.names
+		# The benchmarks have their own section, after the tests.
+		benchmarks = {row["key"] for row in report.suites or () if row.get("levels")}
 		for function in report.functions:
+			if function.name in benchmarks:
+				continue
 			line = _leader(names.get(function.name) or tester.prefix + function.name)
 			line.append_text(_score(function.passed, function.total))
 			lines.append(line)
@@ -490,6 +494,7 @@ def tester_report(report, tester, project):
 				line.append(test.short_name)
 				lines.append(line)
 				lines += _details(test.detail)
+	lines += bars_lines(report.suites or (), report.tests)
 	if report.info:
 		lines.append(Text("\n" + t("Undefined cases, not counted"), style="bold"))
 		for test in report.info:
@@ -506,46 +511,128 @@ def tester_report(report, tester, project):
 	lines.append(Text("\n" + t(DISCLAIMER), style="dim italic"))
 	return lines
 
-# The colors of the cells of the panel of a tester.
+# The colors of the cells of the panel of a tester, and of the levels of its benchmarks (the best first).
 CELL_GOOD, CELL_BAD, CELL_WAITING = "#4ade80", "#f87171", "#2a2f3a"
+LEVEL_COLORS = ("#4ade80", "#a3e635", "#fbbf24")
+BARS = "▁▂▃▄▅▆▇█"
+
+def row_level(row, count):
+	"""The level of `count` in a row of benchmarks: the best one it is under, or None (not validated)."""
+	return next((level for level in row["levels"] if count < level["under"]), None)
+
+def level_color(row, level):
+	if level is None:
+		return CELL_BAD
+	index = [other["key"] for other in row["levels"]].index(level["key"])
+	return LEVEL_COLORS[min(index, len(LEVEL_COLORS) - 1)]
+
+def _cells(text, row, results, width, label_room):
+	"""A row of cells: its label, a cell a test (green, red, or waiting), its score."""
+	label = row["label"] if len(row["label"]) <= label_room else row["label"][:label_room - 1] + "…"
+	text.append("\n " + label.ljust(label_room) + " ", style="#d1d5db")
+	passed = [result[0] for result in results]
+	tests = max(row["tests"], len(passed), 1)
+	cells = min(tests, max(4, width - label_room - 10))
+	for cell in range(cells):
+		part = passed[cell * tests // cells:(cell + 1) * tests // cells]
+		covered = (cell + 1) * tests // cells - cell * tests // cells
+		if False in part:
+			style = CELL_BAD
+		elif part and len(part) == covered:
+			style = CELL_GOOD
+		else:
+			style = CELL_WAITING
+		text.append("■", style=style)
+	if passed:
+		bad = passed.count(False)
+		finished = len(passed) >= row["tests"]
+		text.append(f" {len(passed) - bad}/{len(passed)}", style=CELL_BAD if bad else CELL_GOOD if finished else "#9ca3af")
+
+def _bars(text, row, results, width):
+	"""A row of benchmarks: its label and the level of its worst run, a bar a run, the counts, the levels."""
+	counts = [ops for _, ops in results if ops is not None]
+	limits = " · ".join(f"{level['name']} <{level['under']}" for level in row["levels"])
+	text.append("\n " + row["label"], style="bold")
+	if not counts:
+		text.append("\n " + t("waiting…"), style="dim")
+		text.append("\n " + limits, style="#4b5563")
+		return
+	level = row_level(row, max(counts))
+	text.append("   " + (level["name"] if level else t("not validated")), style=f"bold {level_color(row, level)}")
+	limit = row["levels"][-1]["under"]
+	text.append("\n ")
+	for count in counts[-(width - 2):]:
+		text.append(BARS[min(len(BARS) - 1, count * len(BARS) // limit)], style=level_color(row, row_level(row, count)))
+	text.append("\n " + t("best {best} · average {average} · worst {worst}", best=min(counts),
+		average=round(sum(counts) / len(counts)), worst=max(counts)), style="#9ca3af")
+	text.append("\n " + limits, style="#4b5563")
 
 def tester_panel(rows, done, width=44, label_width=22):
-	"""The panel of the suites of a tester: a group of rows, each its label, a cell a test, its score.
+	"""The panel of the suites of a tester: groups of rows, drawn as they come.
 
-	rows: the suites the tester gives (testers.suites_of); done: {suite: [True
-	when it passed, ...]}. A cell is green when its test passed, red when it
-	failed, dim while waiting; with more tests than room, a cell stands for
-	several (red when one failed). The tester draws the same on its own.
+	rows: the suites the tester gives (testers.suites_of); done: {suite:
+	[(passed, operations), ...]}. A row of cells has a cell a test: green
+	when it passed, red when it failed, dim while waiting; with more tests
+	than room, a cell stands for several (red when one failed). A row of
+	benchmarks has a bar a run, as high as its operations, in the color of
+	its level. The tester draws the same on its own.
 	"""
 	text, group = Text(), None
 	for row in rows:
-		if row["group"] != group:
+		first = row["group"] != group
+		if first:
 			group = row["group"]
 			if text:
 				text.append("\n\n")
 			text.append(group, style="bold")
 			label_room = min(label_width, max(len(other["label"]) for other in rows if other["group"] == group))
 		results = done.get(row["key"], [])
-		label = row["label"] if len(row["label"]) <= label_room else row["label"][:label_room - 1] + "…"
-		text.append("\n " + label.ljust(label_room) + " ", style="#d1d5db")
-		tests = max(row["tests"], len(results), 1)
-		cells = min(tests, max(4, width - label_room - 10))
-		for cell in range(cells):
-			part = results[cell * tests // cells:(cell + 1) * tests // cells]
-			covered = (cell + 1) * tests // cells - cell * tests // cells
-			if False in part:
-				style = CELL_BAD
-			elif part and len(part) == covered:
-				style = CELL_GOOD
-			else:
-				style = CELL_WAITING
-			text.append("■", style=style)
-		if results:
-			bad = results.count(False)
-			finished = len(results) >= row["tests"]
-			text.append(f" {len(results) - bad}/{len(results)}",
-				style=CELL_BAD if bad else CELL_GOOD if finished else "#9ca3af")
+		if row.get("levels"):
+			if not first:
+				text.append("\n")
+			_bars(text, row, results, width)
+		else:
+			_cells(text, row, results, width, label_room)
 	return text
+
+def bars_lines(rows, tests):
+	"""The benchmarks in the report: each row, its level and its counts, a bar to the lowest level and the next one."""
+	lines, group = [], None
+	for row in rows:
+		if not row.get("levels"):
+			continue
+		if row["group"] != group:
+			group = row["group"]
+			lines.append(Text("\n" + group, style="bold"))
+		runs = [test for test in tests if test.function == row["key"]]
+		counts = [test.ops for test in runs if test.ops is not None]
+		if counts:
+			worst = max(counts)
+			level = row_level(row, worst)
+			line = Text(f"  {row['label']:14}")
+			name = Text(level["name"] if level else t("not validated"), style=f"bold {level_color(row, level)}")
+			line.append_text(name)
+			line.append(" " * max(1, 11 - len(name.plain)))
+			line.append(t("best {best} · average {average} · worst {worst}", best=min(counts),
+				average=round(sum(counts) / len(counts)), worst=worst))
+			lines.append(line)
+			target = Text(" " * 16)
+			filled = min(12, round(12 * worst / row["levels"][-1]["under"]))
+			target.append("━" * filled, style=level_color(row, level))
+			target.append("─" * (12 - filled), style="dim")
+			better = row["levels"][:row["levels"].index(level)] if level else row["levels"]
+			if better:
+				target.append(" " + t("{level} under {count} {unit}", level=better[-1]["name"], count=better[-1]["under"],
+					unit=row.get("unit", "")).rstrip(), style="dim")
+			lines.append(target)
+		for test in runs:
+			if test.bad and test.ops is None:
+				line = Text("    ")
+				line.append_text(_status(test.status))
+				line.append(test.short_name)
+				lines.append(line)
+				lines += _details(test.detail)
+	return lines
 
 def progress_bar(done, total, width=24):
 	"""A bar of `width` characters, filled as `done` goes to `total`."""
@@ -601,6 +688,12 @@ def tester_verdict(report):
 		scores.append(t("subject {passed}/{total}", passed=report.conformity_score[0], total=report.conformity_score[1]))
 	if report.functions:
 		scores.append(t("tests {passed}/{total}", passed=report.test_score[0], total=report.test_score[1]))
+	# The level of each benchmark, when the tester gives them.
+	for row in report.suites or ():
+		counts = [test.ops for test in report.tests if test.function == row["key"] and test.ops is not None]
+		if row.get("levels") and counts:
+			level = row_level(row, max(counts))
+			scores.append(f"{row['short']}: {level['name'] if level else t('not validated')}")
 	if scores:
 		verdict.append("  " + " · ".join(scores))
 	return verdict

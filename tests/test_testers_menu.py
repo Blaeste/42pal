@@ -528,6 +528,61 @@ GNL_TESTS = [
 	{"name": "read_errors/reopen", "status": "PASS", "detail": "NULL", "ms": 1},
 ]
 
+# The suites as Pushterator gives them: a row of benchmarks has its levels.
+BENCH_ROW = {"key": "bench_100", "name": "100 numbers", "group": "Benchmarks", "label": "100 numbers", "tests": 3,
+	"levels": [{"key": "excellent", "name": "excellent", "under": 700}, {"key": "good", "name": "good", "under": 1500},
+		{"key": "pass", "name": "pass", "under": 2000}], "unit": "operations", "short": "100"}
+SWAP_SUITES = [{"key": "size_3", "name": "3 numbers", "group": "Suites", "label": "3 numbers", "tests": 2}, BENCH_ROW]
+SWAP_TESTS = [
+	{"name": "size_3/1_2_3", "status": "PASS", "detail": "no operation", "ms": 1, "ops": 0},
+	{"name": "size_3/3_2_1", "status": "PASS", "detail": "2 operations", "ms": 1, "ops": 2},
+	{"name": "bench_100/run_1", "status": "PASS", "detail": "650 operations: excellent", "ms": 1, "ops": 650},
+	{"name": "bench_100/run_2", "status": "PASS", "detail": "1100 operations: good", "ms": 1, "ops": 1100},
+	{"name": "bench_100/run_3", "status": "CRASH", "detail": "SIGSEGV", "ms": 1},
+]
+
+class TestTheBenchmarksOfATester(unittest.TestCase):
+	"""A tester whose suites have levels (the benchmarks of Pushterator): bars, their own section, the verdict."""
+
+	def report(self):
+		return testers.parse(results(conformity=[], tests=SWAP_TESTS, suites=SWAP_SUITES), testers.find("pushterator"))
+
+	def text(self, lines):
+		console = Console(file=io.StringIO(), width=100, color_system=None)
+		for line in lines:
+			console.print(line)
+		return console.file.getvalue()
+
+	def test_the_levels_and_the_operations_read(self):
+		report = self.report()
+		self.assertEqual(report.suites[1]["short"], "100")
+		self.assertEqual([test.ops for test in report.tests], [0, 2, 650, 1100, None])
+
+	def test_their_section_in_the_report_and_their_level_in_the_verdict(self):
+		from pal42.cli import display
+		text = self.text(display.tester_report(self.report(), testers.find("pushterator"), Path("/tmp/push_swap")))
+		self.assertIn("Benchmarks", text)
+		self.assertIn("best 650 · average 875 · worst 1100", text)
+		self.assertIn("excellent under 700 operations", text)
+		# A run without operations: its failure under the benchmarks; the suite not listed with the tests.
+		self.assertIn("run_3", text)
+		self.assertNotIn("100 numbers ....", text)
+		verdict = next(line for line in text.splitlines() if line.startswith("✗ KO"))
+		self.assertEqual(verdict, "✗ KO  tests 4/5 · 100: good")
+
+	def test_their_bars_in_the_panel(self):
+		from pal42.cli import display
+		report = self.report()
+		done = {}
+		for test in report.tests:
+			done.setdefault(test.function, []).append((not test.bad, test.ops))
+		panel = display.tester_panel(report.suites, done)
+		lines = panel.plain.splitlines()
+		self.assertEqual(lines[:2], ["Suites", " 3 numbers ■■ 2/2"])
+		self.assertIn(" 100 numbers   good", lines)
+		self.assertIn(" excellent <700 · good <1500 · pass <2000", lines)
+		self.assertIn("waiting…", display.tester_panel([BENCH_ROW], {}).plain)
+
 class TestTheSuitesOfATester(FullScreenTest, TestersTestCase):
 	"""A tester that names and draws its suites: 42pal shows the same names and the same panel as the tester."""
 

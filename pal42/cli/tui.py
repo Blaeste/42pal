@@ -753,7 +753,7 @@ class TesterScreen(Screen):
 		self.query_one("#activity", Static).set_class(False, "-busy")
 		done = {}
 		for test in report.tests:
-			done.setdefault(test.function, []).append(not test.bad)
+			done.setdefault(test.function, []).append((not test.bad, test.ops))
 		self.show_panel(report.suites or [], done)
 		log = self.log_view
 		# The report takes the place of what came live, like in the tester on its own.

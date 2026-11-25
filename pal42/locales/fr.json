@@ -440,5 +440,9 @@
 	"{tests} tests": "{tests} tests",
 	"{tests} tests passed": "{tests} tests réussis",
 	"✓ a {project} here: Enter tests it": "✓ {project} ici : Entrée le teste",
-	"✓ a {project} here: test (or Enter) runs {tester} on it.": "✓ {project} ici : test (ou Entrée) lance {tester} dessus."
+	"✓ a {project} here: test (or Enter) runs {tester} on it.": "✓ {project} ici : test (ou Entrée) lance {tester} dessus.",
+	"waiting…": "en attente…",
+	"not validated": "non validé",
+	"best {best} · average {average} · worst {worst}": "meilleur {best} · moyenne {average} · pire {worst}",
+	"{level} under {count} {unit}": "{level} sous {count} {unit}"
 }

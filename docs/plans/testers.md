@@ -35,6 +35,8 @@ Un menu **Testers** dans le premier menu de `./42pal` : l'étudiant choisit un t
 
 `key` est le début du nom des tests (`buffer_1/…`) ; `name` remplace la clé dans le rapport et les échecs en direct ; `group` et `label` rangent la ligne dans le panneau, `tests` dit combien de cases elle a. Avec `suites`, 42pal montre le panneau à côté du log (à partir de 100 colonnes), comme le testeur seul ; sans, rien ne change. Un `INFO` n'est compté nulle part, un `WARN` passe.
 
+Une ligne de **benchmarks** (Pushterator 1.2.0) a en plus `levels` (du meilleur au plus bas : `{"key": "excellent", "name": "excellent", "under": 700}`), `unit` (`"operations"`) et `short` (`"100"`, pour le verdict) ; ses tests donnent leurs `ops`. 42pal la dessine en barres (une par run, colorée selon son niveau), lui donne sa section dans le rapport (meilleur, moyenne, pire, le niveau suivant) et met son niveau dans le verdict (`100: good`), comme le testeur seul.
+
 ## Étapes
 
 Chaque étape en TDD.

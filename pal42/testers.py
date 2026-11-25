@@ -76,8 +76,8 @@ TESTERS = (
 		project="push_swap",
 		summary=N_("push_swap, subject of 2026: the strategies, --bench, the benchmarks"),
 		url="https://github.com/Blaeste/Pushterator.git",
-		tag="v1.1.1",
-		commit="c7519b1b4ef0fd3a86a8ee71ba26482293097f31",
+		tag="v1.2.0",
+		commit="971d842dc2f59a36ce7fce438e2fdddc135def6a",
 		launcher="pushterator",
 		marker="Makefile",
 		marker_text="push_swap",
@@ -92,8 +92,8 @@ TESTERS = (
 		project="get_next_line",
 		summary=N_("get_next_line: every BUFFER_SIZE, read and malloc failures, the bonus"),
 		url="https://github.com/Blaeste/Linerator.git",
-		tag="v1.1.0",
-		commit="c150771b384342a8072a3005a6f18ab46a222c6e",
+		tag="v1.1.1",
+		commit="e74cdfeaa0a92d155a807441015b9eb3b919106c",
 		launcher="linerator",
 		marker="get_next_line.c",
 		streams=True,
@@ -198,6 +198,8 @@ class TestCase:
 	name: str
 	status: str
 	detail: str
+	# The operations of a run that has some (a benchmark of push_swap), else None.
+	ops: int = None
 
 	@property
 	def function(self):
@@ -297,7 +299,7 @@ class Progress:
 	tests_done: int = 0
 	# The tests failed so far.
 	bad: list = field(default_factory=list)
-	# The suites as the tester draws them (from its plan), and for each one whether each test passed.
+	# The suites as the tester draws them (from its plan), and for each one (passed, operations) of each test.
 	suites: list = field(default_factory=list)
 	results: dict = field(default_factory=dict)
 
@@ -315,29 +317,50 @@ class Progress:
 			self.checks.append(check)
 			return check
 		elif kind == "test":
-			test = TestCase(event.get("name", ""), event.get("status", ""), event.get("detail") or "")
+			test = test_case(event)
 			self.tests_done += 1
-			self.results.setdefault(test.function, []).append(not test.bad)
+			self.results.setdefault(test.function, []).append((not test.bad, test.ops))
 			if test.bad:
 				self.bad.append(test)
 			return test
 		return None
+
+def test_case(item):
+	"""The TestCase of a test of the JSON, or of a test event."""
+	ops = item.get("ops")
+	return TestCase(str(item.get("name", "")), str(item.get("status", "")), item.get("detail") or "",
+		ops if isinstance(ops, int) and not isinstance(ops, bool) else None)
+
+def _levels(row):
+	"""The levels of a row of benchmarks, best first: [{key, name, under}], or None."""
+	levels = row.get("levels")
+	if not isinstance(levels, list):
+		return None
+	found = [{"key": str(level["key"]), "name": str(level.get("name") or level["key"]), "under": level["under"]}
+		for level in levels if isinstance(level, dict) and "key" in level and isinstance(level.get("under"), int)]
+	return found or None
 
 def suites_of(data):
 	"""The suites a tester names and draws ("suites" of its JSON or of its plan), checked.
 
 	Each one: {key, name, group, label, tests}: its key in the names of the
 	tests, its name for the report, its group and its label in the panel, and
-	how many tests it has. Nothing when the tester gives none.
+	how many tests it has. A row of benchmarks has its levels too (best
+	first: {key, name, under}), the unit of its counts and a short name for
+	the verdict: its runs are drawn as bars. Nothing when the tester gives none.
 	"""
 	rows = []
 	for row in data.get("suites") or () if isinstance(data.get("suites"), list) else ():
 		if not isinstance(row, dict) or not isinstance(row.get("key"), str):
 			continue
 		tests = row.get("tests")
-		rows.append({"key": row["key"], "name": str(row.get("name") or row["key"]), "group": str(row.get("group") or ""),
+		found = {"key": row["key"], "name": str(row.get("name") or row["key"]), "group": str(row.get("group") or ""),
 			"label": str(row.get("label") or row.get("name") or row["key"]),
-			"tests": tests if isinstance(tests, int) and tests >= 0 else 0})
+			"tests": tests if isinstance(tests, int) and tests >= 0 else 0}
+		levels = _levels(row)
+		if levels:
+			found.update(levels=levels, unit=str(row.get("unit") or ""), short=str(row.get("short") or found["label"]))
+		rows.append(found)
 	return rows
 
 def failed(title, detail="", output=""):
@@ -352,8 +375,7 @@ def parse(data, tester, output=""):
 			tester=tester.name, format=found), output=output)
 	checks = [Check(item.get("key", ""), item.get("group", ""), item.get("label", ""), item.get("status", ""),
 		item.get("detail") or "") for item in data.get("conformity") or []]
-	tests = [TestCase(item.get("name", ""), item.get("status", ""), item.get("detail") or "")
-		for item in data.get("tests") or []]
+	tests = [test_case(item) for item in data.get("tests") or [] if isinstance(item, dict)]
 	error = data.get("error")
 	return Report(checks, tests, error=(error.get("title", ""), error.get("detail") or "") if error else None,
 		notes=list(data.get("notes") or []), log=data.get("log"), lang=data.get("lang", "en"), output=output,
