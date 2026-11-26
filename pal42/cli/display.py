@@ -167,17 +167,48 @@ def grade_result(grade, log):
 	warnings = "".join(f"\n[yellow]! {escape(t(warning))}[/]" for warning in grade.warnings)
 	return f"{verdict}\n{t('Trace:')} {link}{warnings}"
 
+# 84 wide: the 80 columns of a trace line, plus the frame and its margins.
+TRACE_FRAME_WIDTH = 84
+
+# A title line of a trace, like "= Test 1 =====...": its start, then its =.
+TRACE_TITLE = re.compile(r"(= .* )=+")
+
+def fit_title(line, width):
+	"""A title line of a trace cut to `width` columns: only its = go, never its title.
+
+	The other lines come back as they are.
+	"""
+	title = TRACE_TITLE.fullmatch(line)
+	if title is None or len(line) <= width:
+		return line
+	return title.group(1) + "=" * max(1, width - len(title.group(1)))
+
+class TraceFrame:
+	"""The trace in a red frame, as wide as it can be up to TRACE_FRAME_WIDTH.
+
+	In a log narrower than that (side by side in full screen), rich would wrap
+	the title lines, the 80 columns of a trace: they are cut to the width
+	instead. The other lines wrap, so that nothing of an output is lost.
+	"""
+
+	def __init__(self, lines, more):
+		self.lines = lines
+		self.more = more
+
+	def __rich_console__(self, console, options):
+		width = min(TRACE_FRAME_WIDTH, options.max_width)
+		# The frame and its margins take 4 columns.
+		inside = width - 4
+		# Text: the trace is shown as it is, with no rich markup read in it.
+		text = Text("\n".join(fit_title(line, inside) for line in self.lines))
+		if self.more:
+			text.append("\n… " + t("{count} more lines: see the trace file", count=self.more), style="dim")
+		yield Panel(text, title="trace", border_style="red", width=width)
+
 def trace_panel(trace):
 	"""The trace in a red frame, cut after TRACE_LINES_SHOWN lines."""
 	lines = trace.rstrip("\n").splitlines()
-	shown = "\n".join(lines[:TRACE_LINES_SHOWN])
-	# Text: the trace is shown as it is, with no rich markup read in it.
-	text = Text(shown)
-	if len(lines) > TRACE_LINES_SHOWN:
-		more = len(lines) - TRACE_LINES_SHOWN
-		text.append("\n… " + t("{count} more lines: see the trace file", count=more), style="dim")
-	# 84 wide: the 80 columns of a trace line, plus the frame and its margins.
-	return Panel(text, title="trace", border_style="red", width=84)
+	return TraceFrame(lines[:TRACE_LINES_SHOWN], max(0, len(lines) - TRACE_LINES_SHOWN))
 
 def exam_passed_panel(exam):
 	"""The panel shown when the last playable level is passed."""

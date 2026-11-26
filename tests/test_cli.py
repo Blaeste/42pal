@@ -176,6 +176,36 @@ class TestHelpTable(unittest.TestCase):
 		console.print(display.help_table({"grademe": "grade your work"}))
 		self.assertIn("./42pal --report", console.file.getvalue())
 
+class TestTracePanel(unittest.TestCase):
+	"""display.trace_panel: the trace in its red frame, whatever the width of the log."""
+
+	def rows(self, trace, width):
+		"""The rows of the frame printed at `width` columns, the borders taken off."""
+		console = Console(file=io.StringIO(), width=width, color_system=None)
+		console.print(display.trace_panel(trace))
+		lines = console.file.getvalue().splitlines()
+		return [line.strip()[1:-1].strip() for line in lines[1:-1]]
+
+	def test_the_title_line_stays_on_one_row_in_a_narrow_log(self):
+		"""Side by side at 176 columns, the log is under 84: "= Test 4 ===" was cut in two rows."""
+		from pal42 import trace
+		rows = self.rows(trace.header("Test 4") + "\n$> ./x | cat -e\nDiff KO\n", 70)
+		self.assertEqual(len(rows), 3, rows)
+		self.assertTrue(rows[0].startswith("= Test 4 ="), rows)
+		self.assertTrue(rows[0].endswith("="), rows)
+
+	def test_the_title_line_keeps_its_80_columns_in_a_wide_log(self):
+		from pal42 import trace
+		rows = self.rows(trace.header("Test 4") + "\nDiff KO\n", 100)
+		self.assertEqual(rows[0], trace.header("Test 4"))
+
+	def test_a_long_line_of_output_still_shows_whole(self):
+		"""Only the title lines are shortened: an output wraps, nothing of it is lost."""
+		from pal42 import trace
+		output = "-" + "x" * 99 + "$"
+		rows = self.rows(trace.header("Test 1") + "\n" + output + "\nDiff KO\n", 70)
+		self.assertEqual("".join(rows[1:-1]), output)
+
 class TestPoints(unittest.TestCase):
 	"""display.points: the points of a level and the grade, as a student reads them."""
 

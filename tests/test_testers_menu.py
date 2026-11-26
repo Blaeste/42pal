@@ -737,6 +737,8 @@ class TestTheFramesOfTheExam(FullScreenTest):
 			self.assertTrue(frame[0].startswith("╭") and frame[-1].startswith("╰"), frame)
 			self.assertTrue(all(line.endswith(("│", "╮", "╯")) for line in frame), frame)
 			self.assertIn("Diff KO", "\n".join(frame))
+			# The log is under 84 columns here: the title line is cut, not wrapped.
+			self.assertFalse([line for line in frame if set(line.strip("│ ")) == {"="}], frame)
 
 class TestTheProgressText(unittest.TestCase):
 
