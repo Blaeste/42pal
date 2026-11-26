@@ -469,6 +469,12 @@ def tester_report(report, tester, project):
 			if function.name in benchmarks:
 				continue
 			line = _leader(names.get(function.name) or tester.prefix + function.name)
+			# Nothing counted (only undefined cases): said, with why, like the tester on its own.
+			if function.total == 0:
+				line.append(" " + t("not measured"), style="dim")
+				lines.append(line)
+				lines += _details(function.tests[0].detail, indent=4, lines=1)
+				continue
 			line.append_text(_score(function.passed, function.total))
 			lines.append(line)
 			bad = function.bad

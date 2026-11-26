@@ -886,6 +886,14 @@ class TestTheReportOfATester(unittest.TestCase):
 		self.assertEqual(report.test_score, (1, 1))
 		self.assertEqual((report.functions[0].passed, report.functions[0].total), (1, 1))
 
+	def test_a_suite_of_undefined_cases_only_not_measured(self):
+		tests = [{"name": "malloc_failures/no_malloc", "status": "INFO", "detail": "ft_printf never calls malloc", "ms": 0}]
+		text = self.text(self.report(tests), testers.find("pushterator"))
+		self.assertIn("not measured", text)
+		self.assertIn("ft_printf never calls malloc", text)
+		line = next(line for line in text.splitlines() if "malloc_failures" in line)
+		self.assertNotIn("0/0", line)
+
 	def test_the_suites_checked(self):
 		data = {"suites": [{"key": "a", "tests": 3}, {"name": "no key"}, "nonsense", {"key": "b", "tests": -1}]}
 		self.assertEqual(testers.suites_of(data), [

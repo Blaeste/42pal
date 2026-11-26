@@ -154,6 +154,19 @@ class TestTheRegistry(unittest.TestCase):
 		self.assertFalse(testers.available(tester, "darwin"))
 		self.assertTrue(tester.streams)
 
+	def test_printerator_for_ft_printf(self):
+		tester = testers.find("printerator")
+		self.assertEqual(tester.url, "https://github.com/Blaeste/Printerator.git")
+		self.assertTrue(tester.tag.startswith("v1."))
+		self.assertRegex(tester.commit, r"^[0-9a-f]{40}$")
+		self.assertEqual((tester.launcher, tester.project), ("printerator", "ft_printf"))
+		self.assertFalse(tester.python)
+		self.assertEqual(tester.visualizer, ("--visualize",))
+		self.assertFalse(testers.available(tester, "darwin"))
+		with tempfile.TemporaryDirectory() as folder:
+			(Path(folder) / "Makefile").write_text("NAME = libftprintf.a\n")
+			self.assertTrue(testers.has_marker(tester, folder))
+
 	def test_only_on_linux(self):
 		tester = testers.find("libfterator")
 		self.assertTrue(testers.available(tester, "linux"))

@@ -218,6 +218,7 @@ Choose **Testers** in the first menu of `./42pal`, then a tester:
 | [libfterator](https://github.com/Blaeste/Libfterator) | libft, subject v19.3 | the subject (files, Makefile, header, README, norm), the 43 functions, leaks, overflows, failed `malloc` |
 | [Pushterator](https://github.com/Blaeste/Pushterator) | push_swap, subject of 2026 | the Makefile, the code, the README, errors, sorting, the four strategies and their complexity, `--bench`, the benchmarks of 100 and 500, the checker of the bonus, leaks |
 | [Linerator](https://github.com/Blaeste/Linerator) | get_next_line | the subject (files, header, the build with and without `BUFFER_SIZE`, the functions allowed, README, norm), every `BUFFER_SIZE` from 1 to 10000000, the standard input, bad fds, failed `read` and `malloc`, reading little, the bonus, leaks |
+| [Printerator](https://github.com/Blaeste/Printerator) | ft_printf, subject 12.1 | the subject (Makefile, `ar`, header, libft, functions allowed, README, norm), every conversion against printf, every flag of the bonus, random formats, failed `write` and `malloc`, leaks |
 
 <p align="center">
   <img src="docs/images/testers.png" alt="The results of Pushterator: the tests by suite, the warnings, the undefined cases" width="760">
@@ -230,8 +231,9 @@ updating. Nothing else uses the network.
 
 Then choose the folder of your project. 42pal looks for it in your home
 folder (the folders with a `libft.h` for libfterator, with a Makefile that
-builds push_swap for Pushterator, with a `get_next_line.c` for Linerator),
-the one tested last first:
+builds push_swap for Pushterator, with a `get_next_line.c` for Linerator,
+with a Makefile that builds libftprintf.a for Printerator), the one tested
+last first:
 
 - in full screen, the list below the path shows them as they are found;
   type a path and the list follows it, with the folders in it (★ for a
@@ -245,18 +247,20 @@ live: the checks of the subject as they are done, a bar of the tests and
 the failures as they come. Then the whole report, in the language of
 42pal: each check of the subject, each function with its failing tests,
 the undefined cases (not counted), the verdict and the full log. `r` runs
-it again, `f` tests another folder. With Pushterator and Linerator, `v`
-opens their visualizer, of the sort or of the reads (`Visualize` in
-`--plain`): 42pal steps aside, and comes back when it is left.
+it again, `f` tests another folder. With Pushterator, Linerator and
+Printerator, `v` opens their visualizer (of the sort, of the reads, the
+comparator of ft_printf and printf; `Visualize` in `--plain`): 42pal steps
+aside, and comes back when it is left.
 
 <p align="center">
   <img src="docs/images/visualizer.png" alt="The visualizer of Pushterator: the stacks a and b, the operation now, the counts and the recap" width="760">
 </p>
 
-libfterator and Linerator need Linux (or WSL), `cc` and `git` (and `make`
-for libfterator); Pushterator runs on macOS too. Each one works on its own
-too, in its own clone: `./libfterator /path/to/libft`, `./pushterator
-/path/to/push_swap`, `./linerator /path/to/get_next_line`.
+libfterator, Linerator and Printerator need Linux (or WSL), `cc` and `git`
+(and `make` for libfterator and Printerator); Pushterator runs on macOS too.
+Each one works on its own too, in its own clone: `./libfterator
+/path/to/libft`, `./pushterator /path/to/push_swap`, `./linerator
+/path/to/get_next_line`, `./printerator /path/to/ft_printf`.
 
 ## What the catalog has today
 

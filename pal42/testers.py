@@ -101,6 +101,21 @@ TESTERS = (
 		tests_title=N_("The tests"),
 		visualizer=("--visualize",),
 	),
+	Tester(
+		name="printerator",
+		project="ft_printf",
+		summary=N_("ft_printf: every conversion against printf, every flag of the bonus, failures"),
+		url="https://github.com/Blaeste/Printerator.git",
+		tag="v1.0.0",
+		commit="f8ba07704e65ed5f8fd74d291e6298dc16667b37",
+		launcher="printerator",
+		marker="Makefile",
+		marker_text="libftprintf",
+		streams=True,
+		python=False,
+		tests_title=N_("The tests"),
+		visualizer=("--visualize",),
+	),
 )
 
 # What state() says.
