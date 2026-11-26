@@ -6,10 +6,15 @@
 
 [![tests](https://github.com/Blaeste/42pal/actions/workflows/tests.yml/badge.svg)](https://github.com/Blaeste/42pal/actions/workflows/tests.yml)
 
-An exam trainer for 42 students: it works like the examshell, but every
-subject you get is a **variant** of an exercise, drawn at random, so you
-train on the skill instead of learning one subject by heart. Your work is
-graded on your machine, like the moulinette, with a trace when it fails.
+A companion tool for 42 students, to train and to test your work:
+
+- **the exams**: it works like the examshell, but every subject you get is
+  a **variant** of an exercise, drawn at random, so you train on the skill
+  instead of learning one subject by heart. Your work is graded on your
+  machine, like the moulinette, with a trace when it fails;
+- **your projects**: its testers check your libft, push_swap, get_next_line
+  and ft_printf: the rules of the subject, unit tests, leaks, and a
+  visualizer for some (see [Test your projects](#test-your-projects)).
 
 It runs on the campus machines with **nothing to install and no sudo**.
 
