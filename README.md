@@ -83,7 +83,8 @@ with a Ctrl+click, if it knows links.
    level. Its last choice goes back to the menu before (Quit in the first
    one).
 3. **Read the subject**: it is shown on the screen and written in
-   `~/42pal_exam/subjects/<name>/subject.en.txt`.
+   `~/42pal_exam/subjects/<name>/subject.en.txt` (and in `subject.fr.txt`
+   when 42pal speaks French, see [Settings](#settings-english-or-french)).
 4. **Write your code** in `~/42pal_exam/rendu/<name>/`.
 5. **Type `grademe`** at the `examshell>` prompt.
 
@@ -104,6 +105,7 @@ with a Ctrl+click, if it knows links.
 |---|---|---|
 | `grademe` | `g` | grades your work |
 | `status` | `s` | exam, level, subject, time spent and left, next grademe |
+| `report` | `r` | writes a report for an issue: the subject, your code, the last trace (see [Report a problem](#report-a-problem)) |
 | `finish` | `f` | ends the exam, with a summary |
 | `back` | `b` | back to the menus, after a wrong click in them (it asks first; Escape in full screen) |
 | `help` | `?` | lists the commands |
@@ -237,10 +239,10 @@ last first:
 
 - in full screen, the list below the path shows them as they are found;
   type a path and the list follows it, with the folders in it (★ for a
-  libft, `..` to go up). ↑↓ move, Enter opens a folder or tests a libft,
-  Tab completes;
+  project, `..` to go up). ↑↓ move, Enter opens a folder or tests a
+  project, Tab completes;
 - in `--plain`, a small shell: the folders found by their number, `ls`,
-  `cd`, `test` (or Enter in a libft), `help`, Tab completes.
+  `cd`, `test` (or Enter alone), `help`, Tab completes.
 
 The tester runs on a copy, never on your files. 42pal shows it at work,
 live: the checks of the subject as they are done, a bar of the tests and
@@ -261,6 +263,20 @@ libfterator, Linerator and Printerator need Linux (or WSL), `cc` and `git`
 Each one works on its own too, in its own clone: `./libfterator
 /path/to/libft`, `./pushterator /path/to/push_swap`, `./linerator
 /path/to/get_next_line`, `./printerator /path/to/ft_printf`.
+
+## Settings: English or French
+
+Choose **Settings** in the first menu: it lists the languages, each under
+its own name (English, Français). The choice applies at once and is kept in
+`~/.42pal/settings.json`; `PAL42_LANG=fr ./42pal` chooses it for one run.
+
+In French, 42pal translates its menus and its messages, the traces of a
+grademe (the titles, the verdicts, the crash messages; the commands and the
+outputs stay as they are) and the subjects: the screen shows the French one,
+written in `subject.fr.txt` next to `subject.en.txt`. Like the subjects of
+42, the header of a subject stays in English, and so do the names of the
+commands and the prompts `examshell>` and `practice>`. The testers give their
+report in the language of 42pal too.
 
 ## What the catalog has today
 
@@ -288,7 +304,9 @@ the test main builds the object and calls its methods one after the other.
 | Exercise | Kind | Theme | Variants |
 |---|---|---|---|
 | `shift_letters` | program | letter_rotation | 18 |
+| `shift_words` | function | letter_rotation | 3 |
 | `char_position` | function | string_length | 6 |
+| `len_kinds` | function | string_length | 4 |
 | `char_filter` | program | common_chars | 11 |
 | `split_fields` | function, leaks checked | string_split | 7 |
 | `print_range` | function (void, prints) | print_digits | 10 |
@@ -301,6 +319,7 @@ the test main builds the object and calls its methods one after the other.
 | `list_drop` | function + header handed in, leaks checked | list_remove | 12 |
 | `name_style` | program | case_convert | 18 |
 | `word_pick` | program | find_word | 10 |
+| `word_each` | program | find_word | 6 |
 | `base_print` | program | print_in_base | 8 |
 | `list_measure` | function, header given | list_walk | 10 |
 | `number_read` | function | read_base_number | 11 |
@@ -311,15 +330,24 @@ the test main builds the object and calls its methods one after the other.
 | `alpha_wave` | program | alternating_alphabet | 11 |
 | `alpha_back` | program | backward_alphabet | 7 |
 | `case_flip` | program | case_swap | 12 |
+| `case_zone` | function | case_swap | 4 |
 | `calc_form` | program | calculator | 11 |
 | `replace_pick` | program | char_replace | 8 |
+| `replace_count` | function | char_replace | 4 |
 | `letter_step` | program | letter_step | 7 |
+| `step_marks` | function | letter_step | 3 |
 | `rev_part` | program | reverse_print | 5 |
+| `back_print` | function (void, prints) | reverse_print | 3 |
 | `repeat_rule` | program | letter_repeat | 5 |
+| `repeat_alloc` | function, leaks checked | letter_repeat | 3 |
 | `pointer_pair` | function | value_swap | 5 |
+| `triple_swap` | function | value_swap | 4 |
 | `copy_shape` | function | string_copy | 8 |
+| `copy_part` | function | string_copy | 3 |
 | `put_filter` | function (void, prints) | string_print | 8 |
+| `put_shape` | function (void, prints) | string_print | 3 |
 | `bip_bop` | program | number_words | 8 |
+| `count_words` | program | number_words | 6 |
 | `mirror_group` | program | alphabet_mirror | 7 |
 | `word_from_end` | program | end_word | 8 |
 | `merge_chars` | program | merged_chars | 8 |
@@ -472,14 +500,22 @@ core changed. The same choice works on a machine:
 |---|---|
 | `pal42/` | the core: exercises, variants, subjects, grading, the testers of projects (no display) |
 | `pal42/cli/` | the terminal: examshell, practice, check-catalog, and the full screen (`tui.py`, `tui.tcss`) |
+| `pal42/locales/` | the translations of the texts of 42pal, one file a language (`fr.json`) |
 | `exercises/c/<name>/` | one exercise: `exercise.py`, its `ref.c` (and the header the student hands in, if any) |
 | `exercises/python/<name>/` | one Python exercise: `exercise.py` and its `ref.py`, which holds the function of every variant |
 | `exams/` | the exams: title, language, duration, compile command (the interpreter in Python), retry waits |
 | `tests/` | the tests |
 
+The texts of 42pal are written in English in the code and translated in
+`pal42/locales/<code>.json`; a subject is translated in
+`exercises/<language>/<name>/locales/<code>.json`. `python3 tools/locales.py
+check` says what each language lacks, and `python3 tools/locales.py new
+<code> "<Name>"` starts a new one.
+
 The plan of the project, in French, is in
 [docs/plans/42pal.md](docs/plans/42pal.md); the one of the testers in
-[docs/plans/testers.md](docs/plans/testers.md).
+[docs/plans/testers.md](docs/plans/testers.md), the one of the languages in
+[docs/plans/languages.md](docs/plans/languages.md).
 
 To try a tester before its tag is pushed, point 42pal at a local clone:
 `PAL42_TESTER_LIBFTERATOR=/path/to/libfterator ./42pal`. The tag and its
