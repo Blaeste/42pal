@@ -334,7 +334,7 @@
 	"exam": "examen",
 	"exam mode": "mode examen",
 	"exam mode · hard waits · {minutes} min": "mode examen · attentes longues · {minutes} min",
-	"exam trainer · random variants · local moulinette": "entraîneur d'exam · variants aléatoires · moulinette locale",
+	"exams · random variants · testers of your projects": "exams · variants aléatoires · testeurs de tes projets",
 	"git clone failed.": "git clone a échoué.",
 	"git is missing: install it to download the testers.": "git est absent : installe-le pour télécharger les testeurs.",
 	"git took more than {seconds} s.": "git a pris plus de {seconds} s.",

@@ -75,7 +75,7 @@ LOGO = [
 # The colors the logo goes through, cyan to violet; they move slowly.
 GRADIENT = ["#5eead4", "#67e8f9", "#7dd3fc", "#93c5fd", "#a5b4fc", "#c4b5fd", "#d8b4fe"]
 
-TAGLINE = N_("exam trainer · random variants · local moulinette")
+TAGLINE = N_("exams · random variants · testers of your projects")
 
 # What the app exits with once a newer 42pal is pulled: it must start again.
 RESTART = object()

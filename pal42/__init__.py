@@ -1,4 +1,4 @@
-"""pal42: core library of 42pal, a 42 exam trainer.
+"""pal42: core library of 42pal, a companion tool for 42 students (exams, testers of projects).
 
 The core never prints anything: the front-ends (terminal or web app)
 are in charge of all the display.
